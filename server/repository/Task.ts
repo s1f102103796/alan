@@ -23,6 +23,7 @@ export const func = async (AAA: string) => {
       role: 'user',
       content: `${TODO_NAME}の技術を向上するために人が中々思いつかないTodoリストの内容を1つ10文字以内で具体的に教えてください 「」の中に答えを入れてください`,
     };
+    console.log('a');
     const res = await openai.createChatCompletion({
       model: 'gpt-4-0613',
       messages: [prompt],
@@ -45,10 +46,15 @@ export const func = async (AAA: string) => {
       ],
     });
 
+    if (!res.data.choices[0].message) {
+      return 'あああ';
+    }
+
+    // console.log(res.data.choices[0].message?.function_call);
     const message = res.data.choices[0].message;
     // console.log('message', message);
     const functionCall = message?.function_call;
-
+    console.log('b');
     if (functionCall) {
       // const args = JSON.parse(functionCall.arguments || '{}');
       const args = JSON.parse(functionCall.arguments ?? '{}');
@@ -72,7 +78,10 @@ export const func = async (AAA: string) => {
           },
         ],
       });
-      // console.log('answer2', res2.data.choices[0].message);
+      if (!res2.data.choices[0].message) {
+        console.log('ない');
+      }
+      console.log('answer2', res2.data.choices[0].message);
       // messageContent = res2.data.choices[0].message;
       // Taskname = res2.data.choices[0].message;
       const contentResult = res2.data?.choices[0]?.message?.content;
