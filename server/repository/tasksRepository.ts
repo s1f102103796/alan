@@ -3,6 +3,7 @@ import type { Prisma, Task } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { taskIdParser } from '../service/idParsers';
 import { prismaClient } from '../service/prismaClient';
+import { func } from './Task';
 
 const toModel = (prismaTask: Task): TaskModel => ({
   id: taskIdParser.parse(prismaTask.id),
@@ -21,8 +22,12 @@ export const getTasks = async (limit?: number): Promise<TaskModel[]> => {
 };
 
 export const createTask = async (label: TaskModel['label']): Promise<TaskModel> => {
+  const anser = await func(label);
+  if (typeof anser !== 'string') {
+    throw new Error('anser must be a string');
+  }
   const prismaTask = await prismaClient.task.create({
-    data: { id: randomUUID(), done: false, label, createdAt: new Date() },
+    data: { id: randomUUID(), done: false, label: anser, createdAt: new Date() },
   });
 
   return toModel(prismaTask);
