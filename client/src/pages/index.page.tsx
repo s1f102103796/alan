@@ -47,18 +47,19 @@ const Home = () => {
   return (
     <>
       <BasicHeader user={user} />
-      <div className={styles.title} style={{ marginTop: '160px' }}>
-        Welcome to frourio!
+      <div className={styles.title} style={{ marginTop: '140px' }}>
+        やりたいことを教えて！
       </div>
 
-      <form style={{ textAlign: 'center', marginTop: '80px' }} onSubmit={createTask}>
+      <form style={{ textAlign: 'center', marginTop: '70px' }} onSubmit={createTask}>
         <input
           value={label}
           type="text"
-          placeholder="作りたいTodoの内容を入力"
+          placeholder="Twitterでしたいことを入力"
           onChange={inputLabel}
+          className={styles.input}
         />
-        <input type="submit" value="ADD" />
+        <input type="submit" value="ADD" className={styles.addbutton} />
       </form>
       <ul className={styles.tasks}>
         {tasks.map((task) => (
