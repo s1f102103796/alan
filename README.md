@@ -68,4 +68,4 @@ $ cd server
 $ npx prisma studio
 ```
 
-/hiroki pullreq
+/hiroki first pullreq
