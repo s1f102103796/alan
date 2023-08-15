@@ -1,3 +1,4 @@
+import type { BoardArr } from '../useCase/boardUseCase';
 import type { TaskId, UserId } from './branded';
 
 export type UserModel = {
@@ -12,4 +13,9 @@ export type TaskModel = {
   label: string;
   done: boolean;
   created: number;
+};
+
+export type RoomModel = {
+  board: BoardArr;
+  turn: number;
 };
