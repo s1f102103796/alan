@@ -13,3 +13,8 @@ model Task {
   done      Boolean
   createdAt DateTime
 }
+
+model Room {
+  board      Json   @id
+  turn       Int
+}
