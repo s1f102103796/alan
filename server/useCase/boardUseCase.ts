@@ -97,7 +97,27 @@ const countCandidates = () => {
   return candidate;
 };
 
-const advanceBoard = (advancex: number, advancey: number, turnclour: number) => {
+const countthree = () => {
+  const positions: number[][] = [];
+  for (let y = 0; y < board.length; y++) {
+    for (let x = 0; x < board[y].length; x++) {
+      if (board[y][x] === 3) {
+        positions.push([y, x]);
+      }
+    }
+  }
+  console.log(positions);
+
+  const getRandomPosition = (positions: number[][]): number[] => {
+    const randomIndex = Math.floor(Math.random() * positions.length);
+    return positions[randomIndex];
+  };
+  console.log(getRandomPosition(positions));
+  return getRandomPosition(positions);
+};
+const turn = 1;
+
+const advanceBoard = (advancey: number, advancex: number, turnclour: number) => {
   let pass = 0;
   let turn = turnclour;
   const handlePass = () => {
@@ -125,6 +145,7 @@ const advanceBoard = (advancex: number, advancey: number, turnclour: number) => 
   changeBoard(advancex, advancey, true, turnclour);
   updateBoard(3 - turnclour);
   Pass();
+  countthree();
   // board[params.y][params.x] = params.turn;
   return { board, turn };
 };
@@ -152,7 +173,7 @@ export const boardUseCace = {
   },
 
   startBoard: () => {
-    return board;
-    // とりあえず
+    const randomPosition = countthree();
+    advanceBoard(randomPosition[0], randomPosition[1], turn);
   },
 };
