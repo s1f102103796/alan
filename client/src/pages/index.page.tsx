@@ -40,15 +40,8 @@ const Home = () => {
   };
 
   const startGame = async () => {
-    const c = await apiClient.startboard.post({ body: { board } });
-    console.log(c);
-    setBoard(c.body);
-    setTurnColor(1);
+    await apiClient.startboard.post({ body: { board } });
   };
-
-  useEffect(() => {
-    fetchBoard();
-  }, []);
 
   const countCandidates = () => {
     let candidate = 0;
@@ -62,10 +55,34 @@ const Home = () => {
     return candidate;
   };
 
+  let timeoutcounts = 0;
   const candidate = countCandidates();
-  if (candidate === 0) {
-    alert('ゲーム終了');
-  }
+  const endGame = async () => {
+    if (candidate === 0) {
+      timeoutcounts++;
+      alert('ゲーム終了');
+
+      const b = await apiClient.newboard.post({ body: { board } });
+      console.log(b);
+      setBoard(b.body);
+      setTurnColor(1);
+    }
+  };
+
+  endGame();
+  // setTimeout(endGame, 3000);
+
+  // setTimeout(function () {
+  //   if (timeoutcounts === 0) {
+  //     endGame();
+  //   }
+  // }, 3000);
+
+  useEffect(() => {
+    fetchBoard();
+    const intervalId = setInterval(fetchBoard, 100);
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <div className={styles.container}>

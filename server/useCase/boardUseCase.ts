@@ -97,44 +97,89 @@ const countCandidates = () => {
   return candidate;
 };
 
-const advanceBoard = (advancex: number, advancey: number, turnclour: number) => {
-  let pass = 0;
-  let turn = turnclour;
-  const handlePass = () => {
-    console.log('パス');
-    pass++;
-    for (let y = 0; y < 8; y++) {
-      for (let x = 0; x < 8; x++) {
-        changeBoard(x, y, false, turnclour);
+const countthree = () => {
+  const positions: number[][] = [];
+  for (let y = 0; y < board.length; y++) {
+    for (let x = 0; x < board[y].length; x++) {
+      if (board[y][x] === 3) {
+        positions.push([y, x]);
       }
     }
-    turn = 3 - turnclour;
-  };
+  }
+  // console.log(positions);
 
-  const Pass = () => {
-    const candidate = countCandidates();
-    if (candidate !== 0) {
-      console.log('ゲーム続行');
-      pass = 0;
-      turn = turnclour;
-    } else {
-      handlePass();
-    }
+  const getRandomPosition = (positions: number[][]): number[] => {
+    const randomIndex = Math.floor(Math.random() * positions.length);
+    return positions[randomIndex];
   };
-  clearNewBoard();
-  changeBoard(advancex, advancey, true, turnclour);
-  updateBoard(3 - turnclour);
-  Pass();
-  // board[params.y][params.x] = params.turn;
+  // console.log(getRandomPosition(positions));
+  return getRandomPosition(positions);
+};
+const turn = 1;
+let randomPosition = countthree();
+let count = 0;
+
+const advanceBoard = (
+  advancey: number,
+  advancex: number,
+  turnclour: number,
+  recursive: boolean
+) => {
+  if (onoff === 1) {
+    let pass = 0;
+    let turn = turnclour;
+    const handlePass = () => {
+      console.log('パス');
+      pass++;
+      for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+          changeBoard(x, y, false, turnclour);
+        }
+      }
+      turn = 3 - turnclour;
+    };
+    let turn1 = 1;
+    turn1 = 3 - turnclour;
+    const Pass = () => {
+      const candidate = countCandidates();
+      if (candidate !== 0) {
+        console.log('ゲーム続行');
+        pass = 0;
+        turn = turnclour;
+      } else {
+        handlePass();
+      }
+    };
+    turn = 3 - turnclour;
+    clearNewBoard();
+    changeBoard(advancex, advancey, true, turnclour);
+    updateBoard(3 - turnclour);
+    Pass();
+    const candidate = countCandidates();
+    // count++;
+    // if (recursive && count <= 10) {
+    if (recursive && candidate !== 0) {
+      const randomPosition = countthree();
+      console.log('こっち来ている');
+      console.log(randomPosition);
+      // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+      setTimeout(function () {
+        advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+      }, 1000);
+    }
+    // board[params.y][params.x] = params.turn;
+    return { board, turn };
+  }
   return { board, turn };
 };
 
-// const newBoard: number[][] = JSON.parse(JSON.stringify(resetboard));
+let onoff = 0;
 
 export const boardUseCace = {
   getBoard: () => board,
   clickBoard: (params: { x: number; y: number; turn: number }, userId: UserId) => {
-    return advanceBoard(params.x, params.y, params.turn);
+    onoff = 1;
+    return advanceBoard(params.y, params.x, params.turn, false);
   },
 
   resetBoard: () => {
@@ -148,11 +193,16 @@ export const boardUseCace = {
       [0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0],
     ];
+    count = 0;
+    onoff = 0;
+    randomPosition = [];
     return board;
   },
 
   startBoard: () => {
-    return board;
-    // とりあえず
+    onoff = 1;
+    randomPosition = countthree();
+    // console.log('1');
+    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
   },
 };
