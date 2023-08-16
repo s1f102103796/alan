@@ -32,12 +32,19 @@ const Home = () => {
     }
   };
 
-  const resetBoard = async () => {
+  const resetGame = async () => {
     const b = await apiClient.newboard.post({ body: { board } });
     console.log(b);
     setBoard(b.body);
     setTurnColor(1);
   };
+
+  const startGame = async () => {
+    const c = await apiClient.startboard.post({ body: { board } });
+    console.log(c);
+    setBoard(c.body);
+    setTurnColor(1);
+  }
 
   useEffect(() => {
     fetchBoard();
@@ -59,6 +66,8 @@ const Home = () => {
   if (candidate === 0) {
     alert('ゲーム終了');
   }
+
+  
 
   return (
     <div className={styles.container}>
@@ -82,7 +91,10 @@ const Home = () => {
           ))
         )}
       </div>
-      <button className={styles.button} onClick={resetBoard}>
+      <button className={styles.button} onClick={startGame}>
+        ゲームスタート
+      </button>
+      <button className={styles.button} onClick={resetGame}>
         ゲーム終了
       </button>
     </div>
