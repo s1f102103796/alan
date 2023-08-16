@@ -1,5 +1,5 @@
-import type { BoardArr } from '../../useCase/boardUseCase';
 import type { DefineMethods } from 'aspida';
+import type { BoardArr } from '../../useCase/boardUseCase';
 
 export type Methods = DefineMethods<{
   get: {

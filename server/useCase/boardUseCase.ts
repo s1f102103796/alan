@@ -1,4 +1,3 @@
-import { truncate } from 'fs';
 import type { UserId } from '../commonTypesWithClient/branded';
 
 export type BoardArr = number[][];
@@ -153,7 +152,7 @@ export const boardUseCace = {
   },
 
   startBoard: () => {
-    return board
+    return board;
     // とりあえず
-  }
+  },
 };

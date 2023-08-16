@@ -44,7 +44,7 @@ const Home = () => {
     console.log(c);
     setBoard(c.body);
     setTurnColor(1);
-  }
+  };
 
   useEffect(() => {
     fetchBoard();
@@ -66,8 +66,6 @@ const Home = () => {
   if (candidate === 0) {
     alert('ゲーム終了');
   }
-
-  
 
   return (
     <div className={styles.container}>
