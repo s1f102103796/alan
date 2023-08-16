@@ -117,7 +117,7 @@ const countthree = () => {
 };
 const turn = 1;
 let randomPosition = countthree();
-let count = 0
+let count = 0;
 
 const advanceBoard = (
   advancey: number,
@@ -137,7 +137,8 @@ const advanceBoard = (
     }
     turn = 3 - turnclour;
   };
-
+  let turn1 = 1;
+  turn1 = 3 - turnclour;
   const Pass = () => {
     const candidate = countCandidates();
     if (candidate !== 0) {
@@ -157,8 +158,11 @@ const advanceBoard = (
   if (recursive && count <= 10) {
     const randomPosition = countthree();
     console.log('こっち来ている');
-    console.log(randomPosition)
-    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+    console.log(randomPosition);
+    // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+    setTimeout(function () {
+      advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+    }, 1000);
   }
   // board[params.y][params.x] = params.turn;
   return { board, turn };
@@ -183,6 +187,8 @@ export const boardUseCace = {
       [0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0],
     ];
+    count = 0;
+    randomPosition = [];
     return board;
   },
 
