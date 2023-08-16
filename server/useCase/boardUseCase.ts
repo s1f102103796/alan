@@ -106,18 +106,25 @@ const countthree = () => {
       }
     }
   }
-  console.log(positions);
+  // console.log(positions);
 
   const getRandomPosition = (positions: number[][]): number[] => {
     const randomIndex = Math.floor(Math.random() * positions.length);
     return positions[randomIndex];
   };
-  console.log(getRandomPosition(positions));
+  // console.log(getRandomPosition(positions));
   return getRandomPosition(positions);
 };
 const turn = 1;
+let randomPosition = countthree();
+let count = 0
 
-const advanceBoard = (advancey: number, advancex: number, turnclour: number) => {
+const advanceBoard = (
+  advancey: number,
+  advancex: number,
+  turnclour: number,
+  recursive: boolean
+) => {
   let pass = 0;
   let turn = turnclour;
   const handlePass = () => {
@@ -141,11 +148,18 @@ const advanceBoard = (advancey: number, advancex: number, turnclour: number) => 
       handlePass();
     }
   };
+  turn = 3 - turnclour;
   clearNewBoard();
   changeBoard(advancex, advancey, true, turnclour);
   updateBoard(3 - turnclour);
   Pass();
-  countthree();
+  count++;
+  if (recursive && count <= 10) {
+    const randomPosition = countthree();
+    console.log('こっち来ている');
+    console.log(randomPosition)
+    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+  }
   // board[params.y][params.x] = params.turn;
   return { board, turn };
 };
@@ -155,7 +169,7 @@ const advanceBoard = (advancey: number, advancex: number, turnclour: number) => 
 export const boardUseCace = {
   getBoard: () => board,
   clickBoard: (params: { x: number; y: number; turn: number }, userId: UserId) => {
-    return advanceBoard(params.x, params.y, params.turn);
+    return advanceBoard(params.y, params.x, params.turn, false);
   },
 
   resetBoard: () => {
@@ -173,7 +187,8 @@ export const boardUseCace = {
   },
 
   startBoard: () => {
-    const randomPosition = countthree();
-    advanceBoard(randomPosition[0], randomPosition[1], turn);
+    randomPosition = countthree();
+    // console.log('1');
+    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
   },
 };
