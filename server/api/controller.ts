@@ -1,5 +1,13 @@
+// import { defineController } from './$relay';
+
+// export default defineController(() => ({
+//   get: () => ({ status: 200, body: '' }),
+// }));
+
+import { createTask, getTasks } from '$/repository/tasksRepository';
 import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: () => ({ status: 200, body: '' }),
+  get: async ({ query }) => ({ status: 200, body: await getTasks(query?.limit) }),
+  post: async ({ body }) => ({ status: 201, body: await createTask(body.label) }),
 }));

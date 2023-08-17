@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from 'src/utils/apiClient';
 import { returnNull } from 'src/utils/returnNull';
-import type { BoardArr } from '../../../server/useCase/boardUseCase';
 import styles from './index.module.css';
 
 const Home = () => {
-  const [board, setBoard] = useState<BoardArr>([
+  const [board, setBoard] = useState<number[][]>([
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 3, 0, 0, 0],
@@ -70,13 +69,13 @@ const Home = () => {
   };
 
   endGame();
-  // setTimeout(endGame, 3000);
+  setTimeout(endGame, 3000);
 
-  // setTimeout(function () {
-  //   if (timeoutcounts === 0) {
-  //     endGame();
-  //   }
-  // }, 3000);
+  setTimeout(function () {
+    if (timeoutcounts === 0) {
+      endGame();
+    }
+  }, 3000);
 
   useEffect(() => {
     fetchBoard();

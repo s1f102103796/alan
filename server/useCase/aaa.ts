@@ -71,7 +71,7 @@ export const func1 = async (aaa: number[][] = []) => {
   });
 
   const message = res.data.choices[0].message;
-  console.log('message', message);
+  //console.log('message', message);
 
   const functioncall = message?.function_call;
 
@@ -111,7 +111,7 @@ export const func1 = async (aaa: number[][] = []) => {
     }
 
     const result = JSON.parse(inputString) as number[];
-    console.log('配列型array', result);
+    // console.log('配列型array', result);
     // return result;
     if (
       Array.isArray(result) &&
@@ -119,7 +119,6 @@ export const func1 = async (aaa: number[][] = []) => {
       typeof result[0] === 'number' &&
       typeof result[1] === 'number'
     ) {
-      console.log('aaaファイルは通りました');
       return result;
     } else {
       console.log('undifinedです');
