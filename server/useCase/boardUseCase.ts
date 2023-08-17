@@ -1,5 +1,5 @@
 import type { UserId } from '../commonTypesWithClient/branded';
-
+import { func1 } from './aaa';
 export type BoardArr = number[][];
 
 let board: BoardArr = [
@@ -97,7 +97,7 @@ const countCandidates = () => {
   return candidate;
 };
 
-const countthree = () => {
+export const countthree = () => {
   const positions: number[][] = [];
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[y].length; x++) {
@@ -106,20 +106,37 @@ const countthree = () => {
       }
     }
   }
-  // console.log(positions);
+  console.log(positions);
 
-  const getRandomPosition = (positions: number[][]): number[] => {
-    const randomIndex = Math.floor(Math.random() * positions.length);
-    return positions[randomIndex];
-  };
+  let getRandomPosition = func1(positions);
+
+  // const getRandomPosition = (positions: number[][]): number[] => {
+  //   const randomIndex = Math.floor(Math.random() * positions.length);
+  //   return positions[randomIndex];
+  // };
   // console.log(getRandomPosition(positions));
-  return getRandomPosition(positions);
+  console.log(getRandomPosition);
+  if (getRandomPosition === undefined) {
+    const newPosition = func1(positions);
+    if (newPosition !== undefined) {
+      getRandomPosition = newPosition;
+    }
+  } else {
+    return getRandomPosition;
+  }
 };
+
 const turn = 1;
-let randomPosition = countthree();
+// const aaa = countthree();
+let randomPosition: number[] = [];
+// if (aaa !== undefined) {
+//   randomPosition = aaa;
+// }
+// let randomPosition = countthree();
+
 let count = 0;
 
-const advanceBoard = (
+const advanceBoard = async (
   advancey: number,
   advancex: number,
   turnclour: number,
@@ -159,15 +176,22 @@ const advanceBoard = (
     // count++;
     // if (recursive && count <= 10) {
     if (recursive && candidate !== 0) {
-      const randomPosition = countthree();
-      console.log('こっち来ている');
-      console.log(randomPosition);
-      // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
-      setTimeout(function () {
-        advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
-      }, 1000);
+      const aaa = await countthree();
+
+      console.log('こっち来ている', aaa);
+
+      if (aaa !== undefined) {
+        const randomPosition = aaa;
+        console.log('ランダムポジ読み出された!2回目以降', randomPosition);
+        setTimeout(function () {
+          advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+          console.log('advanceBoard関数が実行されました2回目以降!');
+          // board = undatedState.board;
+          // turn = updateBoard.turn;
+        });
+      }
     }
-    // board[params.y][params.x] = params.turn;
+
     return { board, turn };
   }
   return { board, turn };
@@ -179,6 +203,8 @@ export const boardUseCace = {
   getBoard: () => board,
   clickBoard: (params: { x: number; y: number; turn: number }, userId: UserId) => {
     onoff = 1;
+    // console.log(func1());
+
     return advanceBoard(params.y, params.x, params.turn, false);
   },
 
@@ -201,8 +227,36 @@ export const boardUseCace = {
 
   startBoard: () => {
     onoff = 1;
-    randomPosition = countthree();
+    const aaa = countthree();
+    console.log('startBoardが実行されました', aaa);
+
+    console.log('aaa');
+
+    async function ProcessResult() {
+      if (aaa instanceof Promise) {
+        const result = await aaa;
+        if (result !== undefined) {
+          randomPosition = result;
+          console.log('ランダムポジ１回目', randomPosition);
+          advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+        }
+      } else if (aaa !== undefined) {
+        randomPosition === aaa;
+        console.log('ランダムポジ１回目undifinedの場合', randomPosition);
+        advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+      }
+    }
+
+    ProcessResult();
+
+    // if (aaa !== undefined && !(aaa instanceof Promise) && aaa !== undefined) {
+    //   randomPosition = aaa;
+    //   console.log('ランダムポジ', randomPosition);
+    //   advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+    // }
+
+    // randomPosition = countthree();
     // console.log('1');
-    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+    // advanceBoard(randomPosition[0], randomPosition[1], turn, true);
   },
 };
