@@ -27,7 +27,7 @@ const directions: number[][] = [
 const clearNewBoard = () => {
   for (let y = 0; y < 8; y++) {
     for (let x = 0; x < 8; x++) {
-      board[y][x] = board[y][x] % 3; // 3 -> 0にしている
+      board[y][x] = board[y][x] % 3;
     }
   }
 };
@@ -71,7 +71,6 @@ const changeBoard = (x: number, y: number, type: boolean, color: number) => {
   if (board[y][x] === 0) {
     for (const w of directions) {
       if (board[y + w[0]] !== undefined && board[y + w[0]][x + w[1]] === 3 - color) {
-        // 隣が相手の色だったら
         flipPiece2(x, y, type, color, w);
       }
     }
@@ -106,18 +105,17 @@ const countthree = () => {
       }
     }
   }
-  // console.log(positions);
 
   const getRandomPosition = (positions: number[][]): number[] => {
     const randomIndex = Math.floor(Math.random() * positions.length);
     return positions[randomIndex];
   };
-  // console.log(getRandomPosition(positions));
   return getRandomPosition(positions);
 };
-const turn = 1;
-let randomPosition = countthree();
+
+let randomPositionbefore: number[] = [];
 let count = 0;
+const turn = 1;
 
 const advanceBoard = (
   advancey: number,
@@ -195,14 +193,17 @@ export const boardUseCace = {
     ];
     count = 0;
     onoff = 0;
-    randomPosition = [];
+    randomPositionbefore = [];
     return board;
   },
 
   startBoard: () => {
     onoff = 1;
-    randomPosition = countthree();
-    // console.log('1');
-    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+    randomPositionbefore = countthree();
+    advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turn, true);
   },
+
+  // getChat: () => ({ turn: turn1, position: randomPositionbefore }),
+  getTurn: () => turn,
+  getChat: () => randomPositionbefore,
 };
