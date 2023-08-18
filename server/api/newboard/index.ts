@@ -14,7 +14,7 @@ import type { DefineMethods } from 'aspida';
 import type { BoardArr } from '../../useCase/boardUseCase';
 export type Methods = DefineMethods<{
   get: {
-    resBody: BoardArr;
+    resBody: number[];
   };
   post: {
     reqBody: { board: number[][] };
