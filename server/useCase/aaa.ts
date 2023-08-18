@@ -126,4 +126,4 @@ export const func1 = async (aaa: number[][] = []) => {
   }
 };
 
-// func();
+// func1();

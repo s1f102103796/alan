@@ -114,21 +114,14 @@ const countthree = async () => {
     if (newPosition !== undefined) {
       console.log('return getRandomPos is type of num[]?', getRandomPosition);
       getRandomPosition = newPosition;
-      console.log('func1がよみだされている');
       return getRandomPosition;
     }
   } else {
     return getRandomPosition;
   }
-
-  // const getRandomPosition = (positions: number[][]): number[] => {
-  //   const randomIndex = Math.floor(Math.random() * positions.length);
-  //   return positions[randomIndex];
-  // };
-  // return getRandomPosition(positions);
 };
 
-let randomPositionbefore: number[] = [];
+const randomPositionbefore: number[] = [];
 let count = 0;
 let turndeluxe = 1;
 let turn = 1;
@@ -172,16 +165,16 @@ const advanceBoard = async (
     Pass();
     const candidate = countCandidates();
     if (recursive && candidate !== 0) {
-      const randomPositionafter = await countthree();
+      const randomPositionbefore = await countthree();
       // console.log('こっち来ている');
       // console.log(randomPositionafter);
-      if (randomPositionafter !== undefined) {
-        randomPositionbefore = randomPositionafter;
+      if (randomPositionbefore !== undefined) {
+        const randomPositionafter = randomPositionbefore;
 
         turndeluxe = turn;
-        setTimeout(function () {
-          advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turn, true);
-        }, 1000);
+        // setTimeout(function () {
+        await advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
+        // }, 1000);
       }
     }
     return { board, turn };
@@ -220,10 +213,14 @@ export const boardUseCace = {
   startBoard: async () => {
     onoff = 1;
     const randomPositionbefore = await countthree();
+    console.log('count three return :', randomPositionbefore);
+
     async function ProcessResult() {
       const result = randomPositionbefore;
       if (result !== undefined) {
         const randomPosititionafter = result;
+        console.log('AI tapping  position', randomPosititionafter);
+
         advanceBoard(randomPosititionafter[0], randomPosititionafter[1], turndeluxe, true);
       }
     }
