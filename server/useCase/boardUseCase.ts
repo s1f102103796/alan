@@ -115,7 +115,8 @@ const countthree = () => {
 
 let randomPositionbefore: number[] = [];
 let count = 0;
-const turn = 1;
+let turndeluxe = 1;
+let turn = 1;
 
 const advanceBoard = (
   advancey: number,
@@ -125,7 +126,7 @@ const advanceBoard = (
 ) => {
   if (onoff === 1) {
     let pass = 0;
-    let turn = turnclour;
+    turn = turnclour;
     const handlePass = () => {
       console.log('パス');
       pass++;
@@ -136,36 +137,30 @@ const advanceBoard = (
       }
       turn = 3 - turnclour;
     };
-    let turn1 = 1;
-    turn1 = 3 - turnclour;
+    turn = 3 - turnclour;
     const Pass = () => {
       const candidate = countCandidates();
       if (candidate !== 0) {
         console.log('ゲーム続行');
         pass = 0;
-        turn = turnclour;
       } else {
         handlePass();
       }
     };
-    turn = 3 - turnclour;
     clearNewBoard();
     changeBoard(advancex, advancey, true, turnclour);
     updateBoard(3 - turnclour);
     Pass();
     const candidate = countCandidates();
-    // count++;
-    // if (recursive && count <= 10) {
     if (recursive && candidate !== 0) {
       const randomPosition = countthree();
       console.log('こっち来ている');
       console.log(randomPosition);
-      // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+      turndeluxe = turn;
       setTimeout(function () {
-        advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+        advanceBoard(randomPosition[0], randomPosition[1], turn, true);
       }, 1000);
     }
-    // board[params.y][params.x] = params.turn;
     return { board, turn };
   }
   return { board, turn };
@@ -200,10 +195,9 @@ export const boardUseCace = {
   startBoard: () => {
     onoff = 1;
     randomPositionbefore = countthree();
-    advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turn, true);
+    advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turndeluxe, true);
   },
 
-  // getChat: () => ({ turn: turn1, position: randomPositionbefore }),
-  getTurn: () => turn,
+  getTurn: () => turndeluxe,
   getChat: () => randomPositionbefore,
 };
