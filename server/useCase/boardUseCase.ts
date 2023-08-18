@@ -164,7 +164,7 @@ const advanceBoard = (
       turndeluxe = turn;
       setTimeout(function () {
         advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
-      }, 10000);
+      }, 1000);
     }
     return { board, turn };
   }
