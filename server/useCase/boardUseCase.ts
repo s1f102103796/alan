@@ -126,6 +126,8 @@ const advanceBoard = (
   turnclour: number,
   recursive: boolean
 ) => {
+  randomPositionbox.push(randomPositionbefore);
+  turnbox.push(turndeluxe);
   if (onoff === 1) {
     let pass = 0;
     turn = turnclour;
@@ -162,8 +164,6 @@ const advanceBoard = (
       turndeluxe = turn;
       setTimeout(function () {
         advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
-        randomPositionbox.push(randomPositionbefore);
-        turnbox.push(turndeluxe);
       }, 10000);
     }
     return { board, turn };
@@ -193,6 +193,7 @@ export const boardUseCace = {
     ];
     count = 0;
     onoff = 0;
+    turndeluxe = 1;
     randomPositionbox = [];
     turnbox = [];
     return board;
