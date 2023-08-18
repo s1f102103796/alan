@@ -117,8 +117,8 @@ let randomPositionbefore: number[] = [];
 let count = 0;
 let turndeluxe = 1;
 let turn = 1;
-const randomPositionbox: number[][] = [];
-const turnbox: number[] = [];
+let randomPositionbox: number[][] = [];
+let turnbox: number[] = [];
 
 const advanceBoard = (
   advancey: number,
@@ -159,12 +159,12 @@ const advanceBoard = (
       console.log('こっち来ている');
       console.log(randomPositionafter);
       randomPositionbefore = randomPositionafter;
-      randomPositionbox.push(randomPositionbefore);
       turndeluxe = turn;
-      turnbox.push(turndeluxe);
       setTimeout(function () {
         advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
-      }, 1000);
+        randomPositionbox.push(randomPositionbefore);
+        turnbox.push(turndeluxe);
+      }, 10000);
     }
     return { board, turn };
   }
@@ -193,13 +193,15 @@ export const boardUseCace = {
     ];
     count = 0;
     onoff = 0;
-    randomPositionbefore = [];
+    randomPositionbox = [];
+    turnbox = [];
     return board;
   },
 
   startBoard: () => {
     onoff = 1;
     randomPositionbefore = countthree();
+    // randomPositionbox.push(randomPositionbefore);
     advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turndeluxe, true);
   },
 
