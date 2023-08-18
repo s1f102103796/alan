@@ -27,7 +27,7 @@ const directions: number[][] = [
 const clearNewBoard = () => {
   for (let y = 0; y < 8; y++) {
     for (let x = 0; x < 8; x++) {
-      board[y][x] = board[y][x] % 3; // 3 -> 0にしている
+      board[y][x] = board[y][x] % 3;
     }
   }
 };
@@ -71,7 +71,6 @@ const changeBoard = (x: number, y: number, type: boolean, color: number) => {
   if (board[y][x] === 0) {
     for (const w of directions) {
       if (board[y + w[0]] !== undefined && board[y + w[0]][x + w[1]] === 3 - color) {
-        // 隣が相手の色だったら
         flipPiece2(x, y, type, color, w);
       }
     }
@@ -106,18 +105,20 @@ const countthree = () => {
       }
     }
   }
-  // console.log(positions);
 
   const getRandomPosition = (positions: number[][]): number[] => {
     const randomIndex = Math.floor(Math.random() * positions.length);
     return positions[randomIndex];
   };
-  // console.log(getRandomPosition(positions));
   return getRandomPosition(positions);
 };
-const turn = 1;
-let randomPosition = countthree();
+
+let randomPositionbefore: number[] = [];
 let count = 0;
+let turndeluxe = 1;
+let turn = 1;
+let randomPositionbox: number[][] = [];
+let turnbox: number[] = [];
 
 const advanceBoard = (
   advancey: number,
@@ -125,9 +126,11 @@ const advanceBoard = (
   turnclour: number,
   recursive: boolean
 ) => {
+  randomPositionbox.push(randomPositionbefore);
+  turnbox.push(turndeluxe);
   if (onoff === 1) {
     let pass = 0;
-    let turn = turnclour;
+    turn = turnclour;
     const handlePass = () => {
       console.log('パス');
       pass++;
@@ -138,36 +141,31 @@ const advanceBoard = (
       }
       turn = 3 - turnclour;
     };
-    let turn1 = 1;
-    turn1 = 3 - turnclour;
+    turn = 3 - turnclour;
     const Pass = () => {
       const candidate = countCandidates();
       if (candidate !== 0) {
         console.log('ゲーム続行');
         pass = 0;
-        turn = turnclour;
       } else {
         handlePass();
       }
     };
-    turn = 3 - turnclour;
     clearNewBoard();
     changeBoard(advancex, advancey, true, turnclour);
     updateBoard(3 - turnclour);
     Pass();
     const candidate = countCandidates();
-    // count++;
-    // if (recursive && count <= 10) {
     if (recursive && candidate !== 0) {
-      const randomPosition = countthree();
+      const randomPositionafter = countthree();
       console.log('こっち来ている');
-      console.log(randomPosition);
-      // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+      console.log(randomPositionafter);
+      randomPositionbefore = randomPositionafter;
+      turndeluxe = turn;
       setTimeout(function () {
-        advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+        advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
       }, 1000);
     }
-    // board[params.y][params.x] = params.turn;
     return { board, turn };
   }
   return { board, turn };
@@ -195,14 +193,19 @@ export const boardUseCace = {
     ];
     count = 0;
     onoff = 0;
-    randomPosition = [];
+    turndeluxe = 1;
+    randomPositionbox = [];
+    turnbox = [];
     return board;
   },
 
   startBoard: () => {
     onoff = 1;
-    randomPosition = countthree();
-    // console.log('1');
-    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+    randomPositionbefore = countthree();
+    // randomPositionbox.push(randomPositionbefore);
+    advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turndeluxe, true);
   },
+
+  getTurn: () => turnbox,
+  getChat: () => randomPositionbox,
 };
