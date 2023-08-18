@@ -1,4 +1,6 @@
 import type { UserId } from '../commonTypesWithClient/branded';
+import { func1 } from './aaa';
+
 export type BoardArr = number[][];
 
 let board: BoardArr = [
@@ -49,7 +51,7 @@ const isContinue = (i: number, x: number, y: number, color: number, w: number[])
 const isBreak = (i: number, x: number, y: number, w: number[]): boolean => {
   return (
     board[y + w[0] * i] === undefined ||
-    board[y + w[0] * i][x + w[1] * i] === undefined ||
+    board[x + w[1] * i] === undefined ||
     board[y + w[0] * i][x + w[1] * i] % 3 === 0
   );
 };
@@ -95,7 +97,7 @@ const countCandidates = () => {
   return candidate;
 };
 
-export const countthree = async () => {
+const countthree = async () => {
   const positions: number[][] = [];
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[y].length; x++) {
@@ -104,18 +106,34 @@ export const countthree = async () => {
       }
     }
   }
-  // console.log(positions);
+  let getRandomPosition = await func1(positions);
 
-  const getRandomPosition = (positions: number[][]): number[] => {
-    const randomIndex = Math.floor(Math.random() * positions.length);
-    return positions[randomIndex];
-  };
-  // console.log(getRandomPosition(positions));
-  return getRandomPosition(positions);
+  console.log(`chose one position ${getRandomPosition}`);
+  if (getRandomPosition === undefined) {
+    const newPosition = await func1(positions);
+    if (newPosition !== undefined) {
+      console.log('return getRandomPos is type of num[]?', getRandomPosition);
+      getRandomPosition = newPosition;
+      console.log('func1がよみだされている');
+      return getRandomPosition;
+    }
+  } else {
+    return getRandomPosition;
+  }
+
+  // const getRandomPosition = (positions: number[][]): number[] => {
+  //   const randomIndex = Math.floor(Math.random() * positions.length);
+  //   return positions[randomIndex];
+  // };
+  // return getRandomPosition(positions);
 };
-const turn = 1;
-let randomPosition = countthree();
-const count = 0;
+
+let randomPositionbefore: number[] = [];
+let count = 0;
+let turndeluxe = 1;
+let turn = 1;
+let randomPositionbox: number[][] = [];
+let turnbox: number[] = [];
 
 const advanceBoard = async (
   advancey: number,
@@ -138,11 +156,11 @@ const advanceBoard = async (
       }
       turn = 3 - turnclour;
     };
-    let turn1 = 1;
-    turn1 = 3 - turnclour;
+    turn = 3 - turnclour;
     const Pass = () => {
       const candidate = countCandidates();
       if (candidate !== 0) {
+        console.log('ゲーム続行');
         pass = 0;
       } else {
         handlePass();
@@ -150,26 +168,24 @@ const advanceBoard = async (
     };
     clearNewBoard();
     changeBoard(advancex, advancey, true, turnclour);
-    console.log(`change board is ?`);
-    console.table(board);
     updateBoard(3 - turnclour);
-    console.log(`update board is ?`);
-    console.table(board);
     Pass();
     const candidate = countCandidates();
     if (recursive && candidate !== 0) {
-      const randomPosition = countthree();
-      console.log('こっち来ている');
-      console.log(randomPosition);
-      // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
-      setTimeout(function () {
-        advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
-      }, 1000);
+      const randomPositionafter = await countthree();
+      // console.log('こっち来ている');
+      // console.log(randomPositionafter);
+      if (randomPositionafter !== undefined) {
+        randomPositionbefore = randomPositionafter;
+
+        turndeluxe = turn;
+        setTimeout(function () {
+          advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turn, true);
+        }, 1000);
+      }
     }
-    // board[params.y][params.x] = params.turn;
     return { board, turn };
   }
-  console.log('return2');
   return { board, turn };
 };
 
@@ -179,8 +195,6 @@ export const boardUseCace = {
   getBoard: () => board,
   clickBoard: (params: { x: number; y: number; turn: number }, userId: UserId) => {
     onoff = 1;
-    // console.log(func1());
-
     return advanceBoard(params.y, params.x, params.turn, false);
   },
 
@@ -195,6 +209,7 @@ export const boardUseCace = {
       [0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0],
     ];
+    count = 0;
     onoff = 0;
     turndeluxe = 1;
     randomPositionbox = [];
@@ -204,9 +219,16 @@ export const boardUseCace = {
 
   startBoard: async () => {
     onoff = 1;
-    randomPosition = countthree();
-    // console.log('1');
-    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+    const randomPositionbefore = await countthree();
+    async function ProcessResult() {
+      const result = randomPositionbefore;
+      if (result !== undefined) {
+        const randomPosititionafter = result;
+        advanceBoard(randomPosititionafter[0], randomPosititionafter[1], turndeluxe, true);
+      }
+    }
+
+    ProcessResult();
   },
 
   getTurn: () => turnbox,
