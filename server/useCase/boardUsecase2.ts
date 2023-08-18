@@ -1,6 +1,7 @@
+// import type { UserId } from '$/commonTypesWithClient/branded';
 // import { func1 } from './aaa';
 
-// const board: BoardArray = [
+// let board: BoardArray = [
 //   [0, 0, 0, 0, 0, 0, 0, 0],
 //   [0, 0, 0, 0, 0, 0, 0, 0],
 //   [0, 0, 0, 0, 3, 0, 0, 0],
@@ -136,7 +137,7 @@
 //   return { board, turn, passCount };
 // };
 
-// setInterval(() => {
+// const makeBoard = () => {
 //   if (onoff === 1) {
 //     console.table(board);
 //     const canselId = setInterval(() => {
@@ -156,14 +157,31 @@
 //           }
 //         });
 //       };
+//       return () => clearInterval(canselId);
 //     });
-//     return () => clearInterval(canselId);
 //   }
-// }, 1000);
-
+// };
+// makeBoard
 // export const boardUsecace2 = {
 //   getBoard: () => board,
 
+//   clickBoard: (params: { x: number; y: number; turn: number }, userId: UserId) => {
+//     return clickBoard({ x: params.x, y: params.y }, board, params.turn, passCount);
+//   },
+//   resetBoard: () => {
+//     board = [
+//       [0, 0, 0, 0, 0, 0, 0, 0],
+//       [0, 0, 0, 0, 0, 0, 0, 0],
+//       [0, 0, 0, 0, 3, 0, 0, 0],
+//       [0, 0, 0, 1, 2, 3, 0, 0],
+//       [0, 0, 3, 2, 1, 0, 0, 0],
+//       [0, 0, 0, 3, 0, 0, 0, 0],
+//       [0, 0, 0, 0, 0, 0, 0, 0],
+//       [0, 0, 0, 0, 0, 0, 0, 0],
+//     ];
+//     onoff = 0;
+//     return board;
+//   },
 //   startBoard: async () => {
 //     onoff = 1;
 //   },
