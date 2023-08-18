@@ -1,4 +1,5 @@
-import type { UserId } from '../commonTypesWithClient/branded';
+import type { UserId } from '$../../commonTypesWithClient/branded';
+import { func1 } from './aaa';
 
 export type BoardArr = number[][];
 
@@ -96,7 +97,7 @@ const countCandidates = () => {
   return candidate;
 };
 
-const countthree = () => {
+const countthree = async () => {
   const positions: number[][] = [];
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[y].length; x++) {
@@ -105,22 +106,29 @@ const countthree = () => {
       }
     }
   }
+  let getRandomPosition = await func1(positions);
 
-  const getRandomPosition = (positions: number[][]): number[] => {
-    const randomIndex = Math.floor(Math.random() * positions.length);
-    return positions[randomIndex];
-  };
-  return getRandomPosition(positions);
+  console.log(`chose one position ${getRandomPosition}`);
+  if (getRandomPosition === undefined) {
+    const newPosition = await func1(positions);
+    if (newPosition !== undefined) {
+      console.log('return getRandomPos is type of num[]?', getRandomPosition);
+      getRandomPosition = newPosition;
+      return getRandomPosition;
+    }
+  } else {
+    return getRandomPosition;
+  }
 };
 
-let randomPositionbefore: number[] = [];
+const randomPositionbefore: number[] = [];
 let count = 0;
 let turndeluxe = 1;
 let turn = 1;
 let randomPositionbox: number[][] = [];
 let turnbox: number[] = [];
 
-const advanceBoard = (
+const advanceBoard = async (
   advancey: number,
   advancex: number,
   turnclour: number,
@@ -157,14 +165,17 @@ const advanceBoard = (
     Pass();
     const candidate = countCandidates();
     if (recursive && candidate !== 0) {
-      const randomPositionafter = countthree();
-      console.log('こっち来ている');
-      console.log(randomPositionafter);
-      randomPositionbefore = randomPositionafter;
-      turndeluxe = turn;
-      setTimeout(function () {
-        advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
-      }, 1000);
+      const randomPositionbefore = await countthree();
+      // console.log('こっち来ている');
+      // console.log(randomPositionafter);
+      if (randomPositionbefore !== undefined) {
+        const randomPositionafter = randomPositionbefore;
+
+        turndeluxe = turn;
+        // setTimeout(function () {
+        await advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
+        // }, 1000);
+      }
     }
     return { board, turn };
   }
@@ -199,11 +210,22 @@ export const boardUseCace = {
     return board;
   },
 
-  startBoard: () => {
+  startBoard: async () => {
     onoff = 1;
-    randomPositionbefore = countthree();
-    // randomPositionbox.push(randomPositionbefore);
-    advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turndeluxe, true);
+    const randomPositionbefore = await countthree();
+    console.log('count three return :', randomPositionbefore);
+
+    async function ProcessResult() {
+      const result = randomPositionbefore;
+      if (result !== undefined) {
+        const randomPosititionafter = result;
+        console.log('AI tapping  position', randomPosititionafter);
+
+        advanceBoard(randomPosititionafter[0], randomPosititionafter[1], turndeluxe, true);
+      }
+    }
+
+    ProcessResult();
   },
 
   getTurn: () => turnbox,
