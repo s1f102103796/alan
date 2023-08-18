@@ -1,4 +1,4 @@
-import type { UserId } from '$/commonTypesWithClient/branded';
+import type { UserId } from '$../../commonTypesWithClient/branded';
 import { func1 } from './aaa';
 
 export type BoardArr = number[][];
