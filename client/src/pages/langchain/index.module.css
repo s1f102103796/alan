@@ -42,3 +42,10 @@
   border: 1px solid #ccc;
   border-radius: 5px;
 }
+
+.message {
+  margin: 10px 0;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: #dcdcdc; 
+}
