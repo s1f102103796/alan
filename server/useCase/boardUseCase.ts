@@ -1,5 +1,5 @@
 import type { UserId } from '$../../commonTypesWithClient/branded';
-import playwright from 'playwright';
+/*import playwright from 'playwright';*/
 import { func1 } from './aaa';
 
 export type BoardArr = number[][];
@@ -233,7 +233,7 @@ export const boardUseCace = {
   getTurn: () => turnbox,
   getChat: () => randomPositionbox,
 };
-
+/*
 const gettwitter = async () => {
   const browser = await playwright.chromium.launch({ headless: false });
   const context = await browser.newContext();
@@ -248,6 +248,7 @@ const gettwitter = async () => {
   await page.getByLabel('パスワード', { exact: true }).press('Enter');
   return page;
 };
+*/
 /*
 const tweetscreenshot = async () => {
   // ここで写真を追加
