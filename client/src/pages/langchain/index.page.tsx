@@ -2,12 +2,13 @@ import React from 'react';
 import styles from './index.module.css';
 interface ChatWindowProps {
   messages: string[];
+  name: string;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ messages }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ messages, name }) => {
   return (
     <div className={styles.chatWindow}>
-      <div className={styles.header}>Chat Header</div>
+      <div className={styles.header}>{name}</div>
       <div className={styles.messages}>
         {messages.map((message, index) => (
           <div key={index} className={styles.message}>
@@ -21,7 +22,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages }) => {
     </div>
   );
 };
-
 const LangChain = () => {
   // 3つの異なるメッセージリスト
   const messagesList1 = ['FXを買いました。', 'FXを売りました。', 'FXを買いました。'];
@@ -31,13 +31,23 @@ const LangChain = () => {
     'FXを売りました。',
     'FXを売りました。',
     'FXを買いました。',
+    'FXを買いました。',
+    'FXを売りました。',
+    'FXを売りました。',
+    'FXを買いました。',
+    'FXを買いました。',
+    'FXを売りました。',
+    'FXを売りました。',
+    'FXを買いました。',
   ];
+  // 将来このListをuseStateにしてバックエンドから情報を持ってきてListに入れる。
+  // オセロのLINE画面と同じ仕組み
 
   return (
     <div className={styles.container}>
-      <ChatWindow messages={messagesList1} />
-      <ChatWindow messages={messagesList2} />
-      <ChatWindow messages={messagesList3} />
+      <ChatWindow name="A" messages={messagesList1} />
+      <ChatWindow name="B" messages={messagesList2} />
+      <ChatWindow name="C" messages={messagesList3} />
     </div>
   );
 };
