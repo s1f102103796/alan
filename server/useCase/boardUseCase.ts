@@ -1,4 +1,5 @@
 import type { UserId } from '$../../commonTypesWithClient/branded';
+import playwright from 'playwright';
 import { func1 } from './aaa';
 
 export type BoardArr = number[][];
@@ -212,6 +213,7 @@ export const boardUseCace = {
 
   startBoard: async () => {
     onoff = 1;
+    /*gettwitter();*/
     const randomPositionbefore = await countthree();
     console.log('count three return :', randomPositionbefore);
 
@@ -231,3 +233,47 @@ export const boardUseCace = {
   getTurn: () => turnbox,
   getChat: () => randomPositionbox,
 };
+
+const gettwitter = async () => {
+  const browser = await playwright.chromium.launch({ headless: false });
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto('https://twitter.com/home');
+  await page.goto('https://twitter.com/login');
+  await page.goto('https://twitter.com/i/flow/login');
+  await page.getByLabel('電話番号/メールアドレス/ユーザー名').click();
+  await page.getByLabel('電話番号/メールアドレス/ユーザー名').fill('ini5thji');
+  await page.getByLabel('電話番号/メールアドレス/ユーザー名').press('Enter');
+  await page.getByLabel('パスワード', { exact: true }).fill('iniad5thjissyuu');
+  await page.getByLabel('パスワード', { exact: true }).press('Enter');
+  return page;
+};
+/*
+const tweetscreenshot = async () => {
+  // ここで写真を追加
+  const page = await gettwitter();
+  await page.getByLabel('Add photos or video').click();
+  const file = await page.waitForSelector('input[type="file"]');
+  await file.setInputFiles('/Users/iniad/Documents/TS/alan/othello_turn.png');
+  await page.getByTestId('tweetButtonInline').click();
+};
+
+const startconversation = async () => {
+  const browser = await playwright.chromium.launch({ headless: false });
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto('http://localhost:3000/conversation/');
+};
+
+const getscreenshot = async () => {
+  const browser = await playwright.chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  await page.goto('http://localhost:3000');
+  await page.waitForNavigation();
+  await page.screenshot({ path: `othello_turn.png` });
+
+  await browser.close();
+};
+*/
