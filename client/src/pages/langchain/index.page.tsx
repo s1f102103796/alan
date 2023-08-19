@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import styles from './index.module.css';
 interface ChatWindowProps {
   messages: string[];
@@ -6,6 +6,17 @@ interface ChatWindowProps {
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ messages, name }) => {
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
   return (
     <div className={styles.chatWindow}>
       <div className={styles.header}>{name}</div>
@@ -15,6 +26,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, name }) => {
             {message}
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
       <div className={styles.footer}>
         <input className={styles.inputField} placeholder="Type a message..." />
