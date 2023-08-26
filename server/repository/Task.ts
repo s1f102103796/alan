@@ -12,7 +12,7 @@ const openai = new OpenAIApi(configuration);
 export const func = async (AAA: string) => {
   try {
     const TODO_NAME = AAA;
-    const getTask = () => {
+    const getTask = (taskName: string) => {
       return TODO_NAME;
     };
     const functions = {
