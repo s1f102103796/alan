@@ -29,13 +29,13 @@ const getNews = async () => {
 };
 
 const dora = `
-ドラえもんが興味ありそうな内容のニュース情報を選んでください。
+ニュースを見てドラえもんのように解説してください。
 `;
 
 export const runNewsAPI_LANGCHAIN = async () => {
   const llm = new OpenAI({
     openAIApiKey: OPENAIAPI,
-    temperature: 0,
+    temperature: 0.9,
   });
 
   const chain = new ConversationChain({ llm });
@@ -45,4 +45,3 @@ export const runNewsAPI_LANGCHAIN = async () => {
   const res1 = await chain.call({ input: input1 });
   return res1;
 };
-

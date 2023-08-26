@@ -8,4 +8,8 @@ export type Methods = DefineMethods<{
   post: {
     resBody: ChainValues;
   };
+  // post: {
+  //   reqBody: { people: string };
+  //   resBody: BaseMessage;
+  // };
 }>;
