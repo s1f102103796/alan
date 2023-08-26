@@ -70,6 +70,13 @@ const Home = () => {
   };
 
   endGame();
+  // setTimeout(endGame, 3000);
+
+  // setTimeout(function () {
+  //   if (timeoutcounts === 0) {
+  //     endGame();
+  //   }
+  // }, 3000);
 
   useEffect(() => {
     fetchBoard();
