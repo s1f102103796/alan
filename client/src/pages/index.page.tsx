@@ -52,12 +52,7 @@ const Home = () => {
       </div>
 
       <form style={{ textAlign: 'center', marginTop: '80px' }} onSubmit={createTask}>
-        <input
-          value={label}
-          type="text"
-          placeholder="作りたいTodoの内容を入力"
-          onChange={inputLabel}
-        />
+        <input value={label} type="text" onChange={inputLabel} />
         <input type="submit" value="ADD" />
       </form>
       <ul className={styles.tasks}>
