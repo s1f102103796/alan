@@ -1,8 +1,4 @@
 import type { UserId } from '$../../commonTypesWithClient/branded';
-<<<<<<< HEAD
-=======
-import playwright from 'playwright';
->>>>>>> parent of ff751b7... R
 import { func1 } from './aaa';
 
 export type BoardArr = number[][];
