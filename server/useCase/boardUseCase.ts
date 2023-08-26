@@ -112,6 +112,26 @@ const countthree = () => {
     return positions[randomIndex];
   };
   return getRandomPosition(positions);
+  let getRandomPosition = await func1(positions);
+
+  console.log(`chose one position ${getRandomPosition}`);
+  if (getRandomPosition === undefined) {
+    const newPosition = await func1(positions);
+    if (newPosition !== undefined) {
+      console.log('return getRandomPos is type of num[]?', getRandomPosition);
+      getRandomPosition = newPosition;
+      console.log('func1がよみだされている');
+      return getRandomPosition;
+    }
+  } else {
+    return getRandomPosition;
+  }
+
+  // const getRandomPosition = (positions: number[][]): number[] => {
+  //   const randomIndex = Math.floor(Math.random() * positions.length);
+  //   return positions[randomIndex];
+  // };
+  // return getRandomPosition(positions);
 };
 
 let randomPositionbefore: number[] = [];
@@ -166,6 +186,17 @@ const advanceBoard = (
       setTimeout(function () {
         advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
       }, 1000);
+      const randomPositionafter = await countthree();
+      // console.log('こっち来ている');
+      // console.log(randomPositionafter);
+      if (randomPositionafter !== undefined) {
+        randomPositionbefore = randomPositionafter;
+
+        turndeluxe = turn;
+        setTimeout(function () {
+          advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turn, true);
+        }, 1000);
+      }
     }
     return { board, turn };
   }
@@ -205,6 +236,16 @@ export const boardUseCace = {
     randomPositionbefore = countthree();
     // randomPositionbox.push(randomPositionbefore);
     advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turndeluxe, true);
+    const randomPositionbefore = await countthree();
+    async function ProcessResult() {
+      const result = randomPositionbefore;
+      if (result !== undefined) {
+        const randomPosititionafter = result;
+        advanceBoard(randomPosititionafter[0], randomPosititionafter[1], turndeluxe, true);
+      }
+    }
+
+    ProcessResult();
   },
 
   getTurn: () => turnbox,
