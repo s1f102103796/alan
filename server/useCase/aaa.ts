@@ -4,10 +4,11 @@ import type { ChatCompletionRequestMessage } from 'openai';
 import { Configuration, OpenAIApi } from 'openai';
 dotenv.config();
 
-const apiKey = process.env.OPENAI_API_KEY;
+// const apiKey = process.env.API_KEY;
 
 const configuration = new Configuration({
-  apiKey,
+  // apiKey,
+  apiKey: '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',
 });
 
 const openai = new OpenAIApi(configuration);
