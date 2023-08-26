@@ -99,17 +99,16 @@ export const boardUseCace = {
       }
     };
 
-    const countCandidates = () => {
-      let candidate = 0;
-      for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-          if (board[y][x] === 3) {
-            candidate++;
-          }
-        }
-      }
-      return candidate;
-    };
+  const getRandomPosition = (positions: number[][]): number[] => {
+    const randomIndex = Math.floor(Math.random() * positions.length);
+    return positions[randomIndex];
+  };
+  // console.log(getRandomPosition(positions));
+  return getRandomPosition(positions);
+};
+const turn = 1;
+let randomPosition = countthree();
+let count = 0
 
 const advanceBoard = (
   advancey: number,
@@ -129,8 +128,7 @@ const advanceBoard = (
     }
     turn = 3 - turnclour;
   };
-  let turn1 = 1;
-  turn1 = 3 - turnclour;
+
   const Pass = () => {
     const candidate = countCandidates();
     if (candidate !== 0) {
@@ -150,11 +148,8 @@ const advanceBoard = (
   if (recursive && count <= 10) {
     const randomPosition = countthree();
     console.log('こっち来ている');
-    console.log(randomPosition);
-    // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
-    setTimeout(function () {
-      advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
-    }, 1000);
+    console.log(randomPosition)
+    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
   }
   // board[params.y][params.x] = params.turn;
   return { board, turn };
@@ -179,8 +174,6 @@ export const boardUseCace = {
       [0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0],
     ];
-    count = 0;
-    randomPosition = [];
     return board;
   },
 
