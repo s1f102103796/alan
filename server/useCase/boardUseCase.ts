@@ -79,43 +79,20 @@ export const boardUseCace = {
           flipPiece(x, y, type, color, w, i);
         }
       }
-    };
-
-    const changeBoard = (x: number, y: number, type: boolean, color: number) => {
-      if (board[y][x] === 0) {
-        for (const w of directions) {
-          if (board[y + w[0]] !== undefined && board[y + w[0]][x + w[1]] === 3 - color) {
-            // 隣が相手の色だったら
-            flipPiece2(x, y, type, color, w);
-          }
-        }
-      }
-    };
-    const updateBoard = (color: number) => {
-      for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-          changeBoard(x, y, false, color);
-        }
-      }
-    };
+    }
+  }
+  console.log(positions);
 
   const getRandomPosition = (positions: number[][]): number[] => {
     const randomIndex = Math.floor(Math.random() * positions.length);
     return positions[randomIndex];
   };
-  // console.log(getRandomPosition(positions));
+  console.log(getRandomPosition(positions));
   return getRandomPosition(positions);
 };
 const turn = 1;
-let randomPosition = countthree();
-let count = 0
 
-const advanceBoard = (
-  advancey: number,
-  advancex: number,
-  turnclour: number,
-  recursive: boolean
-) => {
+const advanceBoard = (advancey: number, advancex: number, turnclour: number) => {
   let pass = 0;
   let turn = turnclour;
   const handlePass = () => {
@@ -139,18 +116,11 @@ const advanceBoard = (
       handlePass();
     }
   };
-  turn = 3 - turnclour;
   clearNewBoard();
   changeBoard(advancex, advancey, true, turnclour);
   updateBoard(3 - turnclour);
   Pass();
-  count++;
-  if (recursive && count <= 10) {
-    const randomPosition = countthree();
-    console.log('こっち来ている');
-    console.log(randomPosition)
-    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
-  }
+  countthree();
   // board[params.y][params.x] = params.turn;
   return { board, turn };
 };
@@ -160,7 +130,7 @@ const advanceBoard = (
 export const boardUseCace = {
   getBoard: () => board,
   clickBoard: (params: { x: number; y: number; turn: number }, userId: UserId) => {
-    return advanceBoard(params.y, params.x, params.turn, false);
+    return advanceBoard(params.x, params.y, params.turn);
   },
 
   resetBoard: () => {
@@ -178,8 +148,7 @@ export const boardUseCace = {
   },
 
   startBoard: () => {
-    randomPosition = countthree();
-    // console.log('1');
-    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+    const randomPosition = countthree();
+    advanceBoard(randomPosition[0], randomPosition[1], turn);
   },
 };
