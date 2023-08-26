@@ -223,6 +223,6 @@ export const boardUseCace = {
       }
     }
 
-    ProcessResult();
+    await ProcessResult();
   },
 };
