@@ -1,5 +1,5 @@
 import type { UserId } from '../commonTypesWithClient/branded';
-import { func1 } from './aaa';
+
 export type BoardArr = number[][];
 
 let board: BoardArr = [
@@ -183,8 +183,6 @@ export const boardUseCace = {
   getBoard: () => board,
   clickBoard: (params: { x: number; y: number; turn: number }, userId: UserId) => {
     onoff = 1;
-    // console.log(func1());
-
     return advanceBoard(params.y, params.x, params.turn, false);
   },
 
