@@ -118,7 +118,6 @@ const countthree = () => {
 const turn = 1;
 let randomPosition = countthree();
 let count = 0;
-const turn = 1;
 
 const advanceBoard = (
   advancey: number,
@@ -201,17 +200,14 @@ export const boardUseCace = {
       [0, 0, 0, 0, 0, 0, 0, 0],
     ];
     onoff = 0;
-    randomPositionbefore = [];
+    randomPosition = [];
     return board;
   },
 
   startBoard: () => {
     onoff = 1;
-    randomPositionbefore = countthree();
-    advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turn, true);
+    randomPosition = countthree();
+    // console.log('1');
+    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
   },
-
-  // getChat: () => ({ turn: turn1, position: randomPositionbefore }),
-  getTurn: () => turn,
-  getChat: () => randomPositionbefore,
 };
