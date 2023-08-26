@@ -106,25 +106,18 @@ const countthree = () => {
       }
     }
   }
-  console.log(`candidate position is ${positions}`);
+  // console.log(positions);
 
-  let getRandomPosition = await func1(positions);
-
-  console.log(`chose one position ${getRandomPosition}`);
-  if (getRandomPosition === undefined) {
-    const newPosition = await func1(positions);
-    if (newPosition !== undefined) {
-      console.log('return getRandomPos is type of num[]?', getRandomPosition);
-      getRandomPosition = newPosition;
-      return getRandomPosition;
-    }
-  } else {
-    return getRandomPosition;
-  }
+  const getRandomPosition = (positions: number[][]): number[] => {
+    const randomIndex = Math.floor(Math.random() * positions.length);
+    return positions[randomIndex];
+  };
+  // console.log(getRandomPosition(positions));
+  return getRandomPosition(positions);
 };
-
 const turn = 1;
-let randomPosition: number[] = [];
+let randomPosition = countthree();
+let count = 0;
 
 const advanceBoard = (
   advancey: number,
@@ -145,7 +138,8 @@ const advanceBoard = (
       }
       turn = 3 - turnclour;
     };
-
+    let turn1 = 1;
+    turn1 = 3 - turnclour;
     const Pass = () => {
       const candidate = countCandidates();
       if (candidate !== 0) {
@@ -165,17 +159,18 @@ const advanceBoard = (
     console.table(board);
     Pass();
     const candidate = countCandidates();
+    // count++;
+    // if (recursive && count <= 10) {
     if (recursive && candidate !== 0) {
-      const aaa = await countthree();
-
-      if (aaa !== undefined) {
-        const randomPosition = aaa;
-        console.log(`randomposition${randomPosition}`);
-
-        advanceBoard(randomPosition[0], randomPosition[1], turn, true);
-      }
+      const randomPosition = countthree();
+      console.log('こっち来ている');
+      console.log(randomPosition);
+      // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+      setTimeout(function () {
+        advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+      }, 1000);
     }
-    console.log('return1');
+    // board[params.y][params.x] = params.turn;
     return { board, turn };
   }
   console.log('return2');
@@ -211,18 +206,8 @@ export const boardUseCace = {
 
   startBoard: () => {
     onoff = 1;
-    console.log('countthree return val after two times', countthree());
-    const aaa = await countthree();
-    console.log('count three return :', aaa);
-    async function ProcessResult() {
-      const result = aaa;
-      if (result !== undefined) {
-        randomPosition = result;
-        console.log('AI tapping  position', randomPosition);
-        advanceBoard(randomPosition[0], randomPosition[1], turn, true);
-      }
-    }
-
-    await ProcessResult();
+    randomPosition = countthree();
+    // console.log('1');
+    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
   },
 };
