@@ -27,13 +27,11 @@ const Conv = () => {
   return (
     <div className={styles.container}>
       <div className={styles.chat}>
-        {messages &&
-          turn &&
-          messages.map((msg, index) => (
-            <div key={index} className={turn[index] === 2 ? styles.right : styles.left}>
-              {msg.join(' ')}
-            </div>
-          ))}
+        {/* {messages.map((msg, index) => (
+          <div key={index} className={styles.comment} turn={msg.turn}>
+            {msg.text}
+          </div>
+        ))} */}
       </div>
     </div>
   );

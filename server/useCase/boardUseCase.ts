@@ -118,6 +118,13 @@ const countthree = () => {
 const turn = 1;
 let randomPosition = countthree();
 let count = 0;
+<<<<<<< HEAD
+=======
+let turndeluxe = 1;
+let turn = 1;
+const randomPositionbox: number[][] = [];
+const turnbox: number[] = [];
+>>>>>>> parent of ddbc52c... 会話を表示することはできた。1、2選択目だけ表示されない
 
 const advanceBoard = (
   advancey: number,
@@ -164,13 +171,19 @@ const advanceBoard = (
     if (recursive && candidate !== 0) {
       const randomPosition = countthree();
       console.log('こっち来ている');
+<<<<<<< HEAD
       console.log(randomPosition);
       // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+=======
+      console.log(randomPositionafter);
+      randomPositionbefore = randomPositionafter;
+      randomPositionbox.push(randomPositionbefore);
+      turndeluxe = turn;
+      turnbox.push(turndeluxe);
+>>>>>>> parent of ddbc52c... 会話を表示することはできた。1、2選択目だけ表示されない
       setTimeout(function () {
         advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
-        randomPositionbox.push(randomPositionbefore);
-        turnbox.push(turndeluxe);
-      }, 10000);
+      }, 1000);
     }
     // board[params.y][params.x] = params.turn;
     return { board, turn };
@@ -202,24 +215,15 @@ export const boardUseCace = {
       [0, 0, 0, 0, 0, 0, 0, 0],
     ];
     onoff = 0;
-    randomPositionbox = [];
-    turnbox = [];
+    randomPositionbefore = [];
     return board;
   },
 
   startBoard: () => {
     onoff = 1;
-    console.log('countthree return val after two times', countthree());
-    const aaa = await countthree();
-    console.log('count three return :', aaa);
-    async function ProcessResult() {
-      const result = aaa;
-      if (result !== undefined) {
-        randomPosition = result;
-        console.log('AI tapping  position', randomPosition);
-        advanceBoard(randomPosition[0], randomPosition[1], turn, true);
-      }
-    }
+    randomPositionbefore = countthree();
+    advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turndeluxe, true);
+  },
 
     ProcessResult();
   },
