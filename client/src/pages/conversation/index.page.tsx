@@ -3,11 +3,11 @@ import { apiClient } from 'src/utils/apiClient';
 import { returnNull } from 'src/utils/returnNull';
 import styles from './index.module.css';
 
-type CustomType = number[][];
+type CustomType = number[];
 
 const Conv = () => {
   const [messages, setMessages] = useState<CustomType>();
-  const [turn, setTurn] = useState<number[]>();
+  const [turn, setTurn] = useState<number>();
 
   const fetchMessages = async () => {
     const turn = await apiClient.newboard.$get().catch(returnNull);

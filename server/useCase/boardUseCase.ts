@@ -118,13 +118,10 @@ const countthree = () => {
 const turn = 1;
 let randomPosition = countthree();
 let count = 0;
-<<<<<<< HEAD
-=======
 let turndeluxe = 1;
 let turn = 1;
 const randomPositionbox: number[][] = [];
 const turnbox: number[] = [];
->>>>>>> parent of ddbc52c... 会話を表示することはできた。1、2選択目だけ表示されない
 
 const advanceBoard = (
   advancey: number,
@@ -171,16 +168,11 @@ const advanceBoard = (
     if (recursive && candidate !== 0) {
       const randomPosition = countthree();
       console.log('こっち来ている');
-<<<<<<< HEAD
-      console.log(randomPosition);
-      // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
-=======
       console.log(randomPositionafter);
       randomPositionbefore = randomPositionafter;
       randomPositionbox.push(randomPositionbefore);
       turndeluxe = turn;
       turnbox.push(turndeluxe);
->>>>>>> parent of ddbc52c... 会話を表示することはできた。1、2選択目だけ表示されない
       setTimeout(function () {
         advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
       }, 1000);
