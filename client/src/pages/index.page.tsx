@@ -39,13 +39,6 @@ const Home = () => {
     setTurnColor(1);
   };
 
-  const startGame = async () => {
-    const c = await apiClient.startboard.post({ body: { board } });
-    console.log(c);
-    setBoard(c.body);
-    setTurnColor(1);
-  };
-
   useEffect(() => {
     fetchBoard();
     const intervalId = setInterval(fetchBoard, 100);

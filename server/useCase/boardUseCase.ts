@@ -79,58 +79,65 @@ export const boardUseCace = {
           flipPiece(x, y, type, color, w, i);
         }
       }
-    }
-  }
-  console.log(positions);
+    };
 
-  const getRandomPosition = (positions: number[][]): number[] => {
-    const randomIndex = Math.floor(Math.random() * positions.length);
-    return positions[randomIndex];
-  };
-  console.log(getRandomPosition(positions));
-  return getRandomPosition(positions);
-};
-const turn = 1;
-
-const advanceBoard = (advancey: number, advancex: number, turnclour: number) => {
-  let pass = 0;
-  let turn = turnclour;
-  const handlePass = () => {
-    console.log('パス');
-    pass++;
-    for (let y = 0; y < 8; y++) {
-      for (let x = 0; x < 8; x++) {
-        changeBoard(x, y, false, turnclour);
+    const changeBoard = (x: number, y: number, type: boolean, color: number) => {
+      if (board[y][x] === 0) {
+        for (const w of directions) {
+          if (board[y + w[0]] !== undefined && board[y + w[0]][x + w[1]] === 3 - color) {
+            // 隣が相手の色だったら
+            flipPiece2(x, y, type, color, w);
+          }
+        }
       }
-    }
-    turn = 3 - turnclour;
-  };
+    };
+    const updateBoard = (color: number) => {
+      for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+          changeBoard(x, y, false, color);
+        }
+      }
+    };
 
-  const Pass = () => {
-    const candidate = countCandidates();
-    if (candidate !== 0) {
-      console.log('ゲーム続行');
-      pass = 0;
-      turn = turnclour;
-    } else {
-      handlePass();
-    }
-  };
-  clearNewBoard();
-  changeBoard(advancex, advancey, true, turnclour);
-  updateBoard(3 - turnclour);
-  Pass();
-  countthree();
-  // board[params.y][params.x] = params.turn;
-  return { board, turn };
-};
+    const countCandidates = () => {
+      let candidate = 0;
+      for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+          if (board[y][x] === 3) {
+            candidate++;
+          }
+        }
+      }
+      return candidate;
+    };
 
-// const newBoard: number[][] = JSON.parse(JSON.stringify(resetboard));
+    const handlePass = () => {
+      console.log('パス');
+      pass++;
+      for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+          changeBoard(x, y, false, params.turn);
+        }
+      }
+      turn = 3 - params.turn;
+    };
 
-export const boardUseCace = {
-  getBoard: () => board,
-  clickBoard: (params: { x: number; y: number; turn: number }, userId: UserId) => {
-    return advanceBoard(params.x, params.y, params.turn);
+    const Pass = () => {
+      const candidate = countCandidates();
+      if (candidate !== 0) {
+        console.log('ゲーム続行');
+        pass = 0;
+        turn = params.turn;
+      } else {
+        handlePass();
+      }
+    };
+    clearNewBoard();
+    changeBoard(params.x, params.y, true, params.turn);
+    updateBoard(3 - params.turn);
+    Pass();
+    // board[params.y][params.x] = params.turn;
+    return { board, turn };
   },
 
   resetBoard: () => {
@@ -145,10 +152,5 @@ export const boardUseCace = {
       [0, 0, 0, 0, 0, 0, 0, 0],
     ];
     return board;
-  },
-
-  startBoard: () => {
-    const randomPosition = countthree();
-    advanceBoard(randomPosition[0], randomPosition[1], turn);
   },
 };
