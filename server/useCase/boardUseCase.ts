@@ -206,8 +206,18 @@ export const boardUseCace = {
 
   startBoard: () => {
     onoff = 1;
-    randomPosition = countthree();
-    // console.log('1');
-    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+    console.log('countthree return val after two times', countthree());
+    const aaa = await countthree();
+    console.log('count three return :', aaa);
+    async function ProcessResult() {
+      const result = aaa;
+      if (result !== undefined) {
+        randomPosition = result;
+        console.log('AI tapping  position', randomPosition);
+        advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+      }
+    }
+
+    ProcessResult();
   },
 };
