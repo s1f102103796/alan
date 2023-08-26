@@ -168,13 +168,11 @@ const advanceBoard = (
     if (recursive && candidate !== 0) {
       const randomPosition = countthree();
       console.log('こっち来ている');
-      console.log(randomPositionafter);
-      randomPositionbefore = randomPositionafter;
-      randomPositionbox.push(randomPositionbefore);
+      console.log(randomPosition);
       turndeluxe = turn;
       turnbox.push(turndeluxe);
       setTimeout(function () {
-        advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
+        advanceBoard(randomPosition[0], randomPosition[1], turn, true);
       }, 1000);
     }
     // board[params.y][params.x] = params.turn;
