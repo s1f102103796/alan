@@ -1,111 +1,77 @@
+import type { TaskModel } from 'commonTypesWithClient/models';
+import { useAtom } from 'jotai';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
+import { Loading } from 'src/components/Loading/Loading';
+import { BasicHeader } from 'src/pages/@components/BasicHeader/BasicHeader';
 import { apiClient } from 'src/utils/apiClient';
 import { returnNull } from 'src/utils/returnNull';
-import type { BoardArr } from '../../../server/useCase/boardUseCase';
+import { userAtom } from '../atoms/user';
 import styles from './index.module.css';
 
 const Home = () => {
-  const [board, setBoard] = useState<BoardArr>([
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 3, 0, 0, 0],
-    [0, 0, 0, 1, 2, 3, 0, 0],
-    [0, 0, 3, 2, 1, 0, 0, 0],
-    [0, 0, 0, 3, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-  ]);
-  const [turnColor, setTurnColor] = useState(1);
-
-  const fetchBoard = async () => {
-    const board = await apiClient.board.$get().catch(returnNull);
-
-    if (board !== null) setBoard(board);
+  const [user] = useAtom(userAtom);
+  const [tasks, setTasks] = useState<TaskModel[]>();
+  const [label, setLabel] = useState('');
+  const inputLabel = (e: ChangeEvent<HTMLInputElement>) => {
+    setLabel(e.target.value);
   };
+  const fetchTasks = async () => {
+    const tasks = await apiClient.tasks.$get().catch(returnNull);
 
-  const createBoard = async (x: number, y: number, turn: number) => {
-    if (board[y][x] === 3) {
-      const a = await apiClient.board.post({ body: { board, x, y, turn } });
-      console.log(a.body.board);
-      setBoard(a.body.board);
-      setTurnColor(3 - a.body.turn);
-    }
+    if (tasks !== null) setTasks(tasks);
   };
+  const createTask = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!label) return;
 
-  const resetGame = async () => {
-    const b = await apiClient.newboard.post({ body: { board } });
-    console.log(b);
-    setBoard(b.body);
-    setTurnColor(1);
+    await apiClient.tasks.post({ body: { label } });
+    setLabel('');
+    await fetchTasks();
   };
-
-  const startGame = async () => {
-    await apiClient.startboard.post({ body: { board } });
+  const toggleDone = async (task: TaskModel) => {
+    await apiClient.tasks._taskId(task.id).patch({ body: { done: !task.done } });
+    await fetchTasks();
   };
-
-  const countCandidates = () => {
-    let candidate = 0;
-    for (let y = 0; y < 8; y++) {
-      for (let x = 0; x < 8; x++) {
-        if (board[y][x] === 3) {
-          candidate++;
-        }
-      }
-    }
-    return candidate;
+  const deleteTask = async (task: TaskModel) => {
+    await apiClient.tasks._taskId(task.id).delete();
+    await fetchTasks();
   };
-
-  let timeoutcounts = 0;
-  const candidate = countCandidates();
-  const endGame = async () => {
-    if (candidate === 0) {
-      timeoutcounts++;
-      alert('ゲーム終了');
-
-      const b = await apiClient.newboard.post({ body: { board } });
-      console.log(b);
-      setBoard(b.body);
-      setTurnColor(1);
-    }
-  };
-
-  endGame();
 
   useEffect(() => {
-    fetchBoard();
-    const intervalId = setInterval(fetchBoard, 100);
-    return () => clearInterval(intervalId);
+    fetchTasks();
   }, []);
 
+  if (!tasks || !user) return <Loading visible />;
+
   return (
-    <div className={styles.container}>
-      <div className={styles.board}>
-        {board.map((row, y) =>
-          row.map((color, x) => (
-            <div
-              key={`${x}-${y}`}
-              className={styles.cell}
-              onClick={() => createBoard(x, y, turnColor)}
-            >
-              {color !== 0 && (
-                <div
-                  className={styles.stone}
-                  style={{
-                    background: color === 3 ? '#adff2f' : color === 1 ? '#000' : '#fff',
-                  }}
-                />
-              )}
-            </div>
-          ))
-        )}
+    <>
+      <BasicHeader user={user} />
+      <div className={styles.title} style={{ marginTop: '160px' }}>
+        Welcome to frourio! 頑張った！
       </div>
-      <button className={styles.button} onClick={startGame}>
-        ゲームスタート
-      </button>
-      <button className={styles.button} onClick={resetGame}>
-        ゲーム終了
-      </button>
-    </div>
+
+      <form style={{ textAlign: 'center', marginTop: '80px' }} onSubmit={createTask}>
+        <input value={label} type="text" onChange={inputLabel} />
+        <input type="submit" value="ADD" />
+      </form>
+      <ul className={styles.tasks}>
+        {tasks.map((task) => (
+          <li key={task.id}>
+            <label>
+              <input type="checkbox" checked={task.done} onChange={() => toggleDone(task)} />
+              <span>{task.label}</span>
+            </label>
+            <input
+              type="button"
+              value="DELETE"
+              className={styles.deleteBtn}
+              onClick={() => deleteTask(task)}
+            />
+          </li>
+        ))}
+      </ul>
+    </>
   );
 };
 
