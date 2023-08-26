@@ -48,6 +48,8 @@ const Home = () => {
 
   useEffect(() => {
     fetchBoard();
+    const intervalId = setInterval(fetchBoard, 100);
+    return () => clearInterval(intervalId);
   }, []);
 
   const countCandidates = () => {
