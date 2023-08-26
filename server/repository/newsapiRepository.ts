@@ -1,7 +1,7 @@
-import { NEWSAPI, OPENAIAPI } from '$/service/envValues';
 import axios from 'axios';
 import { ConversationChain } from 'langchain/chains';
 import { OpenAI } from 'langchain/llms/openai';
+import { NEWSAPI, OPENAIAPI } from '../service/envValues';
 
 const apiUrl = 'https://newsapi.org/v2/top-headlines';
 const params = {
@@ -32,7 +32,7 @@ const dora = `
 ドラえもんが興味ありそうな内容のニュース情報を選んでください。
 `;
 
-const runNewsAPI_LANGCHAIN = async () => {
+export const runNewsAPI_LANGCHAIN = async () => {
   const llm = new OpenAI({
     openAIApiKey: OPENAIAPI,
     temperature: 0,
@@ -46,4 +46,3 @@ const runNewsAPI_LANGCHAIN = async () => {
   return res1;
 };
 
-runNewsAPI_LANGCHAIN();
