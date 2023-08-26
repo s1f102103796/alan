@@ -32,16 +32,16 @@ const Home = () => {
     }
   };
 
-  const resetGame = async () => {
+  const resetBoard = async () => {
     const b = await apiClient.newboard.post({ body: { board } });
     console.log(b);
     setBoard(b.body);
     setTurnColor(1);
   };
 
-  const startGame = async () => {
-    await apiClient.startboard.post({ body: { board } });
-  };
+  useEffect(() => {
+    fetchBoard();
+  }, []);
 
   const countCandidates = () => {
     let candidate = 0;
@@ -55,34 +55,10 @@ const Home = () => {
     return candidate;
   };
 
-  let timeoutcounts = 0;
   const candidate = countCandidates();
-  const endGame = async () => {
-    if (candidate === 0) {
-      timeoutcounts++;
-      alert('ゲーム終了');
-
-      const b = await apiClient.newboard.post({ body: { board } });
-      console.log(b);
-      setBoard(b.body);
-      setTurnColor(1);
-    }
-  };
-
-  endGame();
-  // setTimeout(endGame, 3000);
-
-  // setTimeout(function () {
-  //   if (timeoutcounts === 0) {
-  //     endGame();
-  //   }
-  // }, 3000);
-
-  useEffect(() => {
-    fetchBoard();
-    const intervalId = setInterval(fetchBoard, 100);
-    return () => clearInterval(intervalId);
-  }, []);
+  if (candidate === 0) {
+    alert('ゲーム終了');
+  }
 
   return (
     <div className={styles.container}>
@@ -106,10 +82,7 @@ const Home = () => {
           ))
         )}
       </div>
-      <button className={styles.button} onClick={startGame}>
-        ゲームスタート
-      </button>
-      <button className={styles.button} onClick={resetGame}>
+      <button className={styles.button} onClick={resetBoard}>
         ゲーム終了
       </button>
     </div>
