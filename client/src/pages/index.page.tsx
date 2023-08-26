@@ -39,13 +39,6 @@ const Home = () => {
     setTurnColor(1);
   };
 
-  const startGame = async () => {
-    const c = await apiClient.startboard.post({ body: { board } });
-    console.log(c);
-    setBoard(c.body);
-    setTurnColor(1);
-  }
-
   useEffect(() => {
     fetchBoard();
   }, []);
@@ -66,8 +59,6 @@ const Home = () => {
   if (candidate === 0) {
     alert('ゲーム終了');
   }
-
-  
 
   return (
     <div className={styles.container}>
