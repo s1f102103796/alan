@@ -118,10 +118,14 @@ const countthree = () => {
 const turn = 1;
 let randomPosition = countthree();
 let count = 0;
+<<<<<<< HEAD
 let turndeluxe = 1;
 let turn = 1;
 const randomPositionbox: number[][] = [];
 const turnbox: number[] = [];
+=======
+const turn = 1;
+>>>>>>> parent of ce221d8... turnの情報は綺麗にフロントに持ってこれる、選択した候補地がまだ
 
 const advanceBoard = (
   advancey: number,
@@ -169,10 +173,14 @@ const advanceBoard = (
       const randomPosition = countthree();
       console.log('こっち来ている');
       console.log(randomPosition);
+<<<<<<< HEAD
       turndeluxe = turn;
       turnbox.push(turndeluxe);
+=======
+      // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
+>>>>>>> parent of ce221d8... turnの情報は綺麗にフロントに持ってこれる、選択した候補地がまだ
       setTimeout(function () {
-        advanceBoard(randomPosition[0], randomPosition[1], turn, true);
+        advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
       }, 1000);
     }
     // board[params.y][params.x] = params.turn;
@@ -212,9 +220,10 @@ export const boardUseCace = {
   startBoard: () => {
     onoff = 1;
     randomPositionbefore = countthree();
-    advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turndeluxe, true);
+    advanceBoard(randomPositionbefore[0], randomPositionbefore[1], turn, true);
   },
 
-    ProcessResult();
-  },
+  // getChat: () => ({ turn: turn1, position: randomPositionbefore }),
+  getTurn: () => turn,
+  getChat: () => randomPositionbefore,
 };
