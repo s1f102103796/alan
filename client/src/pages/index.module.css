@@ -1,24 +1,80 @@
-.title {
-  font-size: 80px;
+.container {
+  width: 100vw;
+  height: 100vh;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.conversationList {
+  width: 20%;
+  height: 100%;
+  background-color: #009fe3;
+  overflow-y: auto;
+  position: absolute;
+  left: 0;
+  border-right: 3px solid #0068b7;
+  padding: 20px;
+}
+
+.gridContainer {
+  width: 40%;
+  left: 44%;
+  top: 12%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  position: absolute;
+  transform: translateX(-50%); 
+}
+
+.gridItem {
+  width: 22%;
+  height: 100px;
+  background-color: #009fe3;
+  border-radius: 10px;
+  margin-bottom: 20px; 
+}
+
+.buttonAskDoraemon {
+  width: 200px;
+  height: 50px;
+  background-color: #009fe3;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 20px;
+  cursor: pointer;
+  position: absolute;
+  left: 35%;
+  bottom: 10%;
   text-align: center;
-  font-weight: bold;
+  line-height: 50px;
 }
 
-.tasks {
-  width: 300px;
-  height: 300px;
-  overflow: auto;
-  padding: 0;
-  margin: 20px auto 0;
-  list-style-type: none;
-  text-align: left;
+.doraemonImage {
+  margin-top: 50px;
+  width: 400px;
+  height: 400px;
+  background-size: cover;
+  background-color: #009fe3;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
-.tasks > li {
-  margin-top: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.deleteBtn {
-  float: right;
+.quote {
+  width: 400px;
+  height: 100px;
+  height: auto;
+  background-color: white;
+  color: white;
+  position: absolute;
+  top: 80%;
+  right: 10px;
+  padding: 20px;
+  border: 1px solid #0068b7;
+  border-radius: 10px;
 }
