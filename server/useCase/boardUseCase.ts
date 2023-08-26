@@ -150,6 +150,16 @@ export const boardUseCace = {
       [0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0],
     ];
+    count = 0;
+    onoff = 0;
+    randomPosition = [];
     return board;
+  },
+
+  startBoard: () => {
+    onoff = 1;
+    randomPosition = countthree();
+    // console.log('1');
+    advanceBoard(randomPosition[0], randomPosition[1], turn, true);
   },
 };
