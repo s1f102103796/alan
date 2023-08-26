@@ -167,8 +167,8 @@ const advanceBoard = (
       console.log(randomPosition);
       // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
       setTimeout(function () {
-        advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
-      }, 1000);
+        advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
+      }, 10000);
     }
     // board[params.y][params.x] = params.turn;
     return { board, turn };
