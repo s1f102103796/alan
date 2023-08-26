@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import styles from './index.module.css';
 import { apiClient } from 'src/utils/apiClient';
+import styles from './index.module.css';
 
 const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchNews = async () => {
-    const response = await apiClient.langchain.$post()
-    console.log(response)
+    const people = 'のび太あああ';
+    // const response = await apiClient.langchain.$post({ body: { people } });
+    const response = await apiClient.langchain.$post({});
+
+    console.log(response);
   };
 
   return (
