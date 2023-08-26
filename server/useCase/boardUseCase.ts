@@ -168,6 +168,8 @@ const advanceBoard = (
       // advanceBoard(randomPosition[0], randomPosition[1], turn1, true);
       setTimeout(function () {
         advanceBoard(randomPositionafter[0], randomPositionafter[1], turn, true);
+        randomPositionbox.push(randomPositionbefore);
+        turnbox.push(turndeluxe);
       }, 10000);
     }
     // board[params.y][params.x] = params.turn;
@@ -200,7 +202,8 @@ export const boardUseCace = {
       [0, 0, 0, 0, 0, 0, 0, 0],
     ];
     onoff = 0;
-    randomPosition = [];
+    randomPositionbox = [];
+    turnbox = [];
     return board;
   },
 
