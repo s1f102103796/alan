@@ -6,9 +6,10 @@ const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchNews = async () => {
+    console.log('押した');
     const people = 'のび太あああ';
     // const response = await apiClient.langchain.$post({ body: { people } });
-    const response = await apiClient.langchain.$post({});
+    const response = await apiClient.langchain.$post();
 
     console.log(response);
   };
