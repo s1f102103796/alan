@@ -4,24 +4,21 @@ import { ConversationChain } from 'langchain/chains';
 import { getNews } from './newsapiRepository';
 import { fetchWeatherData } from './weatherrepository';
 
-export const langchainAPI = async () => {
+export const langchainAPI = async (values: { [key: number]: boolean }) => {
   const llm = new OpenAI({
     openAIApiKey: OPENAIAPI,
     temperature: 0.9,
     modelName: 'gpt-4',
   });
   const dora = `
-この情報を元に今日どのように行動したらいいかドラえもんになってのび太君に教えるように教えて。
+この情報を元に今日どのように行動したらいいかドラえもんになってのび太君に教えるように教えて。もし情報がなかったら「どら焼き大好き」だけ返してください。
 `;
   let news = '';
-  const newsonoff = 1;
-  if (newsonoff === 1) {
+  if (values[0] === true) {
     news = await getNews();
   }
   let weather = '';
-  let weatheronoff = 1;
-  weatheronoff = 1;
-  if (weatheronoff === 1) {
+  if (values[1] === true) {
     weather = await fetchWeatherData();
   }
   const chain = new ConversationChain({ llm });
