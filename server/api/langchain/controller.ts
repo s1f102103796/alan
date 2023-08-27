@@ -1,4 +1,4 @@
-import { runlangchain } from '$/repository/sampleRepository';
+import { runWeatherAPI } from '$/repository/weatherrepository';
 import { defineController } from './$relay';
 
 export default defineController(() => ({
@@ -11,8 +11,12 @@ export default defineController(() => ({
   //   status: 201,
   //   body: await runTemplete(body.people),
   // }),
+  // post: async () => ({
+  //   status: 201,
+  //   body: await runlangchain(),
+  // }),
   post: async () => ({
     status: 201,
-    body: await runlangchain(),
+    body: await runWeatherAPI(),
   }),
 }));
