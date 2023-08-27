@@ -59,6 +59,13 @@
   line-height: 50px;
 }
 
+.dolanLabel {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
 .doraemonImage {
   margin-top: 50px;
   width: 384px;
