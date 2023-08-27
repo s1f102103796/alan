@@ -11,7 +11,7 @@ export const langchainAPI = async () => {
     modelName: 'gpt-4',
   });
   const dora = `
-この情報を元に今日どのように行動したらいいかドラえもんになって解説してください。
+この情報を元に今日どのように行動したらいいかドラえもんになってのび太君に教えるように教えて。
 `;
   let news = '';
   const newsonoff = 1;
