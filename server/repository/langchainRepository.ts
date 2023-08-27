@@ -1,13 +1,21 @@
+import type { DolanModel } from '$/commonTypesWithClient/models';
 import { OPENAIAPI, TWITTER_PASSWORD, TWITTER_USERNAME } from '$/service/envValues';
+import { userIdParser } from '$/service/idParsers';
+import { prismaClient } from '$/service/prismaClient';
+import type { Dolan } from '@prisma/client';
 import { OpenAI } from 'langchain';
 import { ConversationChain } from 'langchain/chains';
+import type { Browser, BrowserContext, Page } from 'playwright';
+import { chromium } from 'playwright';
+import { stringify } from 'querystring';
 import { fetchGourmetData } from './gourmetRepository';
 import { getNews } from './newsapiRepository';
 import { fetchWeatherData } from './weatherrepository';
 
-import type { Browser, BrowserContext, Page } from 'playwright';
-import { chromium } from 'playwright';
-import { stringify } from 'querystring';
+export const toDolanModel = (prismaClient: Dolan): DolanModel => ({
+  id: userIdParser.parse(prismaClient.id),
+  message: prismaClient.message,
+});
 
 let browser: Browser | null = null;
 let context: BrowserContext | null = null;
@@ -48,14 +56,14 @@ const Tweet = async (contents: string) => {
   return content;
 };
 
-export const langchainAPI = async (values: { [key: number]: boolean }) => {
+export const langchainAPI = async (id: string, values: { [key: number]: boolean }) => {
   const llm = new OpenAI({
     openAIApiKey: OPENAIAPI,
     temperature: 0.9,
     modelName: 'gpt-4',
   });
   const dora = `
-この情報を元に今日どのように行動したらいいかドラえもんになってのび太君に教えるように教えて。もし情報がなかったら「どら焼き大好き」だけ返してください。
+この情報を元に今日どのように行動したらいいかドラえもんになってのび太君に100文字くらいで教えるように教えて。もし情報がなかったら「どら焼き大好き」だけ返してください。
 `;
   // ドラえもんは次のような言葉を話します。
   // 「のび太、また宿題忘れたの？」
@@ -103,5 +111,20 @@ export const langchainAPI = async (values: { [key: number]: boolean }) => {
   if (TweetContent.length <= 140) {
     Tweet(TweetContent);
   }
+  createDolan(id, res1.response.toString());
   return res1.response;
+};
+
+const createDolan = async (id: string, dolananser: string) => {
+  const prismaDolan = await prismaClient.dolan.create({
+    data: { id, message: dolananser },
+  });
+  return toDolanModel(prismaDolan);
+};
+
+export const getDolan = async (id: string) => {
+  const dolan = await prismaClient.dolan.findMany({
+    where: { id },
+  });
+  return dolan.map(toDolanModel);
 };

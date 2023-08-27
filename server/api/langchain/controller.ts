@@ -17,6 +17,6 @@ export default defineController(() => ({
   // }),
   post: async ({ body }) => ({
     status: 201,
-    body: await langchainAPI(body.values),
+    body: await langchainAPI(body.id, body.values),
   }),
 }));

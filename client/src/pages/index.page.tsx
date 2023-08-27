@@ -1,14 +1,37 @@
-import { useEffect, useRef, useState } from 'react';
+import type { DolanModel } from 'commonTypesWithClient/models';
+import { useAtom } from 'jotai';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { userAtom } from 'src/atoms/user';
 import { apiClient } from 'src/utils/apiClient';
 import styles from './index.module.css';
 
 const Home = () => {
+  const [user] = useAtom(userAtom);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [output, setOutput] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const displayedOutput = output.substring(0, currentIndex);
   const quoteRef = useRef<HTMLDivElement>(null);
   const [values, setValues] = useState<{ [key: number]: boolean }>({});
+  const [messages, setMessages] = useState<DolanModel[]>([]);
+  const [expanded, setExpanded] = useState(false);
+
+  const fetchDolan = useCallback(async () => {
+    if (!user) {
+      console.error('User is null or undefined!');
+      return;
+    }
+    const getDlanMessage = await apiClient.dolan.$post({ body: { id: user.id } });
+    setMessages(getDlanMessage);
+  }, [user]);
+
+  useEffect(() => {
+    fetchDolan();
+    const intervalId = setInterval(fetchDolan, 100);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [fetchDolan]);
 
   const handleItemClick = (index: number) => {
     setValues((prev) => ({
@@ -17,11 +40,15 @@ const Home = () => {
     }));
   };
 
-  const fetchNews = async () => {
+  const PostDolan = async () => {
+    if (!user) {
+      console.error('User is null or undefined!');
+      return;
+    }
     setCurrentIndex(0);
     setOutput('読み込み中...');
     console.log('押した');
-    const response = await apiClient.langchain.$post({ body: { values } });
+    const response = await apiClient.langchain.$post({ body: { id: user.id, values } });
     setOutput(response.toString());
     console.log(response);
   };
@@ -42,7 +69,18 @@ const Home = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.conversationList}>{/* ここに会話のリストを表示 */}</div>
+      <div className={styles.conversationList}>
+        {messages.map((message, index) => (
+          <div className={styles.messageBox} key={index}>
+            <div style={{ maxHeight: expanded ? 'none' : '100px', overflow: 'hidden' }}>
+              {message.message}
+            </div>
+            {message.message.length > 100 && !expanded && (
+              <button onClick={() => setExpanded(true)}>read more</button>
+            )}
+          </div>
+        ))}
+      </div>
       <div className={styles.gridContainer}>
         {[...Array(8)].map((_, index) => (
           <div key={index} className={styles.gridItem} onClick={() => handleItemClick(index)}>
@@ -53,7 +91,7 @@ const Home = () => {
       <button
         className={styles.buttonAskDoraemon}
         // onClick={() => setIsModalOpen(true)}
-        onClick={fetchNews}
+        onClick={PostDolan}
       >
         教えてドラえもん
       </button>
