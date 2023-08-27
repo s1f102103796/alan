@@ -2,7 +2,6 @@ import { OPENAIAPI } from '$/service/envValues';
 import axios from 'axios';
 import { OpenAI } from 'langchain';
 import { ConversationChain } from 'langchain/chains';
-import { getNews } from './newsapiRepository';
 
 export async function fetchWeatherData() {
   try {
@@ -31,32 +30,6 @@ export const runWeatherAPI = async () => {
 
   const weather = await fetchWeatherData();
   const input1 = `${JSON.stringify(weather)}は最新の天気情報です。${dora}`;
-  const res1 = await chain.call({ input: input1 });
-  return res1.response;
-};
-
-export const langchainAPI = async () => {
-  const llm = new OpenAI({
-    openAIApiKey: OPENAIAPI,
-    temperature: 0.9,
-    modelName: 'gpt-4',
-  });
-  const dora = `
-この情報を元に今日どのように行動したらいいかドラえもんになって解説してください。
-`;
-  let news = '';
-  const newsonoff = 1;
-  if (newsonoff === 1) {
-    news = await getNews();
-  }
-  let weather = '';
-  let weatheronoff = 1;
-  weatheronoff = 1;
-  if (weatheronoff === 1) {
-    weather = await fetchWeatherData();
-  }
-  const chain = new ConversationChain({ llm });
-  const input1 = `${JSON.stringify(news)}${JSON.stringify(weather)}は最新の情報です。${dora}`;
   const res1 = await chain.call({ input: input1 });
   return res1.response;
 };

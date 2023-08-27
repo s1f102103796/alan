@@ -4,13 +4,14 @@ import styles from './index.module.css';
 
 const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [output, setOutput] = useState<string>('');
 
   const fetchNews = async () => {
     console.log('押した');
     const people = 'のび太あああ';
     // const response = await apiClient.langchain.$post({ body: { people } });
     const response = await apiClient.langchain.$post();
-
+    setOutput(response.toString());
     console.log(response);
   };
 
@@ -30,7 +31,7 @@ const Home = () => {
         教えてドラえもん
       </button>
       <div className={styles.doraemonImage} />
-      <div className={styles.quote}>{/* ドラえもんの名言や会話の内容をここに書く */}</div>
+      <div className={styles.quote}>{output}</div>
       {isModalOpen && (
         <div className={styles.overlay}>
           <div className={styles.inputModal}>
