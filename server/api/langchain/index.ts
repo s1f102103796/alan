@@ -1,3 +1,4 @@
+import type { UserId } from '$/commonTypesWithClient/branded';
 import type { DefineMethods } from 'aspida';
 import type { ChainValues } from 'langchain/dist/schema';
 
@@ -19,7 +20,7 @@ export type Methods = DefineMethods<{
   //   resBody: BaseMessage[];
   // };
   post: {
-    reqBody: { id: string; values: { [key: number]: boolean } };
+    reqBody: { id: UserId; values: { [key: number]: boolean }; message: string };
     resBody: ChainValues;
   };
 }>;

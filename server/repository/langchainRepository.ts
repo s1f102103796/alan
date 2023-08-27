@@ -1,3 +1,4 @@
+import type { UserId } from '$/commonTypesWithClient/branded';
 import type { DolanModel } from '$/commonTypesWithClient/models';
 import { OPENAIAPI, TWITTER_PASSWORD, TWITTER_USERNAME } from '$/service/envValues';
 import { userIdParser } from '$/service/idParsers';
@@ -56,14 +57,18 @@ const Tweet = async (contents: string) => {
   return content;
 };
 
-export const langchainAPI = async (id: string, values: { [key: number]: boolean }) => {
+export const langchainAPI = async (
+  id: UserId,
+  values: { [key: number]: boolean },
+  message: string
+) => {
   const llm = new OpenAI({
     openAIApiKey: OPENAIAPI,
     temperature: 0.9,
     modelName: 'gpt-4',
   });
   const dora = `
-この情報を元に今日どのように行動したらいいかドラえもんになってのび太君に100文字くらいで教えるように教えて。もし情報がなかったら「どら焼き大好き」だけ返してください。
+この情報を元に「${message}」という質問に対してドラえもんになってのび太君に100文字くらいで教えるように教えて。もし情報がなかったら「どら焼き大好き」だけ返してください。
 `;
   // ドラえもんは次のような言葉を話します。
   // 「のび太、また宿題忘れたの？」
