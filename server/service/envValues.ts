@@ -12,6 +12,7 @@ const TWITTER_USERNAME = process.env.TWITTER_USERNAME ?? '';
 const TWITTER_PASSWORD = process.env.TWITTER_PASSWORD ?? '';
 const OPENAIAPI = process.env.OPENAI_API ?? '';
 const NEWSAPI = process.env.NEWS_API ?? '';
+const GOURMETAPI = process.env.GOURMET_API ?? '';
 
 export {
   API_BASE_PATH,
@@ -21,6 +22,7 @@ export {
   FIREBASE_SERVER_KEY,
   NEWSAPI,
   OPENAIAPI,
+  GOURMETAPI,
   PORT,
   TWITTER_PASSWORD,
   TWITTER_USERNAME,
