@@ -1,6 +1,7 @@
 import { Switch } from 'antd';
 import type { DolanModel } from 'commonTypesWithClient/models';
 import { useAtom } from 'jotai';
+import type { ChangeEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { userAtom } from 'src/atoms/user';
 import { apiClient } from 'src/utils/apiClient';
@@ -16,6 +17,10 @@ const Home = () => {
   const [values, setValues] = useState<{ [key: number]: boolean }>({});
   const [messages, setMessages] = useState<DolanModel[]>([]);
   const [expanded, setExpanded] = useState<number>(-1);
+  const [inputValue, setInputValue] = useState('');
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
 
   const fetchDolan = useCallback(async () => {
     if (!user) {
@@ -47,11 +52,15 @@ const Home = () => {
       return;
     }
     setCurrentIndex(0);
+    setIsModalOpen(false);
     setOutput('読み込み中...');
     console.log('押した');
-    const response = await apiClient.langchain.$post({ body: { id: user.id, values } });
+    const response = await apiClient.langchain.$post({
+      body: { id: user.id, values, message: inputValue },
+    });
     setOutput(response.toString());
     console.log(response);
+    setInputValue('');
   };
 
   useEffect(() => {
@@ -86,16 +95,21 @@ const Home = () => {
       <div className={styles.gridContainer}>
         {[...Array(8)].map((_, index) => (
           <div key={index} className={styles.gridItem} onClick={() => handleItemClick(index)}>
-            <Switch />
+            <Switch
+              style={{
+                backgroundColor: '#a8a8a8 ',
+              }}
+              checkedChildren={<span style={{ backgroundColor: '#a8a8a8' }}>ON</span>}
+            />
           </div>
         ))}
       </div>
       <button
         className={styles.buttonAskDoraemon}
-        // onClick={() => setIsModalOpen(true)}
-        onClick={PostDolan}
+        onClick={() => setIsModalOpen(true)}
+        // onClick={PostDolan}
       >
-        教えてドラえもん
+        教えてDOLAN
       </button>
       <div className={styles.doraemonImage} />
       <div ref={quoteRef} className={styles.quote}>
@@ -104,7 +118,16 @@ const Home = () => {
       {isModalOpen && (
         <div className={styles.overlay}>
           <div className={styles.inputModal}>
-            <input type="text" className={styles.inputarea} placeholder="ここに質問を入力" />
+            <input
+              type="text"
+              className={styles.inputarea}
+              placeholder="ここに質問を入力"
+              value={inputValue} // stateをinputのvalueにバインド
+              onChange={handleInputChange} // 入力が変わるたびにhandleInputChangeを呼ぶ
+            />
+            <button className={styles.sendButton} onClick={PostDolan}>
+              送信
+            </button>
             <button className={styles.closebutton} onClick={() => setIsModalOpen(false)}>
               閉じる
             </button>

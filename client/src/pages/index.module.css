@@ -11,19 +11,20 @@
 .conversationList {
   width: 20vw;
   height: 100vh;
-  background-color: #009fe3;
+  background-color: #028f95;
   overflow-y: auto;
   position: absolute;
   left: 0;
-  border-right: 3px solid #0068b7;
+  border-right: 3px solid #028f95;
   padding: 2vw;
 }
 
 .messageBox {
   padding: 10px;
-  border: 1px solid #0068b7;
+  border: 1px solid #5f7f7d;
   margin-bottom: 10px;
   background-color: #ffffff;
+  border-radius: 2%;
 }
 
 .gridContainer {
@@ -38,14 +39,14 @@
 .gridItem {
   width: 100%;
   padding-bottom: 100%;
-  background-color: #009fe3;
+  background-color: #028f95;
   border-radius: 10px;
 }
 
 .buttonAskDoraemon {
   width: 200px;
   height: 50px;
-  background-color: #009fe3;
+  background-color: #028f95;
   color: white;
   border: none;
   border-radius: 25px;
@@ -60,13 +61,17 @@
 
 .doraemonImage {
   margin-top: 50px;
-  width: 400px;
-  height: 400px;
+  width: 384px;
+  height: 384px;
+  background-image: url('../assets/images/myedit_ai_image_0828024634.jpg');
   background-size: cover;
-  background-color: #009fe3;
+  background-color: #028f95;
   position: absolute;
   top: 10px;
   right: 10px;
+  border: 8px solid #678784;
+  border-radius: 0.1%;
+  box-shadow: 0 0 0 5px #ffffff, /* 内側の細い白ボーダー */ 0 0 0 15px #678784; /* さらに外側のボーダーで、#678784を強調 */
 }
 
 .quote {
@@ -78,7 +83,7 @@
   top: 80%;
   right: 10px;
   padding: 20px;
-  border: 1px solid #0068b7;
+  border: 1px solid #678784;
   border-radius: 10px;
   overflow-y: scroll;
 }
@@ -113,6 +118,29 @@
   padding: 1vh;
   font-size: 1.5vw;
   outline: none;
+}
+
+.sendButton {
+  padding: 10px 20px; /* ボタン内のスペース */
+  font-size: 1rem; /* テキストサイズ */
+  border: none; /* ボーダーを非表示に */
+  border-radius: 5px; /* 角を丸く */
+  background-color: #0068b7; /* ボタンの背景色 */
+  color: #ffffff; /* テキストの色 */
+  cursor: pointer; /* ホバー時のカーソルを指に */
+  transition: background-color 0.3s; /* 背景色の変化を滑らかに */
+  margin-right: 10px; /* 閉じるボタンとの間にスペースを設ける */
+  position: absolute;
+  right: 20%; /* 閉じるボタンとの位置を調整 */
+  bottom: 5%;
+}
+
+.sendButton:hover {
+  background-color: #0055a4; /* ホバー時の背景色（少し暗めに） */
+}
+
+.sendButton:active {
+  background-color: #004488; /* クリック時の背景色（もっと暗めに） */
 }
 
 .closebutton {
