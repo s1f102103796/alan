@@ -1,5 +1,6 @@
+import type { DolanModel } from 'commonTypesWithClient/models';
 import { useAtom } from 'jotai';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { userAtom } from 'src/atoms/user';
 import { apiClient } from 'src/utils/apiClient';
 import styles from './index.module.css';
@@ -12,24 +13,24 @@ const Home = () => {
   const displayedOutput = output.substring(0, currentIndex);
   const quoteRef = useRef<HTMLDivElement>(null);
   const [values, setValues] = useState<{ [key: number]: boolean }>({});
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<DolanModel[]>([]);
 
-  // const fetchDolan = useCallback(async () => {
-  //   if (!user) {
-  //     console.error('User is null or undefined!');
-  //     return;
-  //   }
-  //   const getDlanMessage = await apiClient.dolan.$post({ body: { id: user.id } });
-  //   setMessages(getDlanMessage);
-  // }, [user]);
+  const fetchDolan = useCallback(async () => {
+    if (!user) {
+      console.error('User is null or undefined!');
+      return;
+    }
+    const getDlanMessage = await apiClient.dolan.$post({ body: { id: user.id } });
+    setMessages(getDlanMessage);
+  }, [user]);
 
-  // useEffect(() => {
-  //   fetchDolan();
-  //   const intervalId = setInterval(fetchDolan, 100);
-  //   return () => {
-  //     clearInterval(intervalId);
-  //   };
-  // }, [fetchDolan]);
+  useEffect(() => {
+    fetchDolan();
+    const intervalId = setInterval(fetchDolan, 100);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [fetchDolan]);
 
   const handleItemClick = (index: number) => {
     setValues((prev) => ({
@@ -69,7 +70,9 @@ const Home = () => {
     <div className={styles.container}>
       <div className={styles.conversationList}>
         {messages.map((message, index) => (
-          <div key={index}>{message}</div>
+          <div className={styles.messageBox} key={index}>
+            <strong>{message.id}:</strong> {message.message}
+          </div>
         ))}
       </div>
       <div className={styles.gridContainer}>

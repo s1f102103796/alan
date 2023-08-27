@@ -19,6 +19,13 @@
   padding: 2vw;
 }
 
+.messageBox {
+  padding: 10px;
+  border: 1px solid #0068b7;
+  margin-bottom: 10px;
+  background-color: #ffffff;
+}
+
 .gridContainer {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
