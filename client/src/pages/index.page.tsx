@@ -17,7 +17,7 @@ const Home = () => {
   const [values, setValues] = useState<{ [key: number]: boolean }>({});
   const [messages, setMessages] = useState<DolanModel[]>([]);
   const [expanded, setExpanded] = useState<number>(-1);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState<string>('');
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
