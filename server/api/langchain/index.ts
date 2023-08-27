@@ -14,4 +14,7 @@ export type Methods = DefineMethods<{
   post: {
     resBody: string;
   };
+  // post: {
+  //   resBody: BaseMessage[];
+  // };
 }>;
