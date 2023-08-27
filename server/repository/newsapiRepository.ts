@@ -15,7 +15,7 @@ interface Article {
   title: string;
   description: string;
 }
-const getNews = async () => {
+export const getNews = async () => {
   const response = await axios.get(apiUrl, { params });
   const articles = response.data.articles;
 
