@@ -1,6 +1,6 @@
-import type { UserId } from '$/commonTypesWithClient/branded';
 import type { DefineMethods } from 'aspida';
 import type { ChainValues } from 'langchain/dist/schema';
+import type { UserId } from '../../commonTypesWithClient/branded';
 
 export type Methods = DefineMethods<{
   get: {
