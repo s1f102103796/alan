@@ -12,6 +12,24 @@ const Home = () => {
   const displayedOutput = output.substring(0, currentIndex);
   const quoteRef = useRef<HTMLDivElement>(null);
   const [values, setValues] = useState<{ [key: number]: boolean }>({});
+  const [messages, setMessages] = useState<string[]>([]);
+
+  // const fetchDolan = useCallback(async () => {
+  //   if (!user) {
+  //     console.error('User is null or undefined!');
+  //     return;
+  //   }
+  //   const getDlanMessage = await apiClient.dolan.$post({ body: { id: user.id } });
+  //   setMessages(getDlanMessage);
+  // }, [user]);
+
+  // useEffect(() => {
+  //   fetchDolan();
+  //   const intervalId = setInterval(fetchDolan, 100);
+  //   return () => {
+  //     clearInterval(intervalId);
+  //   };
+  // }, [fetchDolan]);
 
   const handleItemClick = (index: number) => {
     setValues((prev) => ({
@@ -20,7 +38,7 @@ const Home = () => {
     }));
   };
 
-  const fetchNews = async () => {
+  const PostDolan = async () => {
     if (!user) {
       console.error('User is null or undefined!');
       return;
@@ -49,7 +67,11 @@ const Home = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.conversationList}>{/* ここに会話のリストを表示 */}</div>
+      <div className={styles.conversationList}>
+        {messages.map((message, index) => (
+          <div key={index}>{message}</div>
+        ))}
+      </div>
       <div className={styles.gridContainer}>
         {[...Array(8)].map((_, index) => (
           <div key={index} className={styles.gridItem} onClick={() => handleItemClick(index)}>
@@ -60,7 +82,7 @@ const Home = () => {
       <button
         className={styles.buttonAskDoraemon}
         // onClick={() => setIsModalOpen(true)}
-        onClick={fetchNews}
+        onClick={PostDolan}
       >
         教えてドラえもん
       </button>

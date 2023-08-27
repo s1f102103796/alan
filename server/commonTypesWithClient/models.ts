@@ -18,3 +18,8 @@ export type TrendModel = {
   isHashtag: boolean;
   word: string;
 };
+
+export type DolanModel = {
+  id: string;
+  message: string;
+};

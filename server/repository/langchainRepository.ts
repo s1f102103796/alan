@@ -1,14 +1,21 @@
+import type { DolanModel } from '$/commonTypesWithClient/models';
 import { OPENAIAPI, TWITTER_PASSWORD, TWITTER_USERNAME } from '$/service/envValues';
+import { userIdParser } from '$/service/idParsers';
+import { prismaClient } from '$/service/prismaClient';
+import type { Dolan } from '@prisma/client';
 import { OpenAI } from 'langchain';
 import { ConversationChain } from 'langchain/chains';
+import type { Browser, BrowserContext, Page } from 'playwright';
+import { chromium } from 'playwright';
+import { stringify } from 'querystring';
 import { fetchGourmetData } from './gourmetRepository';
 import { getNews } from './newsapiRepository';
 import { fetchWeatherData } from './weatherrepository';
 
-import { prismaClient } from '$/service/prismaClient';
-import type { Browser, BrowserContext, Page } from 'playwright';
-import { chromium } from 'playwright';
-import { stringify } from 'querystring';
+export const toDolanModel = (prismaClient: Dolan): DolanModel => ({
+  id: userIdParser.parse(prismaClient.id),
+  message: prismaClient.message,
+});
 
 let browser: Browser | null = null;
 let context: BrowserContext | null = null;
@@ -110,9 +117,16 @@ export const langchainAPI = async (id: string, values: { [key: number]: boolean 
 
 const dolanRepository = {
   save: async (id: string, dolananser: string) => {
-    const res = await prismaClient.dolan.create({
+    await prismaClient.dolan.create({
       data: { id, message: dolananser },
     });
     return;
   },
+};
+
+export const getDolan = async (id: string) => {
+  const dolan = await prismaClient.dolan.findMany({
+    where: { id },
+  });
+  return dolan.map(toDolanModel);
 };
