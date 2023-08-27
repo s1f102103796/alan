@@ -1,9 +1,52 @@
-import { OPENAIAPI } from '$/service/envValues';
+import { OPENAIAPI, TWITTER_PASSWORD, TWITTER_USERNAME } from '$/service/envValues';
 import { OpenAI } from 'langchain';
 import { ConversationChain } from 'langchain/chains';
 import { fetchGourmetData } from './gourmetRepository';
 import { getNews } from './newsapiRepository';
 import { fetchWeatherData } from './weatherrepository';
+
+import type { Browser, BrowserContext, Page } from 'playwright';
+import { chromium } from 'playwright';
+import { stringify } from 'querystring';
+
+let browser: Browser | null = null;
+let context: BrowserContext | null = null;
+let page: Page | null = null;
+
+const getLoggedInPage = async () => {
+  if (page?.isClosed() === false) return page;
+
+  browser = await chromium.launch({ headless: false });
+  context = await browser.newContext({ locale: 'ja-JP' });
+  page = await context.newPage();
+
+  await page.goto(origin);
+  await page.getByTestId('loginButton').click();
+  await page.locator('input[autocomplete="username"]').fill(TWITTER_USERNAME);
+  await page.getByText('次へ').click();
+  await page.locator('input[name="password"]').fill(TWITTER_PASSWORD);
+  await page.getByTestId('LoginForm_Login_Button').click();
+  await page.getByTestId('SideNav_NewTweet_Button').waitFor();
+
+  return page;
+};
+
+const Tweet = async (contents: string) => {
+  const page = await getLoggedInPage();
+
+  await page.goto(`${origin}/home`);
+
+  const tweetTextBox = await page.getByRole('textbox', { name: 'Tweet text' });
+  await tweetTextBox.click();
+
+  const content = contents;
+
+  await tweetTextBox.fill(content);
+
+  await page.getByTestId('tweetButtonInline').click();
+
+  return content;
+};
 
 export const langchainAPI = async (values: { [key: number]: boolean }) => {
   const llm = new OpenAI({
@@ -54,5 +97,11 @@ export const langchainAPI = async (values: { [key: number]: boolean }) => {
     gourmet
   )}は最新の情報です。${dora}`;
   const res1 = await chain.call({ input: input1 });
+  const TweetContent = stringify(res1.response);
+
+  console.log('TweetContent', TweetContent);
+  if (TweetContent.length <= 140) {
+    Tweet(TweetContent);
+  }
   return res1.response;
 };
