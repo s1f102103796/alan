@@ -19,6 +19,7 @@ export type Methods = DefineMethods<{
   //   resBody: BaseMessage[];
   // };
   post: {
+    reqBody: { values: { [key: number]: boolean } };
     resBody: ChainValues;
   };
 }>;

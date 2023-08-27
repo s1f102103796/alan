@@ -12,6 +12,7 @@ const TWITTER_USERNAME = process.env.TWITTER_USERNAME ?? '';
 const TWITTER_PASSWORD = process.env.TWITTER_PASSWORD ?? '';
 const OPENAIAPI = process.env.OPENAI_API ?? '';
 const NEWSAPI = process.env.NEWS_API ?? '';
+const GOURMETAPI = process.env.GOURMET_API ?? '';
 
 export {
   API_BASE_PATH,
@@ -19,6 +20,7 @@ export {
   CORS_ORIGIN,
   FIREBASE_AUTH_EMULATOR_HOST,
   FIREBASE_SERVER_KEY,
+  GOURMETAPI,
   NEWSAPI,
   OPENAIAPI,
   PORT,
