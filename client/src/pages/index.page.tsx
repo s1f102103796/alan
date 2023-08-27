@@ -1,3 +1,4 @@
+import { Switch } from 'antd';
 import type { DolanModel } from 'commonTypesWithClient/models';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -14,7 +15,7 @@ const Home = () => {
   const quoteRef = useRef<HTMLDivElement>(null);
   const [values, setValues] = useState<{ [key: number]: boolean }>({});
   const [messages, setMessages] = useState<DolanModel[]>([]);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState<number>(-1);
 
   const fetchDolan = useCallback(async () => {
     if (!user) {
@@ -72,19 +73,20 @@ const Home = () => {
       <div className={styles.conversationList}>
         {messages.map((message, index) => (
           <div className={styles.messageBox} key={index}>
-            <div style={{ maxHeight: expanded ? 'none' : '100px', overflow: 'hidden' }}>
+            <div style={{ maxHeight: expanded === index ? 'none' : '100px', overflow: 'hidden' }}>
               {message.message}
             </div>
-            {message.message.length > 100 && !expanded && (
-              <button onClick={() => setExpanded(true)}>read more</button>
+            {message.message.length > 40 && expanded !== index && (
+              <button onClick={() => setExpanded(index)}>read more</button>
             )}
+            {expanded === index && <button onClick={() => setExpanded(-1)}>close</button>}
           </div>
         ))}
       </div>
       <div className={styles.gridContainer}>
         {[...Array(8)].map((_, index) => (
           <div key={index} className={styles.gridItem} onClick={() => handleItemClick(index)}>
-            {values[index] ? 'TRUE' : 'FALSE'}
+            <Switch />
           </div>
         ))}
       </div>
