@@ -1,8 +1,18 @@
 import { useState } from 'react';
+import { apiClient } from 'src/utils/apiClient';
 import styles from './index.module.css';
 
 const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchNews = async () => {
+    const people = 'のび太あああ';
+    // const response = await apiClient.langchain.$post({ body: { people } });
+    const response = await apiClient.langchain.$post({});
+
+    console.log(response);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.conversationList}>{/* ここに会話のリストを表示 */}</div>
@@ -13,7 +23,8 @@ const Home = () => {
       </div>
       <button
         className={styles.buttonAskDoraemon}
-        onClick={() => setIsModalOpen(true)} // ボタンをクリックしたらモーダルを開く
+        // onClick={() => setIsModalOpen(true)}
+        onClick={fetchNews}
       >
         教えてドラえもん
       </button>
