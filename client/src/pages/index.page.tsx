@@ -21,7 +21,7 @@ const Home = () => {
     setCurrentIndex(0);
     setOutput('読み込み中...');
     console.log('押した');
-    const response = await apiClient.langchain.$post({ body: { values }});
+    const response = await apiClient.langchain.$post({ body: { values } });
     setOutput(response.toString());
     console.log(response);
   };
