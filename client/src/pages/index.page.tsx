@@ -14,6 +14,7 @@ const Home = () => {
   const quoteRef = useRef<HTMLDivElement>(null);
   const [values, setValues] = useState<{ [key: number]: boolean }>({});
   const [messages, setMessages] = useState<DolanModel[]>([]);
+  const [expanded, setExpanded] = useState(false);
 
   const fetchDolan = useCallback(async () => {
     if (!user) {
@@ -71,7 +72,12 @@ const Home = () => {
       <div className={styles.conversationList}>
         {messages.map((message, index) => (
           <div className={styles.messageBox} key={index}>
-            <strong>{message.id}:</strong> {message.message}
+            <div style={{ maxHeight: expanded ? 'none' : '100px', overflow: 'hidden' }}>
+              {message.message}
+            </div>
+            {message.message.length > 100 && !expanded && (
+              <button onClick={() => setExpanded(true)}>read more</button>
+            )}
           </div>
         ))}
       </div>

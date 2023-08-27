@@ -111,17 +111,15 @@ export const langchainAPI = async (id: string, values: { [key: number]: boolean 
   if (TweetContent.length <= 140) {
     Tweet(TweetContent);
   }
-  dolanRepository.save(id, res1.response.toString());
+  createDolan(id, res1.response.toString());
   return res1.response;
 };
 
-const dolanRepository = {
-  save: async (id: string, dolananser: string) => {
-    await prismaClient.dolan.create({
-      data: { id, message: dolananser },
-    });
-    return;
-  },
+const createDolan = async (id: string, dolananser: string) => {
+  const prismaDolan = await prismaClient.dolan.create({
+    data: { id, message: dolananser },
+  });
+  return toDolanModel(prismaDolan);
 };
 
 export const getDolan = async (id: string) => {

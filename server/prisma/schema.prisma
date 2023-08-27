@@ -15,6 +15,6 @@ model Task {
 }
 
 model Dolan {
-  id      String @id
-  message String
+  id      String
+  message String @id
 }
