@@ -1,8 +1,11 @@
+import { useAtom } from 'jotai';
 import { useEffect, useRef, useState } from 'react';
+import { userAtom } from 'src/atoms/user';
 import { apiClient } from 'src/utils/apiClient';
 import styles from './index.module.css';
 
 const Home = () => {
+  const [user] = useAtom(userAtom);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [output, setOutput] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -18,10 +21,14 @@ const Home = () => {
   };
 
   const fetchNews = async () => {
+    if (!user) {
+      console.error('User is null or undefined!');
+      return;
+    }
     setCurrentIndex(0);
     setOutput('読み込み中...');
     console.log('押した');
-    const response = await apiClient.langchain.$post({ body: { values } });
+    const response = await apiClient.langchain.$post({ body: { id: user.id, values } });
     setOutput(response.toString());
     console.log(response);
   };

@@ -13,3 +13,8 @@ model Task {
   done      Boolean
   createdAt DateTime
 }
+
+model Dolan {
+  id      String @id
+  message String
+}
