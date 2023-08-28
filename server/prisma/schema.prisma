@@ -17,4 +17,5 @@ model Task {
 model Dolan {
   id      String
   message String @id
+  createdAt DateTime
 }

@@ -1,3 +1,4 @@
+import { CloseOutlined } from '@ant-design/icons';
 import { Switch } from 'antd';
 import type { DolanModel } from 'commonTypesWithClient/models';
 import { useAtom } from 'jotai';
@@ -111,11 +112,11 @@ const Home = () => {
       >
         教えてDOLAN
       </button>
-      {/* <div className={styles.dolanLabel}>DOLAN</div> */}
       <div className={styles.doraemonImage} />
       <div ref={quoteRef} className={styles.quote}>
         {displayedOutput}
       </div>
+      <div className={styles.dolanLabel}>DOLAN</div>
       {isModalOpen && (
         <div className={styles.overlay}>
           <div className={styles.inputModal}>
@@ -129,9 +130,9 @@ const Home = () => {
             <button className={styles.sendButton} onClick={PostDolan}>
               送信
             </button>
-            <button className={styles.closebutton} onClick={() => setIsModalOpen(false)}>
-              閉じる
-            </button>
+            <div className={styles.closeButton}>
+              <CloseOutlined onClick={() => setIsModalOpen(false)} />
+            </div>
           </div>
         </div>
       )}

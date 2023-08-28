@@ -8,14 +8,14 @@ import { OpenAI } from 'langchain';
 import { ConversationChain } from 'langchain/chains';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { chromium } from 'playwright';
-import { stringify } from 'querystring';
 import { fetchGourmetData } from './gourmetRepository';
 import { getNews } from './newsapiRepository';
 import { fetchWeatherData } from './weatherrepository';
 
-export const toDolanModel = (prismaClient: Dolan): DolanModel => ({
-  id: userIdParser.parse(prismaClient.id),
-  message: prismaClient.message,
+export const toDolanModel = (prismaDolan: Dolan): DolanModel => ({
+  id: userIdParser.parse(prismaDolan.id),
+  message: prismaDolan.message,
+  created: prismaDolan.createdAt.getTime(),
 });
 
 let browser: Browser | null = null;
@@ -110,26 +110,40 @@ export const langchainAPI = async (
     gourmet
   )}は最新の情報です。${dora}`;
   const res1 = await chain.call({ input: input1 });
-  const TweetContent = stringify(res1.response);
+  // const TweetContent = stringify(res1.response);
 
-  console.log('TweetContent', TweetContent);
-  if (TweetContent.length <= 140) {
-    Tweet(TweetContent);
-  }
+  // console.log('TweetContent', TweetContent);
+  // if (TweetContent.length <= 140) {
+  //   Tweet(TweetContent);
+  // }
   createDolan(id, res1.response.toString());
   return res1.response;
 };
 
 const createDolan = async (id: string, dolananser: string) => {
   const prismaDolan = await prismaClient.dolan.create({
-    data: { id, message: dolananser },
+    data: { id, message: dolananser, createdAt: new Date() },
   });
   return toDolanModel(prismaDolan);
 };
 
 export const getDolan = async (id: string) => {
-  const dolan = await prismaClient.dolan.findMany({
+  const latestDolan = await prismaClient.dolan.findFirst({
     where: { id },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  if (!latestDolan) {
+    return [];
+  }
+
+  const dolan = await prismaClient.dolan.findMany({
+    where: {
+      id,
+      NOT: {
+        createdAt: latestDolan.createdAt,
+      },
+    },
   });
   return dolan.map(toDolanModel);
 };

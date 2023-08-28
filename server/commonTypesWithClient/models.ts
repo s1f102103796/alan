@@ -22,4 +22,5 @@ export type TrendModel = {
 export type DolanModel = {
   id: string;
   message: string;
+  created: number;
 };
