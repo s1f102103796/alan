@@ -81,17 +81,20 @@ const Home = () => {
   return (
     <div className={styles.container}>
       <div className={styles.conversationList}>
-        {messages.map((message, index) => (
-          <div className={styles.messageBox} key={index}>
-            <div style={{ maxHeight: expanded === index ? 'none' : '100px', overflow: 'hidden' }}>
-              {message.message}
+        {messages
+          .slice()
+          .reverse()
+          .map((message, index) => (
+            <div className={styles.messageBox} key={index}>
+              <div style={{ maxHeight: expanded === index ? 'none' : '100px', overflow: 'hidden' }}>
+                {message.message}
+              </div>
+              {message.message.length > 40 && expanded !== index && (
+                <button onClick={() => setExpanded(index)}>read more</button>
+              )}
+              {expanded === index && <button onClick={() => setExpanded(-1)}>close</button>}
             </div>
-            {message.message.length > 40 && expanded !== index && (
-              <button onClick={() => setExpanded(index)}>read more</button>
-            )}
-            {expanded === index && <button onClick={() => setExpanded(-1)}>close</button>}
-          </div>
-        ))}
+          ))}
       </div>
       <div className={styles.gridContainer}>
         {[...Array(8)].map((_, index) => (
