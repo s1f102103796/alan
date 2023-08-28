@@ -1,3 +1,4 @@
+import { CloseOutlined } from '@ant-design/icons';
 import { Switch } from 'antd';
 import type { DolanModel } from 'commonTypesWithClient/models';
 import { useAtom } from 'jotai';
@@ -129,9 +130,9 @@ const Home = () => {
             <button className={styles.sendButton} onClick={PostDolan}>
               送信
             </button>
-            <button className={styles.closebutton} onClick={() => setIsModalOpen(false)}>
-              閉じる
-            </button>
+            <div className={styles.closeButton}>
+              <CloseOutlined onClick={() => setIsModalOpen(false)} />
+            </div>
           </div>
         </div>
       )}
