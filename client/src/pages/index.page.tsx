@@ -1,4 +1,6 @@
 import { CloseOutlined } from '@ant-design/icons';
+import { faBook, faCloudSun, faUtensils } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Switch } from 'antd';
 import type { DolanModel } from 'commonTypesWithClient/models';
 import { useAtom } from 'jotai';
@@ -99,12 +101,29 @@ const Home = () => {
       <div className={styles.gridContainer}>
         {[...Array(8)].map((_, index) => (
           <div key={index} className={styles.gridItem} onClick={() => handleItemClick(index)}>
-            <Switch
-              style={{
-                backgroundColor: '#a8a8a8 ',
-              }}
-              checkedChildren={<span style={{ backgroundColor: '#a8a8a8' }}>ON</span>}
-            />
+            <div className={styles.switchCover}>
+              <Switch
+                style={{
+                  backgroundColor: '#a8a8a8 ',
+                }}
+                checkedChildren={<span style={{ backgroundColor: '#a8a8a8' }}>ON</span>}
+              />
+            </div>
+            {index === 0 && (
+              <div className={styles.FontAwesomeIconCover}>
+                <FontAwesomeIcon icon={faBook} color="white" size="4x" />
+              </div>
+            )}
+            {index === 1 && (
+              <div className={styles.FontAwesomeIconCover}>
+                <FontAwesomeIcon icon={faCloudSun} color="white" size="4x" />
+              </div>
+            )}
+            {index === 2 && (
+              <div className={styles.FontAwesomeIconCover}>
+                <FontAwesomeIcon icon={faUtensils} color="white" size="4x" />
+              </div>
+            )}
           </div>
         ))}
       </div>
