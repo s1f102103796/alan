@@ -111,11 +111,11 @@ const Home = () => {
       >
         教えてDOLAN
       </button>
-      {/* <div className={styles.dolanLabel}>DOLAN</div> */}
       <div className={styles.doraemonImage} />
       <div ref={quoteRef} className={styles.quote}>
         {displayedOutput}
       </div>
+      <div className={styles.dolanLabel}>DOLAN</div>
       {isModalOpen && (
         <div className={styles.overlay}>
           <div className={styles.inputModal}>

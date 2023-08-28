@@ -62,8 +62,10 @@
 .dolanLabel {
   font-size: 24px;
   font-weight: bold;
-  text-align: center;
-  margin-bottom: 10px;
+  right: 10%;
+  top: 10px;
+  right: 20px;
+  position: absolute;
 }
 
 .doraemonImage {
