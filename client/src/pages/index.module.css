@@ -26,7 +26,6 @@
   background-color: #ffffff;
   border-radius: 2%;
 }
-
 .gridContainer {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -34,6 +33,7 @@
   width: 100%;
   max-width: 500px;
   margin: 100px 0 0 -160px;
+  position: relative;
 }
 
 .gridItem {
@@ -41,6 +41,24 @@
   padding-bottom: 100%;
   background-color: #028f95;
   border-radius: 10px;
+  position: relative; /* 追加 */
+  display: flex; /* 子要素を中央に配置するための設定 */
+  justify-content: center;
+  align-items: center;
+}
+
+.switchCover {
+  position: absolute;
+  top: 13%;
+  right: -20%;
+  transform: translate(-50%, -50%);
+}
+
+.FontAwesomeIconCover {
+  position: absolute;
+  top: 60%;
+  left: 48.5%;
+  transform: translate(-50%, -50%);
 }
 
 .buttonAskDoraemon {
