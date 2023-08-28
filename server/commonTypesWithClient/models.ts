@@ -1,4 +1,3 @@
-import type { BoardArr } from '../useCase/boardUseCase';
 import type { TaskId, UserId } from './branded';
 
 export type UserModel = {
@@ -15,7 +14,13 @@ export type TaskModel = {
   created: number;
 };
 
-export type RoomModel = {
-  board: BoardArr;
-  turn: number;
+export type TrendModel = {
+  isHashtag: boolean;
+  word: string;
+};
+
+export type DolanModel = {
+  id: string;
+  message: string;
+  created: number;
 };
