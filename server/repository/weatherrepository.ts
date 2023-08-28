@@ -6,7 +6,7 @@ import { ConversationChain } from 'langchain/chains';
 export async function fetchWeatherData() {
   try {
     const url =
-      'https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m,precipitation_probability,precipitation&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo&forecast_days=1';
+      'https://api.open-meteo.com/v1/forecast?latitude=35.6895&longitude=139.6917&hourly=temperature_2m,precipitation_probability,precipitation&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo&forecast_days=1';
     const response = await axios.get(url);
     const data = response.data;
     console.log(data);
