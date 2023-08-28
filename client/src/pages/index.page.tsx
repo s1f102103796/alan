@@ -127,11 +127,7 @@ const Home = () => {
           </div>
         ))}
       </div>
-      <button
-        className={styles.buttonAskDoraemon}
-        onClick={() => setIsModalOpen(true)}
-        // onClick={PostDolan}
-      >
+      <button className={styles.buttonAskDoraemon} onClick={() => setIsModalOpen(true)}>
         教えてDOLAN
       </button>
       <div className={styles.doraemonImage} />
