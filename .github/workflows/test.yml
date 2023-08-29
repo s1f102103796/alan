@@ -34,7 +34,7 @@ jobs:
         id: server-npm-cache
         with:
           path: 'raspi-server/node_modules'
-          key: server-npm-${{ hashFiles('raspi-server/package-lock.json') }}
+          key: raspi-server-npm-${{ hashFiles('raspi-server/package-lock.json') }}
       - run: npm install
         if: steps.root-npm-cache.outputs.cache-hit != 'true'
       - run: npm install --prefix client
