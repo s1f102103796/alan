@@ -10,6 +10,7 @@ import { userAtom } from 'src/atoms/user';
 import { apiClient } from 'src/utils/apiClient';
 import styles from './index.module.css';
 
+// aaaa
 const Home = () => {
   const [user] = useAtom(userAtom);
   const [isModalOpen, setIsModalOpen] = useState(false);
