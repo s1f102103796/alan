@@ -10,6 +10,7 @@ import type { Browser, BrowserContext, Page } from 'playwright';
 import { chromium } from 'playwright';
 import { fetchGourmetData } from './gourmetRepository';
 import { getNews } from './newsapiRepository';
+import { searchingoogle } from './searchRepository';
 import { fetchWeatherData } from './weatherrepository';
 
 export const toDolanModel = (prismaDolan: Dolan): DolanModel => ({
@@ -104,11 +105,15 @@ export const langchainAPI = async (
   if (values[2] === true) {
     gourmet = await fetchGourmetData();
   }
+  let google = '';
+  if (values[2] === true) {
+    google = await searchingoogle();
+  }
 
   const chain = new ConversationChain({ llm });
   const input1 = `${JSON.stringify(news)}${JSON.stringify(weather)}${JSON.stringify(
     gourmet
-  )}は最新の情報です。${dora}`;
+  )}${JSON.stringify(google)}}は最新の情報です。${dora}`;
   const res1 = await chain.call({ input: input1 });
   // const TweetContent = stringify(res1.response);
 
