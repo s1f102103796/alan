@@ -9,6 +9,7 @@
     "generate": "run-p generate:*",
     "generate:client": "npm run generate --prefix client",
     "generate:server": "npm run generate --prefix server",
+    "generate:raspi-server": "npm run generate --prefix raspi-server",
     "lint": "run-p lint:js lint:prettier lint:style",
     "lint:js": "eslint --ext .ts,.tsx,.js --ignore-path .gitignore .",
     "lint:prettier": "prettier --check \"./**/*.{ts,tsx,js}\" --ignore-path .gitignore",
