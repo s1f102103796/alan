@@ -10,6 +10,7 @@ import { userAtom } from 'src/atoms/user';
 import { apiClient } from 'src/utils/apiClient';
 import styles from './index.module.css';
 
+// aaaa
 const Home = () => {
   const [user] = useAtom(userAtom);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +24,11 @@ const Home = () => {
   const [inputValue, setInputValue] = useState<string>('');
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
+  };
+
+  const postRaspi = async () => {
+    const response = await apiClient.raspi.$post({ body: { id: user?.id } });
+    console.log(response);
   };
 
   const fetchDolan = useCallback(async () => {
@@ -127,7 +133,8 @@ const Home = () => {
           </div>
         ))}
       </div>
-      <button className={styles.buttonAskDoraemon} onClick={() => setIsModalOpen(true)}>
+      {/* <button className={styles.buttonAskDoraemon} onClick={() => setIsModalOpen(true)}> */}
+      <button className={styles.buttonAskDoraemon} onClick={() => postRaspi()}>
         教えてDOLAN
       </button>
       <div className={styles.doraemonImage} />

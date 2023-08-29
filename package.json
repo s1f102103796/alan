@@ -5,9 +5,11 @@
     "dev": "run-p dev:*",
     "dev:client": "npm run dev --prefix client",
     "dev:server": "npm run dev --prefix server",
+    "dev:raspi-server": "npm run dev --prefix raspi-server",
     "generate": "run-p generate:*",
     "generate:client": "npm run generate --prefix client",
     "generate:server": "npm run generate --prefix server",
+    "generate:raspi-server": "npm run generate --prefix raspi-server",
     "lint": "run-p lint:js lint:prettier lint:style",
     "lint:js": "eslint --ext .ts,.tsx,.js --ignore-path .gitignore .",
     "lint:prettier": "prettier --check \"./**/*.{ts,tsx,js}\" --ignore-path .gitignore",
@@ -16,7 +18,8 @@
     "test": "npm run test --prefix client && npm run test --prefix server",
     "typecheck": "run-p typecheck:*",
     "typecheck:client": "npm run typecheck --prefix client",
-    "typecheck:server": "npm run typecheck --prefix server"
+    "typecheck:server": "npm run typecheck --prefix server",
+    "typecheck:raspi-server": "npm run typecheck --prefix raspi-server"
   },
   "devDependencies": {
     "@stylelint/postcss-css-in-js": "^0.38.0",
