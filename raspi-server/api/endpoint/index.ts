@@ -1,3 +1,4 @@
+import type { UserId } from '$/commonTypesClient/branded';
 import type { DefineMethods } from 'aspida';
 
 export type Methods = DefineMethods<{
@@ -5,6 +6,7 @@ export type Methods = DefineMethods<{
     resBody: string;
   };
   post: {
-    resBody: string;
+    reqBody: { id: UserId | undefined };
+    resBody: unknown;
   };
 }>;
