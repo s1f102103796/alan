@@ -25,6 +25,11 @@ const Home = () => {
     setInputValue(e.target.value);
   };
 
+  const postRaspi = async () => {
+    const response = await apiClient.raspi.$post({ body: { id: user?.id } });
+    console.log(response);
+  };
+
   const fetchDolan = useCallback(async () => {
     if (!user) {
       console.error('User is null or undefined!');
@@ -127,7 +132,8 @@ const Home = () => {
           </div>
         ))}
       </div>
-      <button className={styles.buttonAskDoraemon} onClick={() => setIsModalOpen(true)}>
+      {/* <button className={styles.buttonAskDoraemon} onClick={() => setIsModalOpen(true)}> */}
+      <button className={styles.buttonAskDoraemon} onClick={() => postRaspi()}>
         教えてDOLAN
       </button>
       <div className={styles.doraemonImage} />
