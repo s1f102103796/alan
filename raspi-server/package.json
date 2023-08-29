@@ -14,9 +14,6 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "prisma": {
-    "seed": "node -r esbuild-register prisma/seed.ts"
-  },
   "dependencies": {
     "@fastify/cookie": "^9.0.4",
     "@fastify/cors": "^8.3.0",
