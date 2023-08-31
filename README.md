@@ -20,6 +20,8 @@ https://nodejs.org/ja/ の左ボタン、LTS をダウンロードしてイン�
 $ npm i
 $ npm i --prefix client
 $ npm i --prefix server
+$ npm i --prefix raspi-client
+$ npm i --prefix raspi-server
 $ npx playwright install-deps
 ```
 
@@ -28,6 +30,8 @@ $ npx playwright install-deps
 ```sh
 $ cp client/.env.example client/.env
 $ cp server/.env.example server/.env
+$ cp raspi-client/.env.example raspi-client/.env
+$ cp raspi-server/.env.example raspi-server/.env
 $ cp docker/dev/.env.example docker/dev/.env
 $ cp server/prisma/.env.example server/prisma/.env
 ```
