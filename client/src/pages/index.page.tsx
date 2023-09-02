@@ -1,18 +1,13 @@
 import { CloseOutlined } from '@ant-design/icons';
-import { faBook, faCloudSun, faUtensils } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Switch } from 'antd';
 import type { DolanModel } from 'commonTypesWithClient/models';
-import { useAtom } from 'jotai';
 import type { ChangeEvent } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { userAtom } from 'src/atoms/user';
+import { useRef, useState } from 'react';
 import { apiClient } from 'src/utils/apiClient';
 import styles from './index.module.css';
 
 // aaaa
 const Home = () => {
-  const [user] = useAtom(userAtom);
+  // const [user] = useAtom(userAtom);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [output, setOutput] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,65 +21,68 @@ const Home = () => {
     setInputValue(e.target.value);
   };
 
+  const user = 'nisinoanase';
+
   const postRaspi = async () => {
-    const response = await apiClient.raspi.$post({ body: { id: user?.id } });
-    console.log(response);
-  };
-
-  const fetchDolan = useCallback(async () => {
-    if (!user) {
-      console.error('User is null or undefined!');
-      return;
-    }
-    const getDlanMessage = await apiClient.dolan.$post({ body: { id: user.id } });
-    setMessages(getDlanMessage);
-  }, [user]);
-
-  useEffect(() => {
-    fetchDolan();
-    const intervalId = setInterval(fetchDolan, 100);
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [fetchDolan]);
-
-  const handleItemClick = (index: number) => {
-    setValues((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
-  };
-
-  const PostDolan = async () => {
-    if (!user) {
-      console.error('User is null or undefined!');
-      return;
-    }
-    setCurrentIndex(0);
-    setIsModalOpen(false);
-    setOutput('読み込み中...');
     console.log('押した');
-    const response = await apiClient.langchain.$post({
-      body: { id: user.id, values, message: inputValue },
-    });
-    setOutput(response.toString());
-    console.log(response);
-    setInputValue('');
+    const response = await apiClient.raspi.$post({ body: { id: user } });
+    console.log('1', response);
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (currentIndex < output.length) {
-        setCurrentIndex((prev) => prev + 1);
-        if (quoteRef.current) {
-          quoteRef.current.scrollTop = quoteRef.current.scrollHeight;
-        }
-      } else {
-        clearInterval(interval);
-      }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [currentIndex, output]);
+  // const fetchDolan = useCallback(async () => {
+  //   if (!user) {
+  //     console.error('User is null or undefined!');
+  //     return;
+  //   }
+  //   const getDlanMessage = await apiClient.dolan.$post({ body: { id: user.id } });
+  //   setMessages(getDlanMessage);
+  // }, [user]);
+
+  // useEffect(() => {
+  //   fetchDolan();
+  //   const intervalId = setInterval(fetchDolan, 100);
+  //   return () => {
+  //     clearInterval(intervalId);
+  //   };
+  // }, [fetchDolan]);
+
+  // const handleItemClick = (index: number) => {
+  //   setValues((prev) => ({
+  //     ...prev,
+  //     [index]: !prev[index],
+  //   }));
+  // };
+
+  // const PostDolan = async () => {
+  //   if (!user) {
+  //     console.error('User is null or undefined!');
+  //     return;
+  //   }
+  //   setCurrentIndex(0);
+  //   setIsModalOpen(false);
+  //   setOutput('読み込み中...');
+  //   console.log('押した');
+  //   const response = await apiClient.langchain.$post({
+  //     body: { id: user.id, values, message: inputValue },
+  //   });
+  //   setOutput(response.toString());
+  //   console.log(response);
+  //   setInputValue('');
+  // };
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (currentIndex < output.length) {
+  //       setCurrentIndex((prev) => prev + 1);
+  //       if (quoteRef.current) {
+  //         quoteRef.current.scrollTop = quoteRef.current.scrollHeight;
+  //       }
+  //     } else {
+  //       clearInterval(interval);
+  //     }
+  //   }, 100);
+  //   return () => clearInterval(interval);
+  // }, [currentIndex, output]);
 
   return (
     <div className={styles.container}>
@@ -105,7 +103,7 @@ const Home = () => {
           ))}
       </div>
       <div className={styles.gridContainer}>
-        {[...Array(8)].map((_, index) => (
+        {/* {[...Array(8)].map((_, index) => (
           <div key={index} className={styles.gridItem} onClick={() => handleItemClick(index)}>
             <div className={styles.switchCover}>
               <Switch
@@ -131,7 +129,7 @@ const Home = () => {
               </div>
             )}
           </div>
-        ))}
+        ))} */}
       </div>
       {/* <button className={styles.buttonAskDoraemon} onClick={() => setIsModalOpen(true)}> */}
       <button className={styles.buttonAskDoraemon} onClick={() => postRaspi()}>
@@ -152,9 +150,9 @@ const Home = () => {
               value={inputValue} // stateをinputのvalueにバインド
               onChange={handleInputChange} // 入力が変わるたびにhandleInputChangeを呼ぶ
             />
-            <button className={styles.sendButton} onClick={PostDolan}>
+            {/* <button className={styles.sendButton} onClick={PostDolan}>
               送信
-            </button>
+            </button> */}
             <div className={styles.closeButton}>
               <CloseOutlined onClick={() => setIsModalOpen(false)} />
             </div>

@@ -1,6 +1,4 @@
-import type { UserId } from '$/commonTypesWithClient/branded';
-
-export const moveRaspi = (id: UserId | undefined) => {
+export const moveRaspi = (id: string) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(`Hello, ${id}`);
