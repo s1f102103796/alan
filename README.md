@@ -64,6 +64,32 @@ Web ブラウザで http://localhost:3000 を開く
 
 閉じるときは `Ctrl + C` を 2 回連続で入力
 
+### raspi開発サーバー起動
+
+```sh
+$ npm run dev:raspi-client
+```
+
+```sh
+$ npm run dev:raspi-server
+```
+
+### データのやり取り
+
+複数のデバイスでserverとraspi-serverのデータのやり取りをするときは.envファイルのlocalhostをIPアドレスに変更する
+
+自分のIPアドレスはPoweshellなどで以下のコマンドで調べることができる
+
+```sh
+$ ipconfig
+```
+
+https://zenn.dev/solufa/articles/accessing-wsl2-from-mobile
+
+この記事を参考にして同じWifi環境で外部からアクセスできるようにする
+
+立ち上げるport番号は client => 3000, sever => 31577, raspi-client => 3001, raspi-server => 31578
+
 #### Firebase Emulator
 
 http://localhost:4000/auth
