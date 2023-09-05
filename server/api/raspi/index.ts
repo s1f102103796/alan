@@ -8,6 +8,6 @@ export type Methods = DefineMethods<{
     reqBody: {
       id: string;
     };
-    resBody: unknown;
+    resBody: string;
   };
 }>;
