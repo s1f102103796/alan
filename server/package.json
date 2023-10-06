@@ -41,6 +41,7 @@
     "zod": "^3.22.2"
   },
   "devDependencies": {
+    "@aspida/node-fetch": "^1.14.0",
     "@types/busboy": "^1.5.0",
     "@types/node": "^20.4.10",
     "commonTypesWithClient": "file:./commonTypesWithClient",
@@ -50,6 +51,7 @@
     "esbuild-register": "^3.4.2",
     "frourio": "^1.0.0",
     "node-dev": "^8.0.0",
+    "node-fetch": "^3.3.2",
     "npm-run-all": "^4.1.5",
     "prisma": "^5.1.1",
     "typescript": "^5.1.6",

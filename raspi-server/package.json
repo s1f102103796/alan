@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "api:build": "aspida",
+    "predev": "npm run generate",
     "dev": "run-p dev:*",
     "dev:build": "node ./scripts/build.dev.js",
     "dev:raspi-server": "node-dev --respawn index.js",
