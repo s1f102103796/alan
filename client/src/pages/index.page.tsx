@@ -114,17 +114,17 @@ const Home = () => {
               />
             </div>
             {index === 0 && (
-              <div className={styles.FontAwesomeIconCover}>
+              <div className={styles.fontAwesomeIconCover}>
                 <FontAwesomeIcon icon={faBook} color="white" size="4x" />
               </div>
             )}
             {index === 1 && (
-              <div className={styles.FontAwesomeIconCover}>
+              <div className={styles.fontAwesomeIconCover}>
                 <FontAwesomeIcon icon={faCloudSun} color="white" size="4x" />
               </div>
             )}
             {index === 2 && (
-              <div className={styles.FontAwesomeIconCover}>
+              <div className={styles.fontAwesomeIconCover}>
                 <FontAwesomeIcon icon={faUtensils} color="white" size="4x" />
               </div>
             )}
