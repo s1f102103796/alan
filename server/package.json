@@ -38,6 +38,7 @@
     "firebase-admin": "^11.10.1",
     "newsapi": "^2.4.1",
     "playwright": "^1.37.1",
+    "velona": "^0.8.0",
     "zod": "^3.22.2"
   },
   "devDependencies": {
