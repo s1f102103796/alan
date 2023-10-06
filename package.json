@@ -24,6 +24,9 @@
     "typecheck:raspi-client": "npm run typecheck --prefix raspi-client",
     "typecheck:raspi-server": "npm run typecheck --prefix raspi-server"
   },
+  "dependencies": {
+    "langchain": "^0.0.135"
+  },
   "devDependencies": {
     "@stylelint/postcss-css-in-js": "^0.38.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -48,9 +51,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "dolan": "^0.0.1",
-    "langchain": "^0.0.135"
   }
 }
