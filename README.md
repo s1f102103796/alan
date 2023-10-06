@@ -41,7 +41,7 @@ server/.env に Twitter のログイン情報を記述
 ### ミドルウェアのセットアップ
 
 ```sh
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 ### 開発サーバー起動
@@ -64,7 +64,7 @@ Web ブラウザで http://localhost:3000 を開く
 
 閉じるときは `Ctrl + C` を 2 回連続で入力
 
-### raspi開発サーバー起動
+### raspi 開発サーバー起動
 
 ```sh
 $ npm run dev:raspi-client
@@ -76,9 +76,9 @@ $ npm run dev:raspi-server
 
 ### データのやり取り
 
-複数のデバイスでserverとraspi-serverのデータのやり取りをするときは.envファイルのlocalhostをIPアドレスに変更する
+複数のデバイスで server と raspi-server のデータのやり取りをするときは.env ファイルの localhost を IP アドレスに変更する
 
-自分のIPアドレスはPoweshellなどで以下のコマンドで調べることができる
+自分の IP アドレスは Poweshell などで以下のコマンドで調べることができる
 
 ```sh
 $ ipconfig
@@ -86,9 +86,9 @@ $ ipconfig
 
 https://zenn.dev/solufa/articles/accessing-wsl2-from-mobile
 
-この記事を参考にして同じWifi環境で外部からアクセスできるようにする
+この記事を参考にして同じ Wifi 環境で外部からアクセスできるようにする
 
-立ち上げるport番号は client => 3000, sever => 31577, raspi-client => 3001, raspi-server => 31578
+立ち上げる port 番号は client => 3000, sever => 31577, raspi-client => 3001, raspi-server => 31578
 
 #### Firebase Emulator
 
