@@ -20,8 +20,6 @@ https://nodejs.org/ja/ の左ボタン、LTS をダウンロードしてイン�
 $ npm i
 $ npm i --prefix client
 $ npm i --prefix server
-$ npm i --prefix raspi-client
-$ npm i --prefix raspi-server
 $ npx playwright install-deps
 ```
 
@@ -30,8 +28,6 @@ $ npx playwright install-deps
 ```sh
 $ cp client/.env.example client/.env
 $ cp server/.env.example server/.env
-$ cp raspi-client/.env.example raspi-client/.env
-$ cp raspi-server/.env.example raspi-server/.env
 $ cp docker/dev/.env.example docker/dev/.env
 $ cp server/prisma/.env.example server/prisma/.env
 ```
@@ -64,19 +60,9 @@ Web ブラウザで http://localhost:3000 を開く
 
 閉じるときは `Ctrl + C` を 2 回連続で入力
 
-### raspi 開発サーバー起動
-
-```sh
-$ npm run dev:raspi-client
-```
-
-```sh
-$ npm run dev:raspi-server
-```
-
 ### データのやり取り
 
-複数のデバイスで server と raspi-server のデータのやり取りをするときは.env ファイルの localhost を IP アドレスに変更する
+複数のデバイスで server のデータのやり取りをするときは.env ファイルの localhost を IP アドレスに変更する
 
 自分の IP アドレスは Poweshell などで以下のコマンドで調べることができる
 
@@ -88,7 +74,7 @@ https://zenn.dev/solufa/articles/accessing-wsl2-from-mobile
 
 この記事を参考にして同じ Wifi 環境で外部からアクセスできるようにする
 
-立ち上げる port 番号は client => 3000, sever => 31577, raspi-client => 3001, raspi-server => 31578
+立ち上げる port 番号は client => 3000, sever => 31577
 
 #### Firebase Emulator
 

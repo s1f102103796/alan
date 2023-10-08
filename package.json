@@ -5,24 +5,18 @@
     "dev": "run-p dev:*",
     "dev:client": "npm run dev --prefix client",
     "dev:server": "npm run dev --prefix server",
-    "dev:raspi-client": "npm run dev --prefix raspi-client",
-    "dev:raspi-server": "npm run dev --prefix raspi-server",
     "generate": "run-p generate:*",
     "generate:client": "npm run generate --prefix client",
     "generate:server": "npm run generate --prefix server",
-    "generate:raspi-client": "npm run generate --prefix raspi-client",
-    "generate:raspi-server": "npm run generate --prefix raspi-server",
     "lint": "run-p lint:js lint:prettier lint:style",
     "lint:js": "eslint --ext .ts,.tsx,.js --ignore-path .gitignore .",
     "lint:prettier": "prettier --check \"./**/*.{ts,tsx,js}\" --ignore-path .gitignore",
     "lint:style": "stylelint \"client/**/*.css\" --ignore-path .gitignore",
     "lint:fix": "npm run lint:js -- --fix && prettier --write \"./**/*.{ts,tsx,js}\" --ignore-path .gitignore && npm run lint:style -- --fix",
-    "test": "npm run test --prefix client && npm run test --prefix server && npm run test --prefix raspi-client && npm run test --prefix raspi-server",
+    "test": "npm run test --prefix client && npm run test --prefix server",
     "typecheck": "run-p typecheck:*",
     "typecheck:client": "npm run typecheck --prefix client",
-    "typecheck:server": "npm run typecheck --prefix server",
-    "typecheck:raspi-client": "npm run typecheck --prefix raspi-client",
-    "typecheck:raspi-server": "npm run typecheck --prefix raspi-server"
+    "typecheck:server": "npm run typecheck --prefix server"
   },
   "dependencies": {
     "langchain": "^0.0.135"

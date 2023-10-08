@@ -30,33 +30,17 @@ jobs:
         with:
           path: 'server/node_modules'
           key: server-npm-${{ hashFiles('server/package-lock.json') }}
-      - uses: actions/cache@v2
-        id: raspi-client-npm-cache
-        with:
-          path: 'raspi-client/node_modules'
-          key: raspi-client-npm-${{ hashFiles('raspi-client/package-lock.json') }}
-      - uses: actions/cache@v2
-        id: raspi-server-npm-cache
-        with:
-          path: 'raspi-server/node_modules'
-          key: raspi-server-npm-${{ hashFiles('raspi-server/package-lock.json') }}
       - run: npm install
         if: steps.root-npm-cache.outputs.cache-hit != 'true'
       - run: npm install --prefix client
         if: steps.client-npm-cache.outputs.cache-hit != 'true'
       - run: npm install --prefix server
         if: steps.server-npm-cache.outputs.cache-hit != 'true'
-      - run: npm install --prefix raspi-client
-        if: steps.raspi-client-npm-cache.outputs.cache-hit != 'true'
-      - run: npm install --prefix raspi-server
-        if: steps.raspi-server-npm-cache.outputs.cache-hit != 'true'
       - run: npm run generate
       - run: npm run lint
       - run: npm run typecheck
       - run: |
           cp client/.env.example client/.env
           cp server/.env.example server/.env
-          cp raspi-client/.env.example raspi-client/.env
-          cp raspi-server/.env.example raspi-server/.env
           cp server/prisma/.env.example server/prisma/.env
       - run: npm test
