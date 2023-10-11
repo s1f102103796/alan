@@ -12,6 +12,7 @@
     "build": "node ./scripts/build.prod.js",
     "generate": "run-s generate:prisma generate:frourio",
     "generate:frourio": "frourio",
+    "generate:openapi": "openapi2aspida",
     "generate:prisma": "prisma generate",
     "migrate:dev": "prisma migrate dev && npx prisma db seed",
     "migrate:dev:createonly": "prisma migrate dev --create-only",
@@ -25,6 +26,7 @@
     "seed": "node -r esbuild-register prisma/seed.ts"
   },
   "dependencies": {
+    "@aspida/fetch": "^1.14.0",
     "@aws-sdk/client-s3": "^3.425.0",
     "@fastify/cookie": "^9.0.4",
     "@fastify/cors": "^8.3.0",
@@ -37,20 +39,21 @@
     "fastify": "^4.21.0",
     "firebase-admin": "^11.10.1",
     "velona": "^0.8.0",
+    "ws": "^8.14.2",
     "zod": "^3.22.2"
   },
   "devDependencies": {
-    "@aspida/node-fetch": "^1.14.0",
     "@types/busboy": "^1.5.0",
     "@types/node": "^20.4.10",
+    "@types/ws": "^8.5.7",
     "commonTypesWithClient": "file:./commonTypesWithClient",
     "esbuild": "^0.18.18",
     "esbuild-node-externals": "^1.8.0",
     "esbuild-register": "^3.4.2",
     "frourio": "^1.0.0",
     "node-dev": "^8.0.0",
-    "node-fetch": "^3.3.2",
     "notios": "^0.4.1",
+    "openapi2aspida": "^0.23.2",
     "prisma": "^5.1.1",
     "typescript": "^5.1.6",
     "vite-tsconfig-paths": "^4.2.0"

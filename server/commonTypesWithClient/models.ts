@@ -13,8 +13,3 @@ export type TaskModel = {
   done: boolean;
   created: number;
 };
-
-export type TrendModel = {
-  isHashtag: boolean;
-  word: string;
-};

@@ -1,5 +1,5 @@
 import { API_BASE_PATH, PORT } from '$/service/envValues';
-import aspida from '@aspida/node-fetch';
+import aspida from '@aspida/fetch';
 import { expect, test } from 'vitest';
 import api from '../../api/$api';
 

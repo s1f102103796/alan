@@ -17,10 +17,9 @@ const S3_BUCKET = z.string().parse(process.env.S3_BUCKET);
 const S3_ACCESS_KEY = z.string().parse(process.env.S3_ACCESS_KEY);
 const S3_SECRET_KEY = z.string().parse(process.env.S3_SECRET_KEY);
 const S3_REGION = z.string().parse(process.env.S3_REGION);
-const OPENAIAPI = process.env.OPENAI_API ?? '';
-const SBI_USER = z.string().parse(process.env.SBI_USER);
-const SBI_PASS = z.string().parse(process.env.SBI_PASS);
-const SBI_TRADE_PASS = z.string().parse(process.env.SBI_TRADE_PASS);
+const OPENAI_KEY = z.string().parse(process.env.OPENAI_KEY);
+const KABUSAPI_PORT = z.string().parse(process.env.KABUSAPI_PORT);
+const KABUSAPI_PASS = z.string().parse(process.env.KABUSAPI_PASS);
 
 export {
   API_BASE_PATH,
@@ -28,14 +27,13 @@ export {
   CORS_ORIGIN,
   FIREBASE_AUTH_EMULATOR_HOST,
   FIREBASE_SERVER_KEY,
-  OPENAIAPI,
+  KABUSAPI_PASS,
+  KABUSAPI_PORT,
+  OPENAI_KEY,
   PORT,
   S3_ACCESS_KEY,
   S3_BUCKET,
   S3_ENDPOINT,
   S3_REGION,
   S3_SECRET_KEY,
-  SBI_PASS,
-  SBI_TRADE_PASS,
-  SBI_USER,
 };
