@@ -1,31 +1,15 @@
-import type { UserModel } from 'commonTypesWithClient/models';
-import { HumanIcon } from 'src/components/icons/HumanIcon';
-import { staticPath } from 'src/utils/$path';
-import { logout } from 'src/utils/login';
+import { APP_TITLE } from 'commonConstantsWithClient';
 import styles from './BasicHeader.module.css';
 
-export const BasicHeader = ({ user }: { user: UserModel }) => {
-  const onLogout = async () => {
-    if (confirm('Logout?')) await logout();
-  };
-
+export const BasicHeader = () => {
   return (
     <div className={styles.container}>
       <div className={styles.main}>
-        <img src={staticPath.frourio_svg} height={36} alt="frourio logo" />
-
-        <div className={styles.userBtn} onClick={onLogout}>
-          {user.photoURL !== undefined ? (
-            <img
-              className={styles.userIcon}
-              src={user.photoURL}
-              height={24}
-              alt={user.displayName}
-            />
-          ) : (
-            <HumanIcon size={18} fill="#555" />
-          )}
-          <span className={styles.userName}>{user.displayName}</span>
+        <div className={styles.logo}>{APP_TITLE}</div>
+        <div className={styles.result}>
+          <div>総資産 1,100,000円</div>
+          <div>原資 1,000,000円</div>
+          <div>損益 +10.0%</div>
         </div>
       </div>
     </div>

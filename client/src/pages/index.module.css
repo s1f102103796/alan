@@ -1,9 +1,21 @@
-.container {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100vw;
-  height: 100vh;
-  background-color: white;
+.main {
+  position: fixed;
+  inset: 48px 0 0 0;
+}
+
+.main > div {
+  display: grid;
+  grid-template-rows: 48px 240px 1fr;
+  grid-template-columns: 240px 4fr 4fr 3fr;
+  height: 100%;
+}
+
+.strategyList {
+  grid-row: 1 / 4;
+  grid-column: 1;
+}
+
+.jobList {
+  grid-row: 1 / 4;
+  grid-column: 1;
 }

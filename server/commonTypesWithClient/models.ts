@@ -1,4 +1,4 @@
-import type { TaskId, UserId } from './branded';
+import type { JobId, TaskId, UserId } from './branded';
 
 export type UserModel = {
   id: UserId;
@@ -12,4 +12,11 @@ export type TaskModel = {
   label: string;
   done: boolean;
   created: number;
+};
+
+export type JobModel = {
+  id: JobId;
+  status: 'running' | 'stopped' | 'archived';
+  description: string;
+  createdTimestamp: number;
 };

@@ -1,41 +1,25 @@
 .container {
-  height: 60px;
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
+  height: 48px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 960px;
   height: 100%;
-  padding: 0 16px;
+  padding: 0 32px;
   margin: 0 auto;
 }
 
-.userBtn {
+.logo {
+  font-size: 20px;
+  color: var(--theme-font-color);
+  letter-spacing: 0.4em;
+}
+
+.result {
   display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 8px 16px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  transition: 0.2s;
-}
-
-.userBtn:hover {
-  background: white;
-  border-color: #eee;
-}
-
-.userIcon {
-  border-radius: 50%;
-}
-
-.userName {
-  font-size: 14px;
-  font-weight: bold;
-  color: #555;
+  gap: 8px;
+  color: var(--main-font-color);
 }

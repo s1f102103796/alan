@@ -24,6 +24,7 @@
     "axios": "^1.4.0",
     "commonConstantsWithClient": "file:../server/commonConstantsWithClient",
     "commonTypesWithClient": "file:../server/commonTypesWithClient",
+    "dayjs": "^1.11.10",
     "firebase": "^10.1.0",
     "jotai": "^2.2.3",
     "next": "^13.4.12",
