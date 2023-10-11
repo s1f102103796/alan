@@ -7,15 +7,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Task {
-  id        String   @id
-  label     String
-  done      Boolean
-  createdAt DateTime
-}
-
-model Dolan {
-  id      String
-  message String @id
-  createdAt DateTime
+model Job {
+  id          String   @id
+  description String
+  status      String
+  createdAt   DateTime
 }

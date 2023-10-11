@@ -14,9 +14,11 @@ export type TaskModel = {
   created: number;
 };
 
+export type JobStatus = 'ready' | 'running' | 'stopped' | 'archived';
+
 export type JobModel = {
   id: JobId;
-  status: 'running' | 'stopped' | 'archived';
+  status: JobStatus;
   description: string;
   createdTimestamp: number;
 };
