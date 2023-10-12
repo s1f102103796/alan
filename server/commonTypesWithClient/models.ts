@@ -1,4 +1,5 @@
-import type { JobId, TaskId, UserId } from './branded';
+import type { JOB_STATUSES } from '../commonConstantsWithClient';
+import type { DisplayId, JobId, TaskId, UserId } from './branded';
 
 export type UserModel = {
   id: UserId;
@@ -14,11 +15,18 @@ export type TaskModel = {
   created: number;
 };
 
-export type JobStatus = 'ready' | 'running' | 'stopped' | 'archived';
+export type JobStatus = (typeof JOB_STATUSES)[number];
 
-export type JobModel = {
+export type JobBase = {
   id: JobId;
+  displayId: DisplayId;
+  title: string;
+  prompt: string;
   status: JobStatus;
-  description: string;
   createdTimestamp: number;
 };
+
+export type ProdJobModel = JobBase & { mode: 'prod' };
+export type TestJobModel = JobBase & { mode: 'test' };
+export type JobModel = ProdJobModel | TestJobModel;
+export type CreateJobParams = { title: string; prompt: string };

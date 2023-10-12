@@ -1,12 +1,8 @@
-import type { JobModel } from '$/commonTypesWithClient/models';
 import type { DefineMethods } from 'aspida';
+import type { ProdJobModel, TestJobModel } from 'commonTypesWithClient/models';
 
 export type Methods = DefineMethods<{
   get: {
-    resBody: JobModel[];
-  };
-  post: {
-    reqBody: { description: string };
-    resBody: JobModel;
+    resBody: { prod: ProdJobModel | null; tests: TestJobModel[] };
   };
 }>;

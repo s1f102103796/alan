@@ -8,8 +8,18 @@ generator client {
 }
 
 model Job {
-  id          String   @id
-  description String
-  status      String
-  createdAt   DateTime
+  id               String           @id
+  displayId        String           @unique
+  title            String
+  prompt           String
+  status           String
+  createdAt        DateTime
+  prodJobHistories ProdJobHistory[]
+}
+
+model ProdJobHistory {
+  id        String   @id
+  Job       Job      @relation(fields: [jobId], references: [id])
+  jobId     String
+  createdAt DateTime
 }

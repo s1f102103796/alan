@@ -23,7 +23,7 @@
   background: #fff2;
 }
 
-.description {
+.title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

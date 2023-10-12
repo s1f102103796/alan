@@ -5,26 +5,19 @@ import { Modal, ModalBody, ModalFooter, ModalHeader } from 'src/components/Modal
 import { Spacer } from 'src/components/Spacer';
 import { Textarea } from 'src/components/Textarea/Textarea';
 import { useLoading } from 'src/pages/@hooks/useLoading';
-import { apiClient } from 'src/utils/apiClient';
 import { formatShortTimestamp } from 'src/utils/dayjs';
-import { returnNull } from 'src/utils/returnNull';
 import styles from './jobList.module.css';
 
 export const JobList = (props: {
   sortedJobs: JobModel[];
   currentJob: JobModel | undefined;
   select: (job: JobModel) => void;
-  append: (job: JobModel) => void;
 }) => {
   const { addLoading, removeLoading } = useLoading();
   const [opened, setOpened] = useState(false);
   const [desc, setDesc] = useState('');
   const createJob = async () => {
     addLoading();
-    await apiClient.jobs
-      .$post({ body: { description: desc } })
-      .then(props.append)
-      .catch(returnNull);
     removeLoading();
     setOpened(false);
   };
@@ -42,15 +35,18 @@ export const JobList = (props: {
             style={{ background: props.currentJob?.id === job.id ? '#fff1' : '' }}
             onClick={() => props.select(job)}
           >
-            <div className={styles.description}>{job.description}</div>
+            <div className={styles.title}>{job.title}</div>
             <Spacer axis="y" size={6} />
             <div className={styles.itemBottom}>
               <div
                 className={styles.statusCircle}
                 style={{
-                  background: { running: '#ff0', stopped: '#14b869', archived: '#ec0000' }[
-                    job.status
-                  ],
+                  background: {
+                    ready: '#aaa',
+                    running: '#ff0',
+                    stopped: '#14b869',
+                    archived: '#ec0000',
+                  }[job.status],
                 }}
               />
               <span className={styles.date}>{formatShortTimestamp(job.createdTimestamp)}</span>

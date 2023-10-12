@@ -18,8 +18,8 @@ const S3_ACCESS_KEY = z.string().parse(process.env.S3_ACCESS_KEY);
 const S3_SECRET_KEY = z.string().parse(process.env.S3_SECRET_KEY);
 const S3_REGION = z.string().parse(process.env.S3_REGION);
 const OPENAI_KEY = z.string().parse(process.env.OPENAI_KEY);
-const KABUSAPI_PORT = z.string().parse(process.env.KABUSAPI_PORT);
-const KABUSAPI_PASS = z.string().parse(process.env.KABUSAPI_PASS);
+const KABUSAPI_PROD_PASS = z.string().parse(process.env.KABUSAPI_PROD_PASS);
+const KABUSAPI_TEST_PASS = z.string().parse(process.env.KABUSAPI_TEST_PASS);
 
 export {
   API_BASE_PATH,
@@ -27,8 +27,8 @@ export {
   CORS_ORIGIN,
   FIREBASE_AUTH_EMULATOR_HOST,
   FIREBASE_SERVER_KEY,
-  KABUSAPI_PASS,
-  KABUSAPI_PORT,
+  KABUSAPI_PROD_PASS,
+  KABUSAPI_TEST_PASS,
   OPENAI_KEY,
   PORT,
   S3_ACCESS_KEY,
