@@ -12,7 +12,7 @@ const Home = () => {
   const [jobs, setJobs] = useState<{ prod: ProdJobModel | null; tests: TestJobModel[] }>();
   const [selectedJobId, setSelectedJobId] = useState<JobId>();
   const sortedJobs = useMemo(
-    () => jobs?.tests.sort((a, b) => b.createdTimestamp - a.createdTimestamp) ?? [],
+    () => jobs?.tests.sort((a, b) => b.timestamp - a.timestamp) ?? [],
     [jobs]
   );
   const currentJob = useMemo<JobModel | undefined>(

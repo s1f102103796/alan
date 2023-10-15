@@ -19,9 +19,6 @@
     "typecheck:client": "npm run typecheck --prefix client",
     "typecheck:server": "npm run typecheck --prefix server"
   },
-  "dependencies": {
-    "langchain": "^0.0.135"
-  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",

@@ -15,6 +15,8 @@ model Job {
   status           String
   createdAt        DateTime
   prodJobHistories ProdJobHistory[]
+  ChatLog          ChatLog          @relation(fields: [chatLogId], references: [id])
+  chatLogId        String
 }
 
 model ProdJobHistory {
@@ -22,4 +24,15 @@ model ProdJobHistory {
   Job       Job      @relation(fields: [jobId], references: [id])
   jobId     String
   createdAt DateTime
+}
+
+model ChatLog {
+  id               String   @id
+  modelId          String
+  status           String
+  s3Key            String?
+  inputTokenCount  Int?
+  outputTokenCount Int?
+  createdAt        DateTime
+  jobs             Job[]
 }

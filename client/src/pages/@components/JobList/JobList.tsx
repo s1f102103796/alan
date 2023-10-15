@@ -49,7 +49,7 @@ export const JobList = (props: {
                   }[job.status],
                 }}
               />
-              <span className={styles.date}>{formatShortTimestamp(job.createdTimestamp)}</span>
+              <span className={styles.date}>{formatShortTimestamp(job.timestamp)}</span>
             </div>
           </div>
         ))}
