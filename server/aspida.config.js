@@ -1,5 +1,5 @@
 module.exports = {
-  input: 'kabusapi',
+  input: 'githubApi',
   outputMode: 'aliasOnly',
-  openapi: { inputFile: 'kabu_STATION_API.yaml' },
+  baseURL: 'https://api.github.com',
 };

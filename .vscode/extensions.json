@@ -1,5 +1,6 @@
 {
   "recommendations": [
+    "apollographql.vscode-apollo",
     "bierner.markdown-mermaid",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
