@@ -1,6 +1,7 @@
 import type { AppProps } from 'next/app';
 import dynamic from 'next/dynamic';
 import '../styles/globals.css';
+import { AuthLoader } from './@components/AuthLoader';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const SafeHydrate = dynamic(() => import('../components/SafeHydrate'), { ssr: false });
@@ -10,7 +11,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <SafeHydrate>
         <Component {...pageProps} />
       </SafeHydrate>
-      {/* <AuthLoader /> */}
+      <AuthLoader />
     </>
   );
 }

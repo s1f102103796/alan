@@ -36,3 +36,27 @@ model ChatLog {
   createdAt        DateTime
   jobs             Job[]
 }
+
+model Bubble {
+  id        String   @id
+  type      String
+  index     Int
+  content   String
+  createdAt DateTime
+  App       App      @relation(fields: [appId], references: [id])
+  appId     String
+}
+
+model App {
+  id              String   @id
+  userId          String
+  index           Int
+  name            String
+  status          String
+  environmentId   String?
+  projectId       String?
+  serviceId       String?
+  createdAt       DateTime
+  statusUpdatedAt DateTime
+  bubbles         Bubble[]
+}

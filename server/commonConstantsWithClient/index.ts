@@ -1,4 +1,4 @@
-export const APP_TITLE = 'Deus.AI';
+export const APP_TITLE = 'Deus App';
 
 export const JOB_STATUSES = ['ready', 'running', 'stopped', 'archived'] as const;
 

@@ -4,7 +4,7 @@ import assert from 'assert';
 export function customAssert(
   val: unknown,
   type: 'エラーならロジック修正必須' | '不正リクエスト防御',
-  data: Record<string, unknown>
+  data?: Record<string, unknown>
 ): asserts val {
   assert(val, JSON.stringify({ type, data }));
 }

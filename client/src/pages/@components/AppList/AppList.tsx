@@ -1,4 +1,4 @@
-import { type JobModel } from 'commonTypesWithClient/models';
+import type { AppModel } from 'commonTypesWithClient/appModels';
 import { useState } from 'react';
 import { PrimeButton } from 'src/components/Buttons/Buttons';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'src/components/Modal/Modal';
@@ -7,17 +7,17 @@ import { Textarea } from 'src/components/Textarea/Textarea';
 import { useLoading } from 'src/pages/@hooks/useLoading';
 import { apiClient } from 'src/utils/apiClient';
 import { formatShortTimestamp } from 'src/utils/dayjs';
-import styles from './jobList.module.css';
+import styles from './appList.module.css';
 
-export const JobList = (props: {
-  sortedJobs: JobModel[];
-  currentJob: JobModel | undefined;
-  select: (job: JobModel) => void;
+export const AppList = (props: {
+  sortedApps: AppModel[];
+  currentApp: AppModel | undefined;
+  select: (app: AppModel) => void;
 }) => {
   const { addLoading, removeLoading } = useLoading();
   const [opened, setOpened] = useState(false);
   const [desc, setDesc] = useState('');
-  const createJob = async () => {
+  const createApp = async () => {
     addLoading();
     await apiClient.apps.$post({ body: { desc } });
     removeLoading();
@@ -31,28 +31,29 @@ export const JobList = (props: {
         <PrimeButton label="アプリ新規作成" width="100%" onClick={() => setOpened(true)} />
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
-        {props.sortedJobs.map((job) => (
+        {props.sortedApps.map((app) => (
           <div
-            key={job.id}
+            key={app.id}
             className={styles.jobItem}
-            style={{ background: props.currentJob?.id === job.id ? '#fff1' : '' }}
-            onClick={() => props.select(job)}
+            style={{ background: props.currentApp?.id === app.id ? '#fff1' : '' }}
+            onClick={() => props.select(app)}
           >
-            <div className={styles.title}>{job.title}</div>
+            <div className={styles.title}>{app.name}</div>
             <Spacer axis="y" size={6} />
             <div className={styles.itemBottom}>
               <div
                 className={styles.statusCircle}
                 style={{
                   background: {
-                    ready: '#aaa',
+                    waiting: '#aaa',
                     running: '#ff0',
-                    stopped: '#14b869',
-                    archived: '#ec0000',
-                  }[job.status],
+                    success: '#14b869',
+                    failure: '#ec0000',
+                    closed: '#ec0000',
+                  }[app.status],
                 }}
               />
-              <span className={styles.date}>{formatShortTimestamp(job.timestamp)}</span>
+              <span className={styles.date}>{formatShortTimestamp(app.createdTime)}</span>
             </div>
           </div>
         ))}
@@ -60,7 +61,7 @@ export const JobList = (props: {
       <Modal open={opened}>
         <ModalHeader text="どんなアプリが欲しい？" />
         <ModalBody content={<Textarea rows={8} value={desc} width="400px" onChange={setDesc} />} />
-        <ModalFooter okText="新規作成" ok={createJob} cancel={() => setOpened(false)} />
+        <ModalFooter okText="新規作成" ok={createApp} cancel={() => setOpened(false)} />
       </Modal>
     </div>
   );

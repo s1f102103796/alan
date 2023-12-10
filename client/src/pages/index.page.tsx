@@ -1,28 +1,31 @@
-import type { JobId } from 'commonTypesWithClient/branded';
-import type { JobModel, ProdJobModel, TestJobModel } from 'commonTypesWithClient/models';
+import type { AppModel } from 'commonTypesWithClient/appModels';
+import type { AppId } from 'commonTypesWithClient/branded';
+import { useAtom } from 'jotai';
 import { useEffect, useMemo, useState } from 'react';
+import { userAtom } from 'src/atoms/user';
 import { Loading } from 'src/components/Loading/Loading';
 import { apiClient } from 'src/utils/apiClient';
 import { returnNull } from 'src/utils/returnNull';
+import { AppList } from './@components/AppList/AppList';
 import { BasicHeader } from './@components/BasicHeader/BasicHeader';
-import { JobList } from './@components/JobList/JobList';
 import styles from './index.module.css';
 
 const Home = () => {
-  const [jobs, setJobs] = useState<{ prod: ProdJobModel | null; tests: TestJobModel[] }>();
-  const [selectedJobId, setSelectedJobId] = useState<JobId>();
-  const sortedJobs = useMemo(
-    () => jobs?.tests.sort((a, b) => b.timestamp - a.timestamp) ?? [],
-    [jobs]
+  const [user] = useAtom(userAtom);
+  const [apps, setApps] = useState<AppModel[]>();
+  const [selectedAppId, setSelectedAppId] = useState<AppId>();
+  const sortedApps = useMemo(
+    () => apps?.sort((a, b) => b.createdTime - a.createdTime) ?? [],
+    [apps]
   );
-  const currentJob = useMemo<JobModel | undefined>(
-    () => sortedJobs.find((job) => job.id === selectedJobId) ?? sortedJobs[0],
-    [selectedJobId, sortedJobs]
+  const currentApp = useMemo<AppModel | undefined>(
+    () => sortedApps.find((app) => app.id === selectedAppId) ?? sortedApps[0],
+    [selectedAppId, sortedApps]
   );
   const fetchJobs = () =>
-    apiClient.jobs
+    apiClient.public.apps
       .$get()
-      .then((res) => setJobs((jobs) => (JSON.stringify(jobs) === JSON.stringify(res) ? jobs : res)))
+      .then((res) => setApps((apps) => (JSON.stringify(apps) === JSON.stringify(res) ? apps : res)))
       .catch(returnNull);
 
   useEffect(() => {
@@ -33,18 +36,19 @@ const Home = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  if (jobs === undefined) return <Loading visible />;
+  if (!user) return null;
+  if (apps === undefined) return <Loading visible />;
 
   return (
     <>
-      <BasicHeader />
+      <BasicHeader user={user} />
       <div className={styles.main}>
         <div>
           <div className={styles.jobList}>
-            <JobList
-              sortedJobs={sortedJobs}
-              currentJob={currentJob}
-              select={(job) => setSelectedJobId(job.id)}
+            <AppList
+              sortedApps={sortedApps}
+              currentApp={currentApp}
+              select={(app) => setSelectedAppId(app.id)}
             />
           </div>
         </div>
