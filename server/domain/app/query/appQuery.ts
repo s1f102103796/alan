@@ -37,7 +37,11 @@ const toWaitingAppModel = (
 ): WaitingAppModel => {
   customAssert(app.status !== 'status', 'エラーならロジック修正必須');
 
-  return { ...toAppModelBase(app), status: 'waiting', waitingOrder: waitingIds.indexOf(app.id) };
+  return {
+    ...toAppModelBase(app),
+    status: 'waiting',
+    waitingOrder: waitingIds.indexOf(app.id) + 1,
+  };
 };
 
 const toAppModel = (app: App & { bubbles: Bubble[] }, waitingIds: string[]): AppModel => {

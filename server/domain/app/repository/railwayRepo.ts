@@ -1,5 +1,5 @@
 import type { RailwayModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
-import { FIREBASE_SERVER_KEY, GITHUB_OWNER } from '$/service/envValues';
+import { BASE_DOMAIN, FIREBASE_SERVER_KEY, GITHUB_OWNER } from '$/service/envValues';
 import { railwayClient } from '$/service/railwayClient';
 import { gql } from '@apollo/client';
 
@@ -88,7 +88,7 @@ export const railwayRepo = {
           environmentId,
           projectId,
           serviceId,
-          origin: `https://${GITHUB_OWNER}.github.io`,
+          origin: `https://${app.subDomain}.${BASE_DOMAIN}`,
           firebase: FIREBASE_SERVER_KEY,
         },
       })

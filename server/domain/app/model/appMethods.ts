@@ -27,7 +27,7 @@ export const appMethods = {
       statusUpdatedTime: now,
       bubbles: [bubbleMethods.create('human', desc)],
       status: 'waiting',
-      waitingOrder: waitingAppCount,
+      waitingOrder: waitingAppCount + 1,
     };
   },
   init: (app: WaitingAppModel, railway: RailwayModel): ActiveAppModel => {

@@ -1,7 +1,8 @@
 import type { WaitingAppModel } from '$/commonTypesWithClient/appModels';
 import api from '$/githubApi/$api';
-import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
+import { BASE_DOMAIN, GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
 import aspida from '@aspida/fetch';
+import * as GitHubApiCreateCommit from '@himenon/github-api-create-commit';
 
 const githubApiClient = api(
   aspida(undefined, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } })
@@ -10,6 +11,12 @@ const githubApiClient = api(
 export const githubRepo = {
   create: async (app: WaitingAppModel) => {
     const repoName = app.displayId;
+    const domain = `${app.subDomain}.${BASE_DOMAIN}`;
+    const commitClient = GitHubApiCreateCommit.create({
+      owner: GITHUB_OWNER,
+      repo: repoName,
+      accessToken: GITHUB_TOKEN,
+    });
 
     await githubApiClient.repos
       ._owner(GITHUB_OWNER)
@@ -17,16 +24,26 @@ export const githubRepo = {
       .generate.$post({ body: { owner: GITHUB_OWNER, name: repoName, include_all_branches: true } })
       .catch((e) => console.log('ignore error when creating repo:', e.message));
 
-    await githubApiClient.repos
-      ._owner(GITHUB_OWNER)
-      ._repo(repoName)
-      .actions.variables.$post({
-        body: { name: 'API_ORIGIN', value: `https://${repoName}-production.up.railway.app` },
-      });
-
-    await githubApiClient.repos
-      ._owner(GITHUB_OWNER)
-      ._repo(repoName)
-      .pages.$post({ body: { build_type: 'legacy', source: { branch: 'gh-pages' } } });
+    await Promise.all([
+      githubApiClient.repos
+        ._owner(GITHUB_OWNER)
+        ._repo(repoName)
+        .actions.variables.$post({
+          body: { name: 'API_ORIGIN', value: `https://${repoName}-production.up.railway.app` },
+        }),
+      githubApiClient.repos
+        ._owner(GITHUB_OWNER)
+        ._repo(repoName)
+        .$patch({ body: { homepage: `https://${domain}` } }),
+      commitClient.createGitCommit({
+        headBranchName: 'main',
+        commitMessage: 'feat: add CNAME file',
+        files: [{ path: 'client/public/CNAME', content: domain }],
+      }),
+      githubApiClient.repos
+        ._owner(GITHUB_OWNER)
+        ._repo(repoName)
+        .pages.$post({ body: { build_type: 'legacy', source: { branch: 'gh-pages' } } }),
+    ]);
   },
 };

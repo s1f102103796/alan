@@ -24,10 +24,12 @@ const GITHUB_TOKEN = z.string().parse(process.env.GITHUB_TOKEN);
 const RAILWAY_TOKEN = z.string().parse(process.env.RAILWAY_TOKEN);
 const DISPLAY_ID_PREFIX = z.string().parse(process.env.DISPLAY_ID_PREFIX);
 const SUB_DOMAIN_PREFIX = z.string().parse(process.env.SUB_DOMAIN_PREFIX);
+const BASE_DOMAIN = z.string().parse(process.env.BASE_DOMAIN);
 
 export {
   API_BASE_PATH,
   API_ORIGIN,
+  BASE_DOMAIN,
   CORS_ORIGIN,
   DISPLAY_ID_PREFIX,
   FIREBASE_AUTH_EMULATOR_HOST,
