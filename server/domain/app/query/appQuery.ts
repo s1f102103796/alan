@@ -1,5 +1,6 @@
 import type { AppModelBase, BubbleModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
 import { APP_STATUSES, BUBBLE_TYPES, type AppModel } from '$/commonTypesWithClient/appModels';
+import { DISPLAY_ID_PREFIX, SUB_DOMAIN_PREFIX } from '$/service/envValues';
 import { appIdParser, bubbleIdParser, displayIdParser, userIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
 import type { App, Bubble, Prisma } from '@prisma/client';
@@ -7,8 +8,9 @@ import { z } from 'zod';
 
 const PRISMA_APP_INCLUDE = { bubbles: { orderBy: { index: 'asc' } } } satisfies Prisma.AppInclude;
 
-export const indexToDisplayId = (index: number) => displayIdParser.parse(`deus-${index}`);
-export const indexToSubDomain = (index: number) => `d${index}`;
+export const indexToDisplayId = (index: number) =>
+  displayIdParser.parse(`${DISPLAY_ID_PREFIX}-${index}`);
+export const indexToSubDomain = (index: number) => `${SUB_DOMAIN_PREFIX}${index}`;
 
 const toAppModelBase = (app: App & { bubbles: Bubble[] }): AppModelBase => ({
   id: appIdParser.parse(app.id),

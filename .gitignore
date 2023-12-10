@@ -37,4 +37,3 @@ npm-debug.log*
 server/index.js
 server/index.js.map
 server/upload/
-server/kabusapi/

@@ -79,7 +79,3 @@ http://localhost:9001/
 $ cd server
 $ npx prisma studio
 ```
-
-#### server/api/kabusapi 参考仕様
-
-kabu STATION API - https://kabucom.github.io/kabusapi/ptal/index.html

@@ -7,36 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Job {
-  id               String           @id
-  displayId        String           @unique
-  title            String
-  prompt           String
-  status           String
-  createdAt        DateTime
-  prodJobHistories ProdJobHistory[]
-  ChatLog          ChatLog          @relation(fields: [chatLogId], references: [id])
-  chatLogId        String
-}
-
-model ProdJobHistory {
-  id        String   @id
-  Job       Job      @relation(fields: [jobId], references: [id])
-  jobId     String
-  createdAt DateTime
-}
-
-model ChatLog {
-  id               String   @id
-  modelId          String
-  status           String
-  s3Key            String?
-  inputTokenCount  Int?
-  outputTokenCount Int?
-  createdAt        DateTime
-  jobs             Job[]
-}
-
 model Bubble {
   id        String   @id
   type      String

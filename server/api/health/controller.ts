@@ -6,7 +6,7 @@ export default defineController(() => ({
     status: 200,
     body: {
       server: 'ok',
-      db: await prismaClient.job
+      db: await prismaClient.app
         .count()
         .then(() => 'ok' as const)
         .catch(() => 'ng' as const),

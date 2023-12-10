@@ -17,21 +17,24 @@ const S3_BUCKET = z.string().parse(process.env.S3_BUCKET);
 const S3_ACCESS_KEY = z.string().parse(process.env.S3_ACCESS_KEY);
 const S3_SECRET_KEY = z.string().parse(process.env.S3_SECRET_KEY);
 const S3_REGION = z.string().parse(process.env.S3_REGION);
-const KABUSAPI_PROD_PASS = z.string().parse(process.env.KABUSAPI_PROD_PASS);
-const KABUSAPI_TEST_PASS = z.string().parse(process.env.KABUSAPI_TEST_PASS);
 const OPENAI_KEY = z.string().parse(process.env.OPENAI_KEY);
+const GITHUB_TEMPLATE = z.string().parse(process.env.GITHUB_TEMPLATE);
+const GITHUB_OWNER = z.string().parse(process.env.GITHUB_OWNER);
 const GITHUB_TOKEN = z.string().parse(process.env.GITHUB_TOKEN);
 const RAILWAY_TOKEN = z.string().parse(process.env.RAILWAY_TOKEN);
+const DISPLAY_ID_PREFIX = z.string().parse(process.env.DISPLAY_ID_PREFIX);
+const SUB_DOMAIN_PREFIX = z.string().parse(process.env.SUB_DOMAIN_PREFIX);
 
 export {
   API_BASE_PATH,
   API_ORIGIN,
   CORS_ORIGIN,
+  DISPLAY_ID_PREFIX,
   FIREBASE_AUTH_EMULATOR_HOST,
   FIREBASE_SERVER_KEY,
+  GITHUB_OWNER,
+  GITHUB_TEMPLATE,
   GITHUB_TOKEN,
-  KABUSAPI_PROD_PASS,
-  KABUSAPI_TEST_PASS,
   OPENAI_KEY,
   PORT,
   RAILWAY_TOKEN,
@@ -40,4 +43,5 @@ export {
   S3_ENDPOINT,
   S3_REGION,
   S3_SECRET_KEY,
+  SUB_DOMAIN_PREFIX,
 };

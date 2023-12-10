@@ -1,11 +1,10 @@
 import type { RailwayModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
-import { FIREBASE_SERVER_KEY } from '$/service/envValues';
+import { FIREBASE_SERVER_KEY, GITHUB_OWNER } from '$/service/envValues';
 import { railwayClient } from '$/service/railwayClient';
 import { gql } from '@apollo/client';
 
 export const railwayRepo = {
   create: async (app: WaitingAppModel): Promise<RailwayModel> => {
-    const owner = 'deus-app';
     const repoName = app.displayId;
     const res1 = await railwayClient
       .mutate({
@@ -37,7 +36,7 @@ export const railwayRepo = {
             githubRepoDeploy(input: { repo: $repoUrl, projectId: $projectId })
           }
         `,
-        variables: { repoUrl: `${owner}/${repoName}`, projectId },
+        variables: { repoUrl: `${GITHUB_OWNER}/${repoName}`, projectId },
       })
       .catch((e) => e.message);
     console.log(res2);
@@ -89,7 +88,7 @@ export const railwayRepo = {
           environmentId,
           projectId,
           serviceId,
-          origin: `https://${owner}.github.io`,
+          origin: `https://${GITHUB_OWNER}.github.io`,
           firebase: FIREBASE_SERVER_KEY,
         },
       })
@@ -155,7 +154,7 @@ export const railwayRepo = {
           environmentId,
           projectId,
           serviceId,
-          repo: `${owner}/${repoName}`,
+          repo: `${GITHUB_OWNER}/${repoName}`,
         },
       })
       .catch((e) => e.message);

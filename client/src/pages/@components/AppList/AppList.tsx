@@ -34,7 +34,7 @@ export const AppList = (props: {
         {props.sortedApps.map((app) => (
           <div
             key={app.id}
-            className={styles.jobItem}
+            className={styles.appItem}
             style={{ background: props.currentApp?.id === app.id ? '#fff1' : '' }}
             onClick={() => props.select(app)}
           >

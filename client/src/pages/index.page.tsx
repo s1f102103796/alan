@@ -22,16 +22,16 @@ const Home = () => {
     () => sortedApps.find((app) => app.id === selectedAppId) ?? sortedApps[0],
     [selectedAppId, sortedApps]
   );
-  const fetchJobs = () =>
+  const fetchApps = () =>
     apiClient.public.apps
       .$get()
       .then((res) => setApps((apps) => (JSON.stringify(apps) === JSON.stringify(res) ? apps : res)))
       .catch(returnNull);
 
   useEffect(() => {
-    fetchJobs();
+    fetchApps();
 
-    const intervalId = window.setInterval(fetchJobs, 1000);
+    const intervalId = window.setInterval(fetchApps, 1000);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -44,7 +44,7 @@ const Home = () => {
       <BasicHeader user={user} />
       <div className={styles.main}>
         <div>
-          <div className={styles.jobList}>
+          <div className={styles.appList}>
             <AppList
               sortedApps={sortedApps}
               currentApp={currentApp}
