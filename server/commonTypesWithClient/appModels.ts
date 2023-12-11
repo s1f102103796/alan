@@ -12,6 +12,7 @@ export type UserModel = {
 };
 
 export type RailwayModel = {
+  url: string;
   environmentId: string;
   projectId: string;
   serviceId: string;
@@ -29,10 +30,10 @@ export type AppModelBase = {
   userId: UserId;
   index: number;
   displayId: DisplayId;
-  subDomain: string;
   name: string;
   createdTime: number;
   statusUpdatedTime: number;
+  urls: { site: string; github: string; vscode: string };
   bubbles: BubbleModel[];
 };
 

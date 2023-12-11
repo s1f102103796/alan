@@ -1,6 +1,11 @@
 import type { AppModelBase, BubbleModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
 import { APP_STATUSES, BUBBLE_TYPES, type AppModel } from '$/commonTypesWithClient/appModels';
-import { DISPLAY_ID_PREFIX, SUB_DOMAIN_PREFIX } from '$/service/envValues';
+import {
+  BASE_DOMAIN,
+  DISPLAY_ID_PREFIX,
+  GITHUB_OWNER,
+  SUB_DOMAIN_PREFIX,
+} from '$/service/envValues';
 import { appIdParser, bubbleIdParser, displayIdParser, userIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
 import type { App, Bubble, Prisma } from '@prisma/client';
@@ -10,26 +15,36 @@ const PRISMA_APP_INCLUDE = { bubbles: { orderBy: { index: 'asc' } } } satisfies 
 
 export const indexToDisplayId = (index: number) =>
   displayIdParser.parse(`${DISPLAY_ID_PREFIX}-${index}`);
-export const indexToSubDomain = (index: number) => `${SUB_DOMAIN_PREFIX}${index}`;
-
-const toAppModelBase = (app: App & { bubbles: Bubble[] }): AppModelBase => ({
-  id: appIdParser.parse(app.id),
-  userId: userIdParser.parse(app.userId),
-  index: app.index,
-  displayId: indexToDisplayId(app.index),
-  subDomain: indexToSubDomain(app.index),
-  name: app.name,
-  createdTime: app.createdAt.getTime(),
-  statusUpdatedTime: app.statusUpdatedAt.getTime(),
-  bubbles: app.bubbles.map(
-    (bubble): BubbleModel => ({
-      id: bubbleIdParser.parse(bubble.id),
-      type: z.enum(BUBBLE_TYPES).parse(bubble.type),
-      content: bubble.content,
-      createdTime: bubble.createdAt.getTime(),
-    })
-  ),
+export const indexToUrls = (index: number): AppModel['urls'] => ({
+  site: `https://${SUB_DOMAIN_PREFIX}${index}.${BASE_DOMAIN}`,
+  github: `https://github.com/${GITHUB_OWNER}/${indexToDisplayId(index)}`,
+  vscode: `https://github.dev/${GITHUB_OWNER}/${indexToDisplayId(
+    index
+  )}/blob/main/client/src/pages/index.page.tsx`,
 });
+
+export const projectIdToUrl = (projectId: string) => `https://railway.app/project/${projectId}`;
+
+const toAppModelBase = (app: App & { bubbles: Bubble[] }): AppModelBase => {
+  return {
+    id: appIdParser.parse(app.id),
+    userId: userIdParser.parse(app.userId),
+    index: app.index,
+    displayId: indexToDisplayId(app.index),
+    name: app.name,
+    createdTime: app.createdAt.getTime(),
+    statusUpdatedTime: app.statusUpdatedAt.getTime(),
+    urls: indexToUrls(app.index),
+    bubbles: app.bubbles.map(
+      (bubble): BubbleModel => ({
+        id: bubbleIdParser.parse(bubble.id),
+        type: z.enum(BUBBLE_TYPES).parse(bubble.type),
+        content: bubble.content,
+        createdTime: bubble.createdAt.getTime(),
+      })
+    ),
+  };
+};
 
 const toWaitingAppModel = (
   app: App & { bubbles: Bubble[] },
@@ -57,6 +72,7 @@ const toAppModel = (app: App & { bubbles: Bubble[] }, waitingIds: string[]): App
     ...toAppModelBase(app),
     status,
     railway: {
+      url: projectIdToUrl(app.projectId),
       environmentId: app.environmentId,
       projectId: app.projectId,
       serviceId: app.serviceId,

@@ -1,8 +1,9 @@
 import type { WaitingAppModel } from '$/commonTypesWithClient/appModels';
 import api from '$/githubApi/$api';
-import { BASE_DOMAIN, GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
+import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
 import aspida from '@aspida/fetch';
 import * as GitHubApiCreateCommit from '@himenon/github-api-create-commit';
+import { URL } from 'url';
 
 const githubApiClient = api(
   aspida(undefined, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } })
@@ -11,7 +12,6 @@ const githubApiClient = api(
 export const githubRepo = {
   create: async (app: WaitingAppModel) => {
     const repoName = app.displayId;
-    const domain = `${app.subDomain}.${BASE_DOMAIN}`;
     const commitClient = GitHubApiCreateCommit.create({
       owner: GITHUB_OWNER,
       repo: repoName,
@@ -34,11 +34,11 @@ export const githubRepo = {
       githubApiClient.repos
         ._owner(GITHUB_OWNER)
         ._repo(repoName)
-        .$patch({ body: { homepage: `https://${domain}` } }),
+        .$patch({ body: { homepage: app.urls.site } }),
       commitClient.createGitCommit({
         headBranchName: 'main',
         commitMessage: 'feat: add CNAME file',
-        files: [{ path: 'client/public/CNAME', content: domain }],
+        files: [{ path: 'client/public/CNAME', content: new URL(app.urls.site).host }],
       }),
       githubApiClient.repos
         ._owner(GITHUB_OWNER)

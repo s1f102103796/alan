@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 12px;
+  color: #fff;
+  background: #fff2;
+  border-bottom: 1px solid #eee2;
+}
+
+.modelLabel {
+  padding: 2px 10px 4px;
+  font-weight: bold;
+  border: 1px solid #fff8;
+  border-radius: 14px;
+}
+
+.mainContainer {
+  position: absolute;
+  width: 100%;
+  background: #fff1;
+  border: none;
+}

@@ -7,7 +7,7 @@ import type {
 } from '$/commonTypesWithClient/appModels';
 import { appIdParser } from '$/service/idParsers';
 import { randomUUID } from 'crypto';
-import { indexToDisplayId, indexToSubDomain } from '../query/appQuery';
+import { indexToDisplayId, indexToUrls } from '../query/appQuery';
 import { bubbleMethods } from './bubbleMethods';
 
 export const appMethods = {
@@ -21,13 +21,13 @@ export const appMethods = {
       userId: user.id,
       index,
       displayId: indexToDisplayId(index),
-      subDomain: indexToSubDomain(index),
       name: desc.slice(0, 10),
       createdTime: now,
       statusUpdatedTime: now,
       bubbles: [bubbleMethods.create('human', desc)],
       status: 'waiting',
       waitingOrder: waitingAppCount + 1,
+      urls: indexToUrls(index),
     };
   },
   init: (app: WaitingAppModel, railway: RailwayModel): ActiveAppModel => {

@@ -1,0 +1,27 @@
+@keyframes load {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loader {
+  font-size: 5px;
+  text-indent: -9999em;
+  border-top: 1.1em solid rgb(255 255 0 / 20%);
+  border-right: 1.1em solid rgb(255 255 0 / 20%);
+  border-bottom: 1.1em solid rgb(255 255 0 / 20%);
+  border-left: 1.1em solid #ff0;
+  transform-origin: center;
+  animation: load 1.1s infinite linear;
+}
+
+.loader,
+.loader::after {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}

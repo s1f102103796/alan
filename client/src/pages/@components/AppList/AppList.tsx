@@ -34,7 +34,7 @@ export const AppList = (props: {
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         {props.sortedApps.map((app) => (
-          <Link key={app.id} href={pagesPath.$url({ query: { displayId: app.displayId } })}>
+          <Link key={app.id} href={pagesPath.$url({ query: { id: app.displayId } })}>
             <div
               className={styles.appItem}
               style={{ background: props.currentApp?.id === app.id ? '#fff1' : '' }}

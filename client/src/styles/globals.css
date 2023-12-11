@@ -18,8 +18,7 @@ a {
 }
 
 :root {
-  --theme-font-color: #ff8;
-  --main-font-color: #fff;
+  --theme-font-color: #fff;
   --warning: #f30;
-  --border-color: #883;
+  --border-color: #ccc7;
 }

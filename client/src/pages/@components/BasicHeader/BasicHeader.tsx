@@ -1,7 +1,7 @@
 import { APP_TITLE } from 'commonConstantsWithClient';
 import type { UserModel } from 'commonTypesWithClient/appModels';
 import { logout } from 'src/utils/login';
-import styles from './BasicHeader.module.css';
+import styles from './basicHeader.module.css';
 
 export const BasicHeader = ({ user }: { user: UserModel }) => {
   const onLogout = async () => {

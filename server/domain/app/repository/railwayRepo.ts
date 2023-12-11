@@ -1,7 +1,8 @@
 import type { RailwayModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
-import { BASE_DOMAIN, FIREBASE_SERVER_KEY, GITHUB_OWNER } from '$/service/envValues';
+import { FIREBASE_SERVER_KEY, GITHUB_OWNER } from '$/service/envValues';
 import { railwayClient } from '$/service/railwayClient';
 import { gql } from '@apollo/client';
+import { projectIdToUrl } from '../query/appQuery';
 
 export const railwayRepo = {
   create: async (app: WaitingAppModel): Promise<RailwayModel> => {
@@ -88,7 +89,7 @@ export const railwayRepo = {
           environmentId,
           projectId,
           serviceId,
-          origin: `https://${app.subDomain}.${BASE_DOMAIN}`,
+          origin: app.urls.site,
           firebase: FIREBASE_SERVER_KEY,
         },
       })
@@ -160,6 +161,6 @@ export const railwayRepo = {
       .catch((e) => e.message);
     console.log(22, res6);
 
-    return { environmentId, projectId, serviceId };
+    return { url: projectIdToUrl(projectId), environmentId, projectId, serviceId };
   },
 };
