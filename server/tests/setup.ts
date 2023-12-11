@@ -1,4 +1,4 @@
-import { init } from '$/service/app';
+import { initServer } from '$/service/app';
 import { PORT } from '$/service/envValues';
 import { prismaClient } from '$/service/prismaClient';
 import { exec } from 'child_process';
@@ -14,7 +14,7 @@ const unneededServer = (file: { filepath?: string } | undefined) =>
 beforeAll(async (info) => {
   if (unneededServer(info)) return;
 
-  server = init();
+  server = initServer();
   await server.listen({ port: PORT, host: '0.0.0.0' });
 });
 

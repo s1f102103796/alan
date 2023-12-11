@@ -2,6 +2,10 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
+  border: 1px solid #fff5;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
 }
 
 .header {
@@ -10,12 +14,13 @@
   height: 48px;
   padding: 0 12px;
   color: #fff;
-  background: #fff2;
-  border-bottom: 1px solid #eee2;
+  background: #fff1;
+  border-bottom: 1px solid #fff5;
 }
 
 .modelLabel {
   padding: 2px 10px 4px;
+  margin-right: auto;
   font-weight: bold;
   border: 1px solid #fff8;
   border-radius: 14px;

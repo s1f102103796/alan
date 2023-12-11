@@ -1,9 +1,14 @@
 import type { ActiveAppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
+import { Spacer } from 'src/components/Spacer';
+import { GithubIcon } from 'src/components/icons/GithubIcon';
+import { RailwayIcon } from 'src/components/icons/RailwayIcon';
+import { SiteIcon } from 'src/components/icons/SIteIcon';
+import { VscodeIcon } from 'src/components/icons/VscodeIcon';
 import { staticPath } from 'src/utils/$path';
 import styles from './infoArea.module.css';
 
-const imgHeight = '(100vh - 48px - 48px - 20px)';
+const imgHeight = '(100vh - 48px - 48px)';
 
 export const InfoArea = (props: { app: ActiveAppModel }) => {
   return (
@@ -22,29 +27,42 @@ export const InfoArea = (props: { app: ActiveAppModel }) => {
         </div>
       </div>
       <div className={styles.rightContent}>
-        <div>
-          Site:{' '}
-          <Link href={props.app.urls.site} target="_brank">
-            {props.app.urls.site}
-          </Link>
-        </div>
-        <div>
-          GitHub:{' '}
-          <Link href={props.app.urls.github} target="_brank">
-            {props.app.urls.github}
-          </Link>
-        </div>
-        <div>
-          VSCode:{' '}
-          <Link href={props.app.urls.vscode} target="_brank">
-            {props.app.urls.vscode}
-          </Link>
-        </div>
-        <div>
-          Railway:{' '}
-          <Link href={props.app.railway.url} target="_brank">
-            {props.app.railway.url}
-          </Link>
+        <div className={styles.linkContainer}>
+          {[
+            {
+              icon: <SiteIcon size={24} fill="#fff" />,
+              label: 'Web App',
+              href: props.app.urls.site,
+            },
+            {
+              icon: <GithubIcon size={24} fill="#fff" />,
+              label: 'GitHub',
+              href: props.app.urls.github,
+            },
+            {
+              icon: <VscodeIcon size={24} />,
+              label: 'VSCode',
+              href: props.app.urls.vscode,
+            },
+            {
+              icon: <RailwayIcon size={24} fill="#fff" />,
+              label: 'Railway',
+              href: props.app.railway.url,
+            },
+          ].map((params) => (
+            <div key={params.label}>
+              <Link href={params.href} target="_brank">
+                <div className={styles.linkCard}>
+                  <div className={styles.linkIcon}>{params.icon}</div>
+                  <div className={styles.linkTexts}>
+                    <div className={styles.linkLabel}>{params.label}</div>
+                    <Spacer axis="y" size={2} />
+                    <div className={styles.linkHref}>{params.href}</div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          ))}
         </div>
       </div>
     </div>

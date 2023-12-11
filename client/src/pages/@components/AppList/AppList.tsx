@@ -32,12 +32,12 @@ export const AppList = (props: {
       <div className={styles.createBtn}>
         <PrimeButton label="アプリ新規作成" width="100%" onClick={() => setOpened(true)} />
       </div>
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div className={styles.itemContainer}>
         {props.sortedApps.map((app) => (
           <Link key={app.id} href={pagesPath.$url({ query: { id: app.displayId } })}>
             <div
               className={styles.appItem}
-              style={{ background: props.currentApp?.id === app.id ? '#fff1' : '' }}
+              style={{ background: props.currentApp?.id === app.id ? '#fff2' : '' }}
             >
               <div className={styles.title}>{app.name}</div>
               <Spacer axis="y" size={6} />

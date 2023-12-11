@@ -13,8 +13,8 @@ import { InfoArea } from './@components/InfoArea/InfoArea';
 import { WaitingContent } from './@components/WaitingContent/WaitingContent';
 import styles from './index.module.css';
 
-export type Query = {
-  id?: DisplayId;
+export type OptionalQuery = {
+  id: DisplayId;
 };
 
 const Home = () => {

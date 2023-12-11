@@ -3,19 +3,28 @@
   flex-direction: column;
   height: 100%;
   color: #fff;
-  border-right: 1px solid var(--border-color);
 }
 
 .createBtn {
+  padding: 8px 12px;
+}
+
+.itemContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
   padding: 12px;
-  border-bottom: 1px solid var(--border-color);
+  overflow: auto;
 }
 
 .appItem {
   padding: 10px 16px;
   font-size: 12px;
   cursor: pointer;
-  border-bottom: 1px solid #eee1;
+  background: #fff1;
+  border: 1px solid #fff5;
+  border-radius: 6px;
   transition: 0.2s;
 }
 

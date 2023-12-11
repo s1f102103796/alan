@@ -24,7 +24,6 @@ export const ChatArea = (props: { app: AppModel }) => {
         <StatusIcon status={props.app.status} />
         <Spacer axis="x" size={12} />
         <span className={styles.modelLabel}>GPT4-turbo</span>
-        <Spacer axis="x" size={12} />
         <RunningTimer
           start={props.app.createdTime}
           end={props.app.status === 'running' ? undefined : props.app.statusUpdatedTime}
