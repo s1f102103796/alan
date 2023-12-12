@@ -1,10 +1,11 @@
 import { z } from 'zod';
-import type {
-  AppId,
-  BubbleId,
-  DisplayId,
-  GitHubId,
-  UserId,
+import type { GHActionId } from '../commonTypesWithClient/branded';
+import {
+  type AppId,
+  type BubbleId,
+  type DisplayId,
+  type GitHubId,
+  type UserId,
 } from '../commonTypesWithClient/branded';
 
 const createIdParser = <T extends string>() => z.string() as unknown as z.ZodType<T>;
@@ -14,3 +15,4 @@ export const displayIdParser = createIdParser<DisplayId>();
 export const appIdParser = createIdParser<AppId>();
 export const userIdParser = createIdParser<UserId>();
 export const githubIdParser = createIdParser<GitHubId>();
+export const ghActionIdParser = createIdParser<GHActionId>();

@@ -19,6 +19,7 @@ export const initServer = (serverFactory?: FastifyServerFactory) => {
 
 export const init = (serverFactory?: FastifyServerFactory) => {
   appUseCase.initOneByOne();
+  appUseCase.watchGHActions();
 
   return initServer(serverFactory);
 };

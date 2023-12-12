@@ -7,26 +7,39 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Bubble {
+model GitHubAction {
   id        String   @id
   type      String
-  index     Int
-  content   String
+  title     String
+  status    String
   createdAt DateTime
-  App       App      @relation(fields: [appId], references: [id])
-  appId     String
+  updatedAt DateTime
+  Bubble    Bubble   @relation(fields: [bubbleId], references: [id])
+  bubbleId  String   @unique
+}
+
+model Bubble {
+  id           String        @id
+  type         String
+  index        Int
+  content      String
+  createdAt    DateTime
+  App          App           @relation(fields: [appId], references: [id])
+  appId        String
+  GitHubAction GitHubAction?
 }
 
 model App {
-  id              String   @id
-  userId          String
-  index           Int
-  name            String
-  status          String
-  environmentId   String?
-  projectId       String?
-  serviceId       String?
-  createdAt       DateTime
-  statusUpdatedAt DateTime
-  bubbles         Bubble[]
+  id               String   @id
+  userId           String
+  index            Int
+  name             String
+  status           String
+  environmentId    String?
+  projectId        String?
+  serviceId        String?
+  createdAt        DateTime
+  statusUpdatedAt  DateTime
+  bubblesUpdatedAt DateTime
+  bubbles          Bubble[]
 }

@@ -1,5 +1,8 @@
-import type { AppModelBase, BubbleModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
-import { APP_STATUSES, BUBBLE_TYPES, type AppModel } from '$/commonTypesWithClient/appModels';
+import type { AppModelBase, WaitingAppModel } from '$/commonTypesWithClient/appModels';
+import { APP_STATUSES, type AppModel } from '$/commonTypesWithClient/appModels';
+import type { AppId, DisplayId, Maybe } from '$/commonTypesWithClient/branded';
+import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
+import { bubbleTypeParser, ghActionParser } from '$/commonTypesWithClient/bubbleModels';
 import {
   BASE_DOMAIN,
   DISPLAY_ID_PREFIX,
@@ -8,10 +11,12 @@ import {
 } from '$/service/envValues';
 import { appIdParser, bubbleIdParser, displayIdParser, userIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
-import type { App, Bubble, Prisma } from '@prisma/client';
+import type { App, Bubble, GitHubAction, Prisma } from '@prisma/client';
 import { z } from 'zod';
 
-const PRISMA_APP_INCLUDE = { bubbles: { orderBy: { index: 'asc' } } } satisfies Prisma.AppInclude;
+const PRISMA_APP_INCLUDE = {
+  bubbles: { include: { GitHubAction: true }, orderBy: { index: 'asc' } },
+} satisfies Prisma.AppInclude;
 
 export const indexToDisplayId = (index: number) =>
   displayIdParser.parse(`${DISPLAY_ID_PREFIX}-${index}`);
@@ -24,32 +29,56 @@ export const indexToUrls = (index: number): AppModel['urls'] => ({
 });
 
 export const projectIdToUrl = (projectId: string) => `https://railway.app/project/${projectId}`;
+export const toGHActionUrl = (displayId: DisplayId, actionId: number | string) =>
+  `https://github.com/${GITHUB_OWNER}/${displayId}/actions/runs/${actionId}`;
 
-const toAppModelBase = (app: App & { bubbles: Bubble[] }): AppModelBase => {
+type PrismaApp = App & { bubbles: (Bubble & { GitHubAction: GitHubAction | null })[] };
+
+const toAppModelBase = (app: PrismaApp): AppModelBase => {
+  const displayId = indexToDisplayId(app.index);
+
   return {
     id: appIdParser.parse(app.id),
     userId: userIdParser.parse(app.userId),
     index: app.index,
-    displayId: indexToDisplayId(app.index),
+    displayId,
     name: app.name,
     createdTime: app.createdAt.getTime(),
     statusUpdatedTime: app.statusUpdatedAt.getTime(),
+    bubblesUpdatedTime: app.bubblesUpdatedAt.getTime(),
     urls: indexToUrls(app.index),
-    bubbles: app.bubbles.map(
-      (bubble): BubbleModel => ({
-        id: bubbleIdParser.parse(bubble.id),
-        type: z.enum(BUBBLE_TYPES).parse(bubble.type),
-        content: bubble.content,
-        createdTime: bubble.createdAt.getTime(),
-      })
-    ),
+    bubbles: app.bubbles.map((bubble): BubbleModel => {
+      const type = bubbleTypeParser.parse(bubble.type);
+      const base = { id: bubbleIdParser.parse(bubble.id), createdTime: bubble.createdAt.getTime() };
+
+      switch (type) {
+        case 'ai':
+        case 'human':
+          return { ...base, type, content: bubble.content };
+        case 'github':
+          customAssert(bubble.GitHubAction, 'エラーならロジック修正必須');
+
+          return {
+            ...base,
+            type,
+            content: ghActionParser.parse({
+              id: bubble.GitHubAction.id,
+              type: bubble.GitHubAction.type,
+              title: bubble.GitHubAction.title,
+              status: bubble.GitHubAction.status,
+              url: toGHActionUrl(displayId, bubble.GitHubAction.id),
+              createdTime: bubble.GitHubAction.createdAt.getTime(),
+              updatedTime: bubble.GitHubAction.updatedAt.getTime(),
+            }),
+          };
+        default:
+          throw new Error(type satisfies never);
+      }
+    }),
   };
 };
 
-const toWaitingAppModel = (
-  app: App & { bubbles: Bubble[] },
-  waitingIds: string[]
-): WaitingAppModel => {
+const toWaitingAppModel = (app: PrismaApp, waitingIds: string[]): WaitingAppModel => {
   customAssert(app.status !== 'status', 'エラーならロジック修正必須');
 
   return {
@@ -59,7 +88,7 @@ const toWaitingAppModel = (
   };
 };
 
-const toAppModel = (app: App & { bubbles: Bubble[] }, waitingIds: string[]): AppModel => {
+const toAppModel = (app: PrismaApp, waitingIds: string[]): AppModel => {
   const status = z.enum(APP_STATUSES).parse(app.status);
 
   if (status === 'waiting') return toWaitingAppModel(app, waitingIds);
@@ -88,6 +117,13 @@ export const appQuery = {
       const waitingIds = apps.filter((app) => app.status === 'waiting').map((app) => app.id);
       return apps.map((app) => toAppModel(app, waitingIds));
     }),
+  findByIdOrThrow: (tx: Prisma.TransactionClient, id: Maybe<AppId>) =>
+    tx.app.findMany({ include: PRISMA_APP_INCLUDE, orderBy: { index: 'asc' } }).then((apps) => {
+      const waitingIds = apps.filter((app) => app.status === 'waiting').map((app) => app.id);
+      return tx.app
+        .findUniqueOrThrow({ where: { id }, include: PRISMA_APP_INCLUDE })
+        .then((app) => toAppModel(app, waitingIds));
+    }),
   findWaitings: (tx: Prisma.TransactionClient) =>
     tx.app
       .findMany({
@@ -104,6 +140,7 @@ export const appQuery = {
       .findFirst({
         where: { status: 'waiting' },
         include: PRISMA_APP_INCLUDE,
+        orderBy: { index: 'asc' },
       })
       .then((app) => (app !== null ? toWaitingAppModel(app, [app.id]) : undefined)),
 };

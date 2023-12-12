@@ -1,7 +1,7 @@
-import type { AppId, BubbleId, DisplayId, GitHubId, UserId } from './branded';
+import type { AppId, DisplayId, GitHubId, UserId } from './branded';
+import type { BubbleModel } from './bubbleModels';
 
 export const APP_STATUSES = ['waiting', 'running', 'failure', 'success', 'closed'] as const;
-export const BUBBLE_TYPES = ['ai', 'human', 'job'] as const;
 
 export type UserModel = {
   id: UserId;
@@ -18,13 +18,6 @@ export type RailwayModel = {
   serviceId: string;
 };
 
-export type BubbleModel = {
-  id: BubbleId;
-  type: (typeof BUBBLE_TYPES)[number];
-  content: string;
-  createdTime: number;
-};
-
 export type AppModelBase = {
   id: AppId;
   userId: UserId;
@@ -33,6 +26,7 @@ export type AppModelBase = {
   name: string;
   createdTime: number;
   statusUpdatedTime: number;
+  bubblesUpdatedTime: number;
   urls: { site: string; github: string; vscode: string };
   bubbles: BubbleModel[];
 };
