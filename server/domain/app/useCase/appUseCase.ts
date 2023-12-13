@@ -28,13 +28,7 @@ export const appUseCase = {
       if (Date.now() - app.bubblesUpdatedTime < 10_000) return app;
 
       const list = await githubRepo.listActionsAll(app);
-      const existingIds = app.bubbles.flatMap((b) => (b.type === 'github' ? b.content.id : []));
-      const newApp = appMethods.addBubbles(
-        app,
-        list
-          .filter((c) => !existingIds.includes(c.id))
-          .map((content) => ({ type: 'github', content }))
-      );
+      const newApp = appMethods.upsertGitHubBubbles(app, list);
       await appRepo.save(tx, newApp);
 
       return newApp;

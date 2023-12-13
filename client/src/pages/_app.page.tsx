@@ -1,6 +1,7 @@
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import type { AppProps } from 'next/app';
 import dynamic from 'next/dynamic';
+import '../styles/chat-ui-kit.css';
 import '../styles/globals.css';
 import { AuthLoader } from './@components/AuthLoader';
 

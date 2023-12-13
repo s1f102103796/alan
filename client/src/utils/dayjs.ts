@@ -3,11 +3,9 @@ import ja from 'dayjs/locale/ja';
 
 dayjs.locale(ja);
 
-export const formatTimestamp = (time: number) => dayjs(time).format('YY/MM/DD HH:mm:ss');
+export const formatTimestamp = (time: number) => dayjs(time).format('YYYY/MM/DD HH:mm:ss');
 
-export const formatShortTimestamp = (time: number) => dayjs(time).format('YY/MM/DD');
-
-export const formatAssetTimestamp = (time: number) => dayjs(time).format('YY/MM/DD hh:mm');
+export const formatShortTimestamp = (time: number) => dayjs(time).format('YYYY/MM/DD');
 
 export const getDateBefore = (days: number) => dayjs().subtract(days, 'day').format('MM/DD');
 

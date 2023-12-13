@@ -32,3 +32,12 @@
   background: #fff1;
   border: none;
 }
+
+.githubTitle {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.githubTitle:hover {
+  text-decoration: underline;
+}

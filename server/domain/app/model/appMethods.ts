@@ -1,3 +1,4 @@
+import { FIRST_QUESTION } from '$/commonConstantsWithClient';
 import type {
   ActiveAppModel,
   AppModel,
@@ -5,7 +6,7 @@ import type {
   UserModel,
   WaitingAppModel,
 } from '$/commonTypesWithClient/appModels';
-import type { BubbleModel, GHActionModel } from '$/commonTypesWithClient/bubbleModels';
+import type { GHActionModel } from '$/commonTypesWithClient/bubbleModels';
 import { appIdParser } from '$/service/idParsers';
 import { randomUUID } from 'crypto';
 import { indexToDisplayId, indexToUrls } from '../query/appQuery';
@@ -26,7 +27,7 @@ export const appMethods = {
       createdTime: now,
       statusUpdatedTime: now,
       bubblesUpdatedTime: now,
-      bubbles: [bubbleMethods.create('human', desc)],
+      bubbles: [bubbleMethods.create('ai', FIRST_QUESTION), bubbleMethods.create('human', desc)],
       status: 'waiting',
       waitingOrder: waitingAppCount + 1,
       urls: indexToUrls(index),
@@ -41,15 +42,25 @@ export const appMethods = {
       statusUpdatedTime: Date.now(),
     };
   },
-  addBubbles: (
-    app: AppModel,
-    data: { type: BubbleModel['type']; content: string | GHActionModel }[]
-  ): AppModel => {
+  upsertGitHubBubbles: (app: AppModel, contents: GHActionModel[]): AppModel => {
+    const newContentIds = contents.flatMap((c) =>
+      app.bubbles.every((b) => b.type !== 'github' || b.content.id !== c.id) ? c.id : []
+    );
+
     return {
       ...app,
       bubbles: [
-        ...app.bubbles,
-        ...data.map(({ type, content }) => bubbleMethods.create(type, content)),
+        ...app.bubbles.map((b) => {
+          if (b.type !== 'github') return b;
+
+          const existingContent = contents.find((c) => c.id === b.content.id);
+
+          return existingContent === undefined ? b : { ...b, content: existingContent };
+        }),
+        ...contents
+          .filter((c) => newContentIds.includes(c.id))
+          .sort((a, b) => a.createdTime - b.createdTime)
+          .map((content) => bubbleMethods.create('github', content)),
       ],
       bubblesUpdatedTime: Date.now(),
     };

@@ -1,3 +1,4 @@
+import { FIRST_QUESTION } from 'commonConstantsWithClient';
 import type { AppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -5,11 +6,31 @@ import { PrimeButton } from 'src/components/Buttons/Buttons';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'src/components/Modal/Modal';
 import { Spacer } from 'src/components/Spacer';
 import { Textarea } from 'src/components/Textarea/Textarea';
+import { useAppStatus } from 'src/pages/@hooks/useAppStatus';
 import { useLoading } from 'src/pages/@hooks/useLoading';
 import { pagesPath } from 'src/utils/$path';
 import { apiClient } from 'src/utils/apiClient';
 import { formatShortTimestamp } from 'src/utils/dayjs';
 import styles from './appList.module.css';
+
+const StatusCircle = (props: { app: AppModel }) => {
+  const appStatus = useAppStatus(props.app);
+
+  return (
+    <div
+      className={styles.statusCircle}
+      style={{
+        background: {
+          waiting: '#aaa',
+          running: '#ff0',
+          success: '#14b869',
+          failure: '#ec0000',
+          closed: '#ec0000',
+        }[appStatus],
+      }}
+    />
+  );
+};
 
 export const AppList = (props: {
   sortedApps: AppModel[];
@@ -19,6 +40,7 @@ export const AppList = (props: {
   const { addLoading, removeLoading } = useLoading();
   const [opened, setOpened] = useState(false);
   const [desc, setDesc] = useState('');
+
   const createApp = async () => {
     addLoading();
     await apiClient.apps.$post({ body: { desc } }).then(props.append);
@@ -42,18 +64,7 @@ export const AppList = (props: {
               <div className={styles.title}>{app.name}</div>
               <Spacer axis="y" size={6} />
               <div className={styles.itemBottom}>
-                <div
-                  className={styles.statusCircle}
-                  style={{
-                    background: {
-                      waiting: '#aaa',
-                      running: '#ff0',
-                      success: '#14b869',
-                      failure: '#ec0000',
-                      closed: '#ec0000',
-                    }[app.status],
-                  }}
-                />
+                <StatusCircle app={app} />
                 <Spacer axis="x" size={2} />
                 {app.status === 'waiting' && <span>開始待ち残{app.waitingOrder}</span>}
                 <span className={styles.date}>{formatShortTimestamp(app.createdTime)}</span>
@@ -63,7 +74,7 @@ export const AppList = (props: {
         ))}
       </div>
       <Modal open={opened}>
-        <ModalHeader text="どんなアプリが欲しいですか？" />
+        <ModalHeader text={FIRST_QUESTION} />
         <ModalBody content={<Textarea rows={8} value={desc} width="400px" onChange={setDesc} />} />
         <ModalFooter okText="新規作成" ok={createApp} cancel={() => setOpened(false)} />
       </Modal>

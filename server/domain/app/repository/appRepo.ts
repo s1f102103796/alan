@@ -48,7 +48,10 @@ export const appRepo = {
 
         await tx.gitHubAction.upsert({
           where: { id: bubble.content.id },
-          update: { status: bubble.content.status },
+          update: {
+            status: bubble.content.status,
+            updatedAt: new Date(bubble.content.updatedTime),
+          },
           create: {
             id: bubble.content.id,
             type: bubble.content.type,
