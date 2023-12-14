@@ -12,6 +12,20 @@ model GitHubAction {
   type      String
   title     String
   status    String
+  branch    String
+  commitId  String
+  createdAt DateTime
+  updatedAt DateTime
+  Bubble    Bubble   @relation(fields: [bubbleId], references: [id])
+  bubbleId  String   @unique
+}
+
+model RailwayDeployment {
+  id        String   @id
+  title     String
+  status    String
+  branch    String
+  commitId  String
   createdAt DateTime
   updatedAt DateTime
   Bubble    Bubble   @relation(fields: [bubbleId], references: [id])
@@ -19,14 +33,15 @@ model GitHubAction {
 }
 
 model Bubble {
-  id           String        @id
-  type         String
-  index        Int
-  content      String
-  createdAt    DateTime
-  App          App           @relation(fields: [appId], references: [id])
-  appId        String
-  GitHubAction GitHubAction?
+  id                String             @id
+  type              String
+  index             Int
+  content           String
+  createdAt         DateTime
+  App               App                @relation(fields: [appId], references: [id])
+  appId             String
+  GitHubAction      GitHubAction?
+  RailwayDeployment RailwayDeployment?
 }
 
 model App {
@@ -40,6 +55,7 @@ model App {
   serviceId        String?
   createdAt        DateTime
   statusUpdatedAt  DateTime
-  bubblesUpdatedAt DateTime
+  githubUpdatedAt  DateTime
+  railwayUpdatedAt DateTime
   bubbles          Bubble[]
 }

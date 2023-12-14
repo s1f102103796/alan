@@ -2,7 +2,11 @@ import type { AppModelBase, WaitingAppModel } from '$/commonTypesWithClient/appM
 import { APP_STATUSES, type AppModel } from '$/commonTypesWithClient/appModels';
 import type { AppId, DisplayId, Maybe } from '$/commonTypesWithClient/branded';
 import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
-import { bubbleTypeParser, ghActionParser } from '$/commonTypesWithClient/bubbleModels';
+import {
+  bubbleTypeParser,
+  parseGHAction,
+  parseRWDeployment,
+} from '$/commonTypesWithClient/bubbleModels';
 import {
   BASE_DOMAIN,
   DISPLAY_ID_PREFIX,
@@ -11,11 +15,11 @@ import {
 } from '$/service/envValues';
 import { appIdParser, bubbleIdParser, displayIdParser, userIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
-import type { App, Bubble, GitHubAction, Prisma } from '@prisma/client';
+import type { App, Bubble, GitHubAction, Prisma, RailwayDeployment } from '@prisma/client';
 import { z } from 'zod';
 
 const PRISMA_APP_INCLUDE = {
-  bubbles: { include: { GitHubAction: true }, orderBy: { index: 'asc' } },
+  bubbles: { include: { GitHubAction: true, RailwayDeployment: true }, orderBy: { index: 'asc' } },
 } satisfies Prisma.AppInclude;
 
 export const indexToDisplayId = (index: number) =>
@@ -31,8 +35,23 @@ export const indexToUrls = (index: number): AppModel['urls'] => ({
 export const projectIdToUrl = (projectId: string) => `https://railway.app/project/${projectId}`;
 export const toGHActionUrl = (displayId: DisplayId, actionId: number | string) =>
   `https://github.com/${GITHUB_OWNER}/${displayId}/actions/runs/${actionId}`;
+export const toRWDeployUrl = (ids: {
+  project: string | null;
+  service: string | null;
+  deployment: string;
+}) => {
+  customAssert(ids.project, 'エラーならロジック修正必須');
+  customAssert(ids.service, 'エラーならロジック修正必須');
 
-type PrismaApp = App & { bubbles: (Bubble & { GitHubAction: GitHubAction | null })[] };
+  return `https://railway.app/project/${ids.project}/service/${ids.service}?id=${ids.deployment}`;
+};
+
+type PrismaApp = App & {
+  bubbles: (Bubble & {
+    GitHubAction: GitHubAction | null;
+    RailwayDeployment: RailwayDeployment | null;
+  })[];
+};
 
 const toAppModelBase = (app: PrismaApp): AppModelBase => {
   const displayId = indexToDisplayId(app.index);
@@ -45,7 +64,8 @@ const toAppModelBase = (app: PrismaApp): AppModelBase => {
     name: app.name,
     createdTime: app.createdAt.getTime(),
     statusUpdatedTime: app.statusUpdatedAt.getTime(),
-    bubblesUpdatedTime: app.bubblesUpdatedAt.getTime(),
+    githubUpdatedTime: app.railwayUpdatedAt.getTime(),
+    railwayUpdatedTime: app.railwayUpdatedAt.getTime(),
     urls: indexToUrls(app.index),
     bubbles: app.bubbles.map((bubble): BubbleModel => {
       const type = bubbleTypeParser.parse(bubble.type);
@@ -61,14 +81,37 @@ const toAppModelBase = (app: PrismaApp): AppModelBase => {
           return {
             ...base,
             type,
-            content: ghActionParser.parse({
+            content: parseGHAction({
               id: bubble.GitHubAction.id,
               type: bubble.GitHubAction.type,
               title: bubble.GitHubAction.title,
               status: bubble.GitHubAction.status,
               url: toGHActionUrl(displayId, bubble.GitHubAction.id),
+              branch: bubble.GitHubAction.branch,
+              commitId: bubble.GitHubAction.commitId,
               createdTime: bubble.GitHubAction.createdAt.getTime(),
               updatedTime: bubble.GitHubAction.updatedAt.getTime(),
+            }),
+          };
+        case 'railway':
+          customAssert(bubble.RailwayDeployment, 'エラーならロジック修正必須');
+
+          return {
+            ...base,
+            type,
+            content: parseRWDeployment({
+              id: bubble.RailwayDeployment.id,
+              title: bubble.RailwayDeployment.title,
+              status: bubble.RailwayDeployment.status,
+              url: toRWDeployUrl({
+                project: app.projectId,
+                service: app.serviceId,
+                deployment: bubble.RailwayDeployment.id,
+              }),
+              branch: bubble.RailwayDeployment.branch,
+              commitId: bubble.RailwayDeployment.commitId,
+              createdTime: bubble.RailwayDeployment.createdAt.getTime(),
+              updatedTime: bubble.RailwayDeployment.updatedAt.getTime(),
             }),
           };
         default:

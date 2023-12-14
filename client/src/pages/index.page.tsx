@@ -2,7 +2,7 @@ import type { AppModel } from 'commonTypesWithClient/appModels';
 import type { DisplayId } from 'commonTypesWithClient/branded';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { userAtom } from 'src/atoms/user';
 import { apiClient } from 'src/utils/apiClient';
 import { returnNull } from 'src/utils/returnNull';
@@ -42,6 +42,21 @@ const Home = () => {
       .$get()
       .then((res) => setApps((apps) => (JSON.stringify(apps) === JSON.stringify(res) ? apps : res)))
       .catch(returnNull);
+  const updateContents = useCallback(async () => {
+    if (currentApp === undefined) return;
+
+    await apiClient.public.apps.bubbles.update
+      .$patch({ body: { appId: currentApp.id } })
+      .then((app) =>
+        setApps((apps) => {
+          // eslint-disable-next-line max-nested-callbacks
+          const hasDiff = apps?.some((a) => JSON.stringify(a) === JSON.stringify(app));
+          // eslint-disable-next-line max-nested-callbacks
+          return hasDiff === true ? apps?.map((a) => (a.id === app.id ? app : a)) : apps;
+        })
+      )
+      .catch(returnNull);
+  }, [currentApp]);
 
   useEffect(() => {
     fetchApps();
@@ -50,6 +65,14 @@ const Home = () => {
 
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    updateContents();
+
+    const intervalId = window.setInterval(updateContents, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [updateContents]);
 
   useEffect(() => {
     if (apps !== undefined && apps.length > 0 && currentApp === undefined) {

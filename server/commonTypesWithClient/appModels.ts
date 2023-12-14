@@ -26,7 +26,8 @@ export type AppModelBase = {
   name: string;
   createdTime: number;
   statusUpdatedTime: number;
-  bubblesUpdatedTime: number;
+  githubUpdatedTime: number;
+  railwayUpdatedTime: number;
   urls: { site: string; github: string; vscode: string };
   bubbles: BubbleModel[];
 };

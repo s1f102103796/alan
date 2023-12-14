@@ -25,10 +25,22 @@ export const appUseCase = {
     transaction<AppModel>(async (tx) => {
       const app = await appQuery.findByIdOrThrow(tx, appId);
 
-      if (Date.now() - app.bubblesUpdatedTime < 10_000) return app;
+      if (app.status === 'waiting' || Date.now() - app.githubUpdatedTime < 10_000) return app;
 
       const list = await githubRepo.listActionsAll(app);
       const newApp = appMethods.upsertGitHubBubbles(app, list);
+      await appRepo.save(tx, newApp);
+
+      return newApp;
+    }),
+  updateRWDeployments: (appId: Maybe<AppId>) =>
+    transaction<AppModel>(async (tx) => {
+      const app = await appQuery.findByIdOrThrow(tx, appId);
+
+      if (app.status === 'waiting' || Date.now() - app.railwayUpdatedTime < 10_000) return app;
+
+      const list = await railwayRepo.listDeploymentsAll(app);
+      const newApp = appMethods.upsertRailwayBubbles(app, list);
       await appRepo.save(tx, newApp);
 
       return newApp;
@@ -52,7 +64,7 @@ export const appUseCase = {
       await setTimeout(startTime + 30_000 - Date.now());
     }
   },
-  watchGHActions: async () => {
+  watchBubbleContents: async () => {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const startTime = Date.now();
@@ -60,6 +72,7 @@ export const appUseCase = {
 
       for (const app of apps) {
         await appUseCase.updateGHActions(app.id);
+        await appUseCase.updateRWDeployments(app.id);
       }
 
       await setTimeout(startTime + 600_000 - Date.now());

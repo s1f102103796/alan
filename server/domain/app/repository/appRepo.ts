@@ -8,7 +8,8 @@ export const appRepo = {
       update: {
         name: app.name,
         statusUpdatedAt: new Date(app.statusUpdatedTime),
-        bubblesUpdatedAt: new Date(app.bubblesUpdatedTime),
+        githubUpdatedAt: new Date(app.githubUpdatedTime),
+        railwayUpdatedAt: new Date(app.railwayUpdatedTime),
         status: app.status,
         environmentId: app.railway?.environmentId,
         projectId: app.railway?.projectId,
@@ -21,7 +22,8 @@ export const appRepo = {
         name: app.name,
         createdAt: new Date(app.createdTime),
         statusUpdatedAt: new Date(app.statusUpdatedTime),
-        bubblesUpdatedAt: new Date(app.bubblesUpdatedTime),
+        githubUpdatedAt: new Date(app.githubUpdatedTime),
+        railwayUpdatedAt: new Date(app.railwayUpdatedTime),
         status: app.status,
         environmentId: app.railway?.environmentId,
         projectId: app.railway?.projectId,
@@ -30,38 +32,70 @@ export const appRepo = {
     });
 
     await Promise.all(
+      // eslint-disable-next-line complexity
       app.bubbles.map(async (bubble, bIndex) => {
         await tx.bubble.upsert({
           where: { id: bubble.id },
-          update: bubble.type === 'github' ? {} : { content: bubble.content },
+          update:
+            bubble.type === 'github' || bubble.type === 'railway'
+              ? {}
+              : { content: bubble.content },
           create: {
             id: bubble.id,
             type: bubble.type,
             index: bIndex,
-            content: bubble.type === 'github' ? '' : bubble.content,
+            content: bubble.type === 'github' || bubble.type === 'railway' ? '' : bubble.content,
             createdAt: new Date(bubble.createdTime),
             App: { connect: { id: app.id } },
           },
         });
 
-        if (bubble.type !== 'github') return;
-
-        await tx.gitHubAction.upsert({
-          where: { id: bubble.content.id },
-          update: {
-            status: bubble.content.status,
-            updatedAt: new Date(bubble.content.updatedTime),
-          },
-          create: {
-            id: bubble.content.id,
-            type: bubble.content.type,
-            title: bubble.content.title,
-            status: bubble.content.status,
-            createdAt: new Date(bubble.content.createdTime),
-            updatedAt: new Date(bubble.content.updatedTime),
-            Bubble: { connect: { id: bubble.id } },
-          },
-        });
+        switch (bubble.type) {
+          case 'ai':
+          case 'human':
+            break;
+          case 'github':
+            await tx.gitHubAction.upsert({
+              where: { id: bubble.content.id },
+              update: {
+                status: bubble.content.status,
+                updatedAt: new Date(bubble.content.updatedTime),
+              },
+              create: {
+                id: bubble.content.id,
+                type: bubble.content.type,
+                title: bubble.content.title,
+                status: bubble.content.status,
+                branch: bubble.content.branch,
+                commitId: bubble.content.commitId,
+                createdAt: new Date(bubble.content.createdTime),
+                updatedAt: new Date(bubble.content.updatedTime),
+                Bubble: { connect: { id: bubble.id } },
+              },
+            });
+            break;
+          case 'railway':
+            await tx.railwayDeployment.upsert({
+              where: { id: bubble.content.id },
+              update: {
+                status: bubble.content.status,
+                updatedAt: new Date(bubble.content.updatedTime),
+              },
+              create: {
+                id: bubble.content.id,
+                title: bubble.content.title,
+                status: bubble.content.status,
+                branch: bubble.content.branch,
+                commitId: bubble.content.commitId,
+                createdAt: new Date(bubble.content.createdTime),
+                updatedAt: new Date(bubble.content.updatedTime),
+                Bubble: { connect: { id: bubble.id } },
+              },
+            });
+            break;
+          default:
+            throw new Error(bubble satisfies never);
+        }
       })
     );
   },

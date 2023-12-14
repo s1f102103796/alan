@@ -9,3 +9,18 @@
 .cs-message__sent-time {
   color: #fff !important;
 }
+
+.cs-message-input__content-editor::before {
+  color: #fff !important;
+}
+
+.cs-message-input__content-editor-wrapper {
+  background: #fff2 !important;
+}
+
+.cs-message-input,
+.cs-message-input__content-editor,
+.cs-message-input__content-editor-container,
+.cs-message-input__content-editor::before {
+  background: transparent !important;
+}

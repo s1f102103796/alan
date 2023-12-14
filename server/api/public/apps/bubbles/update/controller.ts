@@ -4,5 +4,9 @@ import { defineController } from './$relay';
 
 export default defineController(() => ({
   patch: ({ body }) =>
-    appUseCase.updateGHActions(body.appId).then(returnSuccess).catch(returnPatchError),
+    appUseCase
+      .updateGHActions(body.appId)
+      .then(() => appUseCase.updateRWDeployments(body.appId))
+      .then(returnSuccess)
+      .catch(returnPatchError),
 }));

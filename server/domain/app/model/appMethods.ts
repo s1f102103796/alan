@@ -6,7 +6,7 @@ import type {
   UserModel,
   WaitingAppModel,
 } from '$/commonTypesWithClient/appModels';
-import type { GHActionModel } from '$/commonTypesWithClient/bubbleModels';
+import type { GHActionModel, RWDeploymentModel } from '$/commonTypesWithClient/bubbleModels';
 import { appIdParser } from '$/service/idParsers';
 import { randomUUID } from 'crypto';
 import { indexToDisplayId, indexToUrls } from '../query/appQuery';
@@ -26,7 +26,8 @@ export const appMethods = {
       name: desc.slice(0, 10),
       createdTime: now,
       statusUpdatedTime: now,
-      bubblesUpdatedTime: now,
+      githubUpdatedTime: 0,
+      railwayUpdatedTime: 0,
       bubbles: [bubbleMethods.create('ai', FIRST_QUESTION), bubbleMethods.create('human', desc)],
       status: 'waiting',
       waitingOrder: waitingAppCount + 1,
@@ -62,7 +63,30 @@ export const appMethods = {
           .sort((a, b) => a.createdTime - b.createdTime)
           .map((content) => bubbleMethods.create('github', content)),
       ],
-      bubblesUpdatedTime: Date.now(),
+      githubUpdatedTime: Date.now(),
+    };
+  },
+  upsertRailwayBubbles: (app: AppModel, contents: RWDeploymentModel[]): AppModel => {
+    const newContentIds = contents.flatMap((c) =>
+      app.bubbles.every((b) => b.type !== 'railway' || b.content.id !== c.id) ? c.id : []
+    );
+
+    return {
+      ...app,
+      bubbles: [
+        ...app.bubbles.map((b) => {
+          if (b.type !== 'railway') return b;
+
+          const existingContent = contents.find((c) => c.id === b.content.id);
+
+          return existingContent === undefined ? b : { ...b, content: existingContent };
+        }),
+        ...contents
+          .filter((c) => newContentIds.includes(c.id))
+          .sort((a, b) => a.createdTime - b.createdTime)
+          .map((content) => bubbleMethods.create('railway', content)),
+      ],
+      railwayUpdatedTime: Date.now(),
     };
   },
 };

@@ -33,11 +33,11 @@
   border: none;
 }
 
-.githubTitle {
+.contentTitle {
   font-size: 18px;
   font-weight: bold;
 }
 
-.githubTitle:hover {
+.contentTitle:hover {
   text-decoration: underline;
 }

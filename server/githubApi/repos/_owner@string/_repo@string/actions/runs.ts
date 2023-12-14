@@ -1,3 +1,4 @@
+import type { CommitId } from '$/commonTypesWithClient/branded';
 import type { GHActionType, GHStatus } from '$/commonTypesWithClient/bubbleModels';
 import type { DefineMethods } from 'aspida';
 
@@ -36,7 +37,7 @@ export type Methods = DefineMethods<{
         rerun_url: string;
         workflow_url: string;
         head_commit: {
-          id: string;
+          id: CommitId;
           tree_id: string;
           message: string;
           timestamp: string;

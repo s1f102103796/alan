@@ -1,5 +1,5 @@
-import type { AppModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
-import { ghActionParser, type GHActionModel } from '$/commonTypesWithClient/bubbleModels';
+import type { ActiveAppModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
+import { parseGHAction, type GHActionModel } from '$/commonTypesWithClient/bubbleModels';
 import api from '$/githubApi/$api';
 import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
 import aspida from '@aspida/fetch';
@@ -44,7 +44,7 @@ export const githubRepo = {
         .pages.$post({ body: { build_type: 'legacy', source: { branch: 'gh-pages' } } }),
     ]);
   },
-  listActionsAll: async (app: AppModel) => {
+  listActionsAll: async (app: ActiveAppModel) => {
     const list: GHActionModel[] = [];
     const perPage = 100;
     let page = 0;
@@ -63,12 +63,14 @@ export const githubRepo = {
       totalCount = res.total_count;
       list.push(
         ...res.workflow_runs.map((run) =>
-          ghActionParser.parse({
+          parseGHAction({
             id: run.id.toString(),
             type: run.name,
             title: run.display_title,
             status: run.conclusion ?? run.status,
             url: toGHActionUrl(app.displayId, run.id),
+            branch: run.head_branch,
+            commitId: run.head_commit.id,
             createdTime: new Date(run.created_at).getTime(),
             updatedTime: new Date(run.updated_at).getTime(),
           })
