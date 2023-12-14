@@ -6,6 +6,7 @@
     "skipLibCheck": true,
     "strict": true,
     "strictPropertyInitialization": false,
+    "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,

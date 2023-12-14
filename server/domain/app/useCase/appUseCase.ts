@@ -39,43 +39,52 @@ export const appUseCase = {
 
       if (app.status === 'waiting' || Date.now() - app.railwayUpdatedTime < 10_000) return app;
 
-      const list = await railwayRepo.listDeploymentsAll(app);
+      const list = await railwayRepo.listDeploymentsAll(tx, app);
       const newApp = appMethods.upsertRailwayBubbles(app, list);
       await appRepo.save(tx, newApp);
 
       return newApp;
     }),
   initOneByOne: async () => {
+    let prevTime = 0;
+
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const startTime = Date.now();
+      await setTimeout(1000);
+
+      if (Date.now() - prevTime < 30_000) continue;
+
       const waiting = await appQuery.findWaitingHead(prismaClient);
 
-      if (waiting === undefined) {
-        await setTimeout(startTime + 3_000 - Date.now());
-        continue;
-      }
+      if (waiting === undefined) continue;
 
       await githubRepo.create(waiting);
       const railway = await railwayRepo.create(waiting);
       const app = appMethods.init(waiting, railway);
 
       await appRepo.save(prismaClient, app);
-      await setTimeout(startTime + 30_000 - Date.now());
+      prevTime = Date.now();
     }
   },
   watchBubbleContents: async () => {
+    let prevTime = 0;
+
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const startTime = Date.now();
+      await setTimeout(1000);
+
+      if (Date.now() - prevTime < 600_000) continue;
+
       const apps = await appQuery.findAll(prismaClient);
 
       for (const app of apps) {
-        await appUseCase.updateGHActions(app.id);
-        await appUseCase.updateRWDeployments(app.id);
+        await appUseCase
+          .updateGHActions(app.id)
+          .then(() => appUseCase.updateRWDeployments(app.id))
+          .catch(() => null);
       }
 
-      await setTimeout(startTime + 600_000 - Date.now());
+      prevTime = Date.now();
     }
   },
 };

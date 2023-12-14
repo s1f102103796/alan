@@ -43,25 +43,25 @@ const Home = () => {
       .then((res) => setApps((apps) => (JSON.stringify(apps) === JSON.stringify(res) ? apps : res)))
       .catch(returnNull);
   const updateContents = useCallback(async () => {
-    if (currentApp === undefined) return;
+    if (currentApp?.id === undefined) return;
 
     await apiClient.public.apps.bubbles.update
       .$patch({ body: { appId: currentApp.id } })
       .then((app) =>
         setApps((apps) => {
           // eslint-disable-next-line max-nested-callbacks
-          const hasDiff = apps?.some((a) => JSON.stringify(a) === JSON.stringify(app));
+          const hasDiff = apps?.some((a) => JSON.stringify(a) !== JSON.stringify(app));
           // eslint-disable-next-line max-nested-callbacks
           return hasDiff === true ? apps?.map((a) => (a.id === app.id ? app : a)) : apps;
         })
       )
       .catch(returnNull);
-  }, [currentApp]);
+  }, [currentApp?.id]);
 
   useEffect(() => {
     fetchApps();
 
-    const intervalId = window.setInterval(fetchApps, 1000);
+    const intervalId = window.setInterval(fetchApps, 10_000);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -76,7 +76,7 @@ const Home = () => {
 
   useEffect(() => {
     if (apps !== undefined && apps.length > 0 && currentApp === undefined) {
-      router.push(`/?id=${apps[0].displayId}`);
+      router.push(`/?id=${apps[0]?.displayId}`);
     }
   }, [apps, currentApp, router]);
 

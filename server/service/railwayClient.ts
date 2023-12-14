@@ -5,4 +5,5 @@ export const railwayClient = new ApolloClient({
   uri: 'https://backboard.railway.app/graphql/v2',
   cache: new InMemoryCache(),
   headers: { Authorization: `Bearer ${RAILWAY_TOKEN}` },
+  defaultOptions: { watchQuery: { fetchPolicy: 'no-cache' } },
 });

@@ -9,7 +9,7 @@ import type {
 import type { GHActionModel, RWDeploymentModel } from '$/commonTypesWithClient/bubbleModels';
 import { appIdParser } from '$/service/idParsers';
 import { randomUUID } from 'crypto';
-import { indexToDisplayId, indexToUrls } from '../query/appQuery';
+import { indexToDisplayId, indexToUrls } from '../query/utils';
 import { bubbleMethods } from './bubbleMethods';
 
 export const appMethods = {
@@ -28,16 +28,19 @@ export const appMethods = {
       statusUpdatedTime: now,
       githubUpdatedTime: 0,
       railwayUpdatedTime: 0,
-      bubbles: [bubbleMethods.create('ai', FIRST_QUESTION), bubbleMethods.create('human', desc)],
+      bubbles: [
+        { ...bubbleMethods.create('ai', FIRST_QUESTION), createdTime: Date.now() - 1000 },
+        bubbleMethods.create('human', desc),
+      ],
       status: 'waiting',
       waitingOrder: waitingAppCount + 1,
-      urls: indexToUrls(index),
     };
   },
   init: (app: WaitingAppModel, railway: RailwayModel): ActiveAppModel => {
     return {
       ...app,
       status: 'running',
+      urls: indexToUrls(app.index),
       railway,
       waitingOrder: undefined,
       statusUpdatedTime: Date.now(),

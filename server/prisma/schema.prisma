@@ -35,7 +35,6 @@ model RailwayDeployment {
 model Bubble {
   id                String             @id
   type              String
-  index             Int
   content           String
   createdAt         DateTime
   App               App                @relation(fields: [appId], references: [id])

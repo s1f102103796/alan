@@ -14,8 +14,8 @@ export const PrimeButton = (props: {
       props.isDark === true
         ? { background: 'white', color: CSS_VARS.themeFontColor, width: props.width }
         : {
-            background: `${CSS_VARS.themeFontColor}33`,
-            borderColor: 'white',
+            background: '#fff1',
+            borderColor: CSS_VARS.primitive,
             color: 'white',
             width: props.width,
           }

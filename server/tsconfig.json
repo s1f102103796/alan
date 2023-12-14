@@ -14,6 +14,7 @@
     "skipLibCheck": true,
     "strict": true,
     "strictPropertyInitialization": false,
+    "noUncheckedIndexedAccess": true,
     "target": "es6",
     "incremental": true
   },

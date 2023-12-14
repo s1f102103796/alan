@@ -19,6 +19,29 @@ a {
 
 :root {
   --theme-font-color: #fff;
-  --warning: #f30;
   --border-color: #ccc7;
+  --primitive: #259d63;
+  --warning: #f30;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  transition: 0.5s;
+}
+
+::-webkit-scrollbar-track:hover {
+  background: #fff3;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #fff5;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #fff7;
 }

@@ -5,7 +5,7 @@ import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues
 import aspida from '@aspida/fetch';
 // import * as GitHubApiCreateCommit from '@himenon/github-api-create-commit';
 import { URL } from 'url';
-import { toGHActionUrl } from '../query/appQuery';
+import { indexToUrls, toGHActionUrl } from '../query/utils';
 
 const githubApiClient = api(
   aspida(undefined, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } })
@@ -20,6 +20,7 @@ const githubApiClient = api(
 export const githubRepo = {
   create: async (app: WaitingAppModel) => {
     const repoName = app.displayId;
+    const urls = indexToUrls(app.index);
 
     await githubApiClient.repos
       ._owner(GITHUB_OWNER)
@@ -29,7 +30,7 @@ export const githubRepo = {
 
     await Promise.all([
       ...[
-        { name: 'CNAME', value: new URL(app.urls.site).host },
+        { name: 'CNAME', value: new URL(urls.site).host },
         { name: 'API_ORIGIN', value: `https://${repoName}-production.up.railway.app` },
       ].map((body) =>
         githubApiClient.repos._owner(GITHUB_OWNER)._repo(repoName).actions.variables.$post({ body })
@@ -37,7 +38,7 @@ export const githubRepo = {
       githubApiClient.repos
         ._owner(GITHUB_OWNER)
         ._repo(repoName)
-        .$patch({ body: { homepage: app.urls.site } }),
+        .$patch({ body: { homepage: urls.site } }),
       githubApiClient.repos
         ._owner(GITHUB_OWNER)
         ._repo(repoName)

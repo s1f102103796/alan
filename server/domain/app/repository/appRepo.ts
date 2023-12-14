@@ -33,7 +33,7 @@ export const appRepo = {
 
     await Promise.all(
       // eslint-disable-next-line complexity
-      app.bubbles.map(async (bubble, bIndex) => {
+      app.bubbles.map(async (bubble) => {
         await tx.bubble.upsert({
           where: { id: bubble.id },
           update:
@@ -43,7 +43,6 @@ export const appRepo = {
           create: {
             id: bubble.id,
             type: bubble.type,
-            index: bIndex,
             content: bubble.type === 'github' || bubble.type === 'railway' ? '' : bubble.content,
             createdAt: new Date(bubble.createdTime),
             App: { connect: { id: app.id } },

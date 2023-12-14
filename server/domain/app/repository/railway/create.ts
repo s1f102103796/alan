@@ -2,7 +2,7 @@ import type { RailwayModel, WaitingAppModel } from '$/commonTypesWithClient/appM
 import { FIREBASE_SERVER_KEY, GITHUB_OWNER } from '$/service/envValues';
 import { railwayClient } from '$/service/railwayClient';
 import { gql } from '@apollo/client';
-import { projectIdToUrl } from '../../query/appQuery';
+import { indexToUrls, projectIdToUrl } from '../../query/utils';
 
 export const createOnRailwayRepo = async (app: WaitingAppModel): Promise<RailwayModel> => {
   const repoName = app.displayId;
@@ -58,6 +58,7 @@ export const createOnRailwayRepo = async (app: WaitingAppModel): Promise<Railway
     variables: { projectId },
   });
   const serviceId = pj.data.project.services.edges[0].node.id;
+  const urls = indexToUrls(app.index);
 
   await railwayClient
     .mutate({
@@ -88,7 +89,7 @@ export const createOnRailwayRepo = async (app: WaitingAppModel): Promise<Railway
         environmentId,
         projectId,
         serviceId,
-        origin: app.urls.site,
+        origin: urls.site,
         firebase: FIREBASE_SERVER_KEY,
       },
     })

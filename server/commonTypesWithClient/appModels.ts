@@ -28,19 +28,20 @@ export type AppModelBase = {
   statusUpdatedTime: number;
   githubUpdatedTime: number;
   railwayUpdatedTime: number;
-  urls: { site: string; github: string; vscode: string };
   bubbles: BubbleModel[];
 };
 
 export type WaitingAppModel = AppModelBase & {
   status: (typeof APP_STATUSES)[0];
   waitingOrder: number;
+  urls?: undefined;
   railway?: undefined;
 };
 
 export type ActiveAppModel = AppModelBase & {
   status: 'running' | 'failure' | 'success' | 'closed';
   waitingOrder?: undefined;
+  urls?: { site: string; github: string; vscode: string };
   railway: RailwayModel;
 };
 

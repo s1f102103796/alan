@@ -102,7 +102,7 @@ export const ChatArea = (props: { app: AppModel }) => {
                       title={
                         bubble.content.type === bubble.content.title
                           ? bubble.content.type
-                          : `${bubble.content.type}: ${bubble.content.title}`
+                          : `${bubble.content.type} - ${bubble.content.title}`
                       }
                       content={bubble.content}
                       status={actionStatusToIconStatus(bubble.content)}
@@ -111,7 +111,7 @@ export const ChatArea = (props: { app: AppModel }) => {
                   ) : bubble.type === 'railway' ? (
                     <CustomContent
                       key={bubble.id}
-                      title={bubble.content.title}
+                      title={`Deploy server - ${bubble.content.title}`}
                       content={bubble.content}
                       status={deploymentStatusToIconStatus(bubble.content)}
                       icon={<RailwayIcon size={36} fill="#fff" />}
