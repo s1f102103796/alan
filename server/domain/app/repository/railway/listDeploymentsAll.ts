@@ -7,7 +7,7 @@ import { customAssert } from '$/service/returnStatus';
 import { gql } from '@apollo/client';
 import type { Prisma } from '@prisma/client';
 import { appQuery } from '../../query/appQuery';
-import { toRWDeployUrl } from '../../query/utils';
+import { toCommitUrl, toRWDeployUrl } from '../../query/utils';
 
 export const listDeploymentsAllOnRailwayRepo = async (
   tx: Prisma.TransactionClient,
@@ -89,6 +89,7 @@ export const listDeploymentsAllOnRailwayRepo = async (
           }),
           branch: latestTest.content.branch,
           commitId: latestTest.content.commitId,
+          commitUrl: toCommitUrl(app.displayId, latestTest.content.commitId),
           createdTime: new Date(node.createdAt).getTime(),
           updatedTime:
             oldBubble === undefined || oldBubble.content.status !== node.status

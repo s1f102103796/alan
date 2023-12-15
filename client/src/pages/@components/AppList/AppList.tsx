@@ -61,14 +61,14 @@ export const AppList = (props: {
               className={styles.appItem}
               style={{ background: props.currentApp?.id === app.id ? '#fff2' : '' }}
             >
-              <div className={styles.title}>{app.name}</div>
-              <Spacer axis="y" size={6} />
-              <div className={styles.itemBottom}>
+              <div className={styles.itemHeader}>
                 <StatusCircle app={app} />
-                <Spacer axis="x" size={2} />
-                {app.status === 'waiting' && <span>開始待ち残{app.waitingOrder}</span>}
+                <div />
+                <span>No.{app.index}</span>
                 <span className={styles.date}>{formatShortTimestamp(app.createdTime)}</span>
               </div>
+              <Spacer axis="y" size={6} />
+              <div className={styles.title}>{app.name}</div>
             </div>
           </Link>
         ))}

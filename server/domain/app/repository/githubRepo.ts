@@ -5,7 +5,7 @@ import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues
 import aspida from '@aspida/fetch';
 // import * as GitHubApiCreateCommit from '@himenon/github-api-create-commit';
 import { URL } from 'url';
-import { indexToUrls, toGHActionUrl } from '../query/utils';
+import { indexToUrls, toCommitUrl, toGHActionUrl } from '../query/utils';
 
 const githubApiClient = api(
   aspida(undefined, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } })
@@ -72,6 +72,7 @@ export const githubRepo = {
             url: toGHActionUrl(app.displayId, run.id),
             branch: run.head_branch,
             commitId: run.head_commit.id,
+            commitUrl: toCommitUrl(app.displayId, run.head_commit.id),
             createdTime: new Date(run.created_at).getTime(),
             updatedTime: new Date(run.updated_at).getTime(),
           })

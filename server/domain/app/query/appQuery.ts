@@ -20,6 +20,7 @@ import {
   createUrls,
   indexToDisplayId,
   projectIdToUrl,
+  toCommitUrl,
   toGHActionUrl,
   toRWDeployUrl,
 } from './utils';
@@ -63,6 +64,7 @@ const toBubble = (
           url: toGHActionUrl(indexToDisplayId(app.index), bubble.GitHubAction.id),
           branch: bubble.GitHubAction.branch,
           commitId: bubble.GitHubAction.commitId,
+          commitUrl: toCommitUrl(indexToDisplayId(app.index), bubble.GitHubAction.commitId),
           createdTime: bubble.GitHubAction.createdAt.getTime(),
           updatedTime: bubble.GitHubAction.updatedAt.getTime(),
         }),
@@ -84,6 +86,7 @@ const toBubble = (
           }),
           branch: bubble.RailwayDeployment.branch,
           commitId: bubble.RailwayDeployment.commitId,
+          commitUrl: toCommitUrl(indexToDisplayId(app.index), bubble.RailwayDeployment.commitId),
           createdTime: bubble.RailwayDeployment.createdAt.getTime(),
           updatedTime: bubble.RailwayDeployment.updatedAt.getTime(),
         }),

@@ -19,7 +19,7 @@
 }
 
 .appItem {
-  padding: 10px 16px;
+  padding: 10px 12px;
   font-size: 12px;
   cursor: pointer;
   background: #fff1;
@@ -38,12 +38,10 @@
   white-space: nowrap;
 }
 
-.itemBottom {
+.itemHeader {
   display: flex;
   gap: 4px;
   align-items: center;
-  font-size: 11px;
-  color: #ccc;
 }
 
 .statusCircle {
@@ -59,4 +57,5 @@
 
 .date {
   margin-left: auto;
+  font-size: 11px;
 }

@@ -44,10 +44,14 @@ const CustomContent = (props: {
         <Link href={props.content.url} target="_brank">
           <div className={styles.contentTitle}>{props.title}</div>
         </Link>
-        <Spacer axis="y" size={8} />
+        <Spacer axis="y" size={12} />
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <StatusIcon status={props.status} />
           <Spacer axis="x" size={8} />
+          <Link href={props.content.commitUrl} target="_brank" className={styles.commitLink}>
+            {props.content.commitId.slice(0, 7)}
+          </Link>
+          <Spacer axis="x" size={60} />
           <RunningTimer
             start={props.content.createdTime}
             end={

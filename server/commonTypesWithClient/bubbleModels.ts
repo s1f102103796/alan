@@ -33,6 +33,7 @@ const ghActionParser = z.object({
   url: z.string(),
   branch: z.string(),
   commitId: commitIdParser,
+  commitUrl: z.string(),
   createdTime: z.number(),
   updatedTime: z.number(),
 });
@@ -69,6 +70,7 @@ const rwDeploymentParser = z.object({
   url: z.string(),
   branch: z.string(),
   commitId: commitIdParser,
+  commitUrl: z.string(),
   createdTime: z.number(),
   updatedTime: z.number(),
 });

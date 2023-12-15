@@ -13,7 +13,9 @@ const imgHeight = '(100vh - 48px - 48px)';
 export const InfoArea = (props: { app: ActiveAppModel }) => {
   return (
     <div className={styles.container}>
-      <div className={styles.appName}>{props.app.name}</div>
+      <div className={styles.appName}>
+        No.{props.app.index} - {props.app.name}
+      </div>
       {props.app.urls ? (
         <>
           <div className={styles.leftContent}>

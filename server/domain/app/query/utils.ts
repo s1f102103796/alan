@@ -23,6 +23,8 @@ export const indexToUrls = (index: number): Required<AppModel>['urls'] => ({
 export const projectIdToUrl = (projectId: string) => `https://railway.app/project/${projectId}`;
 export const toGHActionUrl = (displayId: DisplayId, actionId: number | string) =>
   `https://github.com/${GITHUB_OWNER}/${displayId}/actions/runs/${actionId}`;
+export const toCommitUrl = (displayId: DisplayId, commitId: string) =>
+  `https://github.com/${GITHUB_OWNER}/${displayId}/commit/${commitId}`;
 export const toRWDeployUrl = (ids: {
   project: string | null;
   service: string | null;

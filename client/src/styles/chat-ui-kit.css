@@ -11,7 +11,12 @@
 }
 
 .cs-message-input__content-editor::before {
+  color: #fffa !important;
+}
+
+.cs-message-input__content-editor {
   color: #fff !important;
+  caret-color: #fff;
 }
 
 .cs-message-input__content-editor-wrapper {
