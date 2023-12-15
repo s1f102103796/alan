@@ -2,7 +2,8 @@ import type { AppModel } from 'commonTypesWithClient/appModels';
 import type { DisplayId } from 'commonTypesWithClient/branded';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
+import { appsAtom } from 'src/atoms/apps';
 import { userAtom } from 'src/atoms/user';
 import { apiClient } from 'src/utils/apiClient';
 import { returnNull } from 'src/utils/returnNull';
@@ -20,11 +21,8 @@ export type OptionalQuery = {
 const Home = () => {
   const router = useRouter();
   const [user] = useAtom(userAtom);
-  const [apps, setApps] = useState<AppModel[]>();
-  const sortedApps = useMemo(
-    () => apps?.sort((a, b) => b.createdTime - a.createdTime) ?? [],
-    [apps]
-  );
+  const [apps, setApps] = useAtom(appsAtom);
+  const sortedApps = useMemo(() => apps.sort((a, b) => b.createdTime - a.createdTime), [apps]);
   const selectedAppId = useMemo(
     () => sortedApps.find((app) => app.displayId === router.query.id)?.id,
     [sortedApps, router.query.id]
@@ -34,14 +32,19 @@ const Home = () => {
     [selectedAppId, sortedApps]
   );
   const appendApp = (app: AppModel) => {
-    setApps((apps) => [...(apps ?? []), app]);
-    router.push(`/?id=${app.displayId}`);
+    setApps((apps) => [...apps, app]);
+    router.push(`/?id=${app.displayId}`, undefined, { shallow: true });
   };
-  const fetchApps = () =>
-    apiClient.public.apps
-      .$get()
-      .then((res) => setApps((apps) => (JSON.stringify(apps) === JSON.stringify(res) ? apps : res)))
-      .catch(returnNull);
+  const fetchApps = useCallback(
+    () =>
+      apiClient.public.apps
+        .$get()
+        .then((res) =>
+          setApps((apps) => (JSON.stringify(apps) === JSON.stringify(res) ? apps : res))
+        )
+        .catch(returnNull),
+    [setApps]
+  );
   const updateContents = useCallback(async () => {
     if (currentApp?.id === undefined) return;
 
@@ -50,13 +53,13 @@ const Home = () => {
       .then((app) =>
         setApps((apps) => {
           // eslint-disable-next-line max-nested-callbacks
-          const hasDiff = apps?.some((a) => JSON.stringify(a) !== JSON.stringify(app));
+          const hasDiff = apps.some((a) => JSON.stringify(a) !== JSON.stringify(app));
           // eslint-disable-next-line max-nested-callbacks
-          return hasDiff === true ? apps?.map((a) => (a.id === app.id ? app : a)) : apps;
+          return hasDiff ? apps.map((a) => (a.id === app.id ? app : a)) : apps;
         })
       )
       .catch(returnNull);
-  }, [currentApp?.id]);
+  }, [currentApp?.id, setApps]);
 
   useEffect(() => {
     fetchApps();
@@ -64,7 +67,7 @@ const Home = () => {
     const intervalId = window.setInterval(fetchApps, 10_000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [fetchApps]);
 
   useEffect(() => {
     updateContents();
@@ -75,8 +78,8 @@ const Home = () => {
   }, [updateContents]);
 
   useEffect(() => {
-    if (apps !== undefined && apps.length > 0 && currentApp === undefined) {
-      router.push(`/?id=${apps[0]?.displayId}`);
+    if (apps.length > 0 && currentApp === undefined) {
+      router.push(`/?id=${apps[0]?.displayId}`, undefined, { shallow: true });
     }
   }, [apps, currentApp, router]);
 

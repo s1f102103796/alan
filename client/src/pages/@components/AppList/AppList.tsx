@@ -56,10 +56,14 @@ export const AppList = (props: {
       </div>
       <div className={styles.itemContainer}>
         {props.sortedApps.map((app) => (
-          <Link key={app.id} href={pagesPath.$url({ query: { id: app.displayId } })}>
+          <Link key={app.id} href={pagesPath.$url({ query: { id: app.displayId } })} shallow>
             <div
               className={styles.appItem}
-              style={{ background: props.currentApp?.id === app.id ? '#fff2' : '' }}
+              style={
+                props.currentApp?.id === app.id
+                  ? { background: '#fff2', borderColor: '#fff' }
+                  : undefined
+              }
             >
               <div className={styles.itemHeader}>
                 <StatusCircle app={app} />
