@@ -3,19 +3,12 @@ import { parseGHAction, type GHActionModel } from '$/commonTypesWithClient/bubbl
 import api from '$/githubApi/$api';
 import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
 import aspida from '@aspida/fetch';
-// import * as GitHubApiCreateCommit from '@himenon/github-api-create-commit';
 import { URL } from 'url';
 import { indexToUrls, toCommitUrl, toGHActionUrl } from '../query/utils';
 
 const githubApiClient = api(
   aspida(undefined, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } })
 );
-
-// const commitClient = GitHubApiCreateCommit.create({
-//   owner: GITHUB_OWNER,
-//   repo: repoName,
-//   accessToken: GITHUB_TOKEN,
-// });
 
 export const githubRepo = {
   create: async (app: WaitingAppModel) => {
@@ -25,8 +18,9 @@ export const githubRepo = {
     await githubApiClient.repos
       ._owner(GITHUB_OWNER)
       ._repo(GITHUB_TEMPLATE)
-      .generate.$post({ body: { owner: GITHUB_OWNER, name: repoName, include_all_branches: true } })
-      .catch((e) => console.log('ignore error when creating repo:', e.message));
+      .generate.$post({
+        body: { owner: GITHUB_OWNER, name: repoName, include_all_branches: true },
+      });
 
     await Promise.all([
       ...[

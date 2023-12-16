@@ -23,7 +23,6 @@ const GITHUB_OWNER = z.string().parse(process.env.GITHUB_OWNER);
 const GITHUB_TOKEN = z.string().parse(process.env.GITHUB_TOKEN);
 const RAILWAY_TOKEN = z.string().parse(process.env.RAILWAY_TOKEN);
 const DISPLAY_ID_PREFIX = z.string().parse(process.env.DISPLAY_ID_PREFIX);
-const SUB_DOMAIN_PREFIX = z.string().parse(process.env.SUB_DOMAIN_PREFIX);
 const BASE_DOMAIN = z.string().parse(process.env.BASE_DOMAIN);
 
 export {
@@ -45,5 +44,4 @@ export {
   S3_ENDPOINT,
   S3_REGION,
   S3_SECRET_KEY,
-  SUB_DOMAIN_PREFIX,
 };

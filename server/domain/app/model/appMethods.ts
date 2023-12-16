@@ -23,7 +23,7 @@ export const appMethods = {
       userId: user.id,
       index,
       displayId: indexToDisplayId(index),
-      name: desc.slice(0, 10),
+      name: desc.slice(0, 15),
       createdTime: now,
       statusUpdatedTime: now,
       githubUpdatedTime: 0,

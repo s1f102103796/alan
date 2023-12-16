@@ -1,19 +1,14 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { DisplayId } from '$/commonTypesWithClient/branded';
 import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
-import {
-  BASE_DOMAIN,
-  DISPLAY_ID_PREFIX,
-  GITHUB_OWNER,
-  SUB_DOMAIN_PREFIX,
-} from '$/service/envValues';
+import { BASE_DOMAIN, DISPLAY_ID_PREFIX, GITHUB_OWNER } from '$/service/envValues';
 import { displayIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
 
 export const indexToDisplayId = (index: number) =>
   displayIdParser.parse(`${DISPLAY_ID_PREFIX}-${index}`);
 export const indexToUrls = (index: number): Required<AppModel>['urls'] => ({
-  site: `https://${SUB_DOMAIN_PREFIX}${index}.${BASE_DOMAIN}`,
+  site: `https://${index}.${BASE_DOMAIN}`,
   github: `https://github.com/${GITHUB_OWNER}/${indexToDisplayId(index)}`,
   vscode: `https://github.dev/${GITHUB_OWNER}/${indexToDisplayId(
     index
