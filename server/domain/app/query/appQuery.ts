@@ -24,7 +24,7 @@ import {
 const PRISMA_APP_INCLUDE = {
   bubbles: {
     include: { GitHubAction: true, RailwayDeployment: true },
-    orderBy: { createdAt: 'asc' },
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
   },
 } satisfies Prisma.AppInclude;
 

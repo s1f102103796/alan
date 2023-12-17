@@ -22,7 +22,7 @@ export const appUseCase = {
       return app;
     }),
   updateGHActions: (appId: Maybe<AppId>) =>
-    transaction<AppModel>(async (tx) => {
+    transaction(async (tx) => {
       const app = await appQuery.findByIdOrThrow(tx, appId);
 
       if (app.status === 'waiting' || Date.now() - app.githubUpdatedTime < 10_000) return app;
@@ -30,11 +30,9 @@ export const appUseCase = {
       const list = await githubRepo.listActionsAll(app);
       const newApp = appMethods.upsertGitHubBubbles(app, list);
       await appRepo.save(tx, newApp);
-
-      return newApp;
     }),
   updateRWDeployments: (appId: Maybe<AppId>) =>
-    transaction<AppModel>(async (tx) => {
+    transaction(async (tx) => {
       const app = await appQuery.findByIdOrThrow(tx, appId);
 
       if (app.status === 'waiting' || Date.now() - app.railwayUpdatedTime < 10_000) return app;
@@ -42,8 +40,6 @@ export const appUseCase = {
       const list = await railwayRepo.listDeploymentsAll(tx, app);
       const newApp = appMethods.upsertRailwayBubbles(app, list);
       await appRepo.save(tx, newApp);
-
-      return newApp;
     }),
   initOneByOne: async () => {
     let prevTime = 0;

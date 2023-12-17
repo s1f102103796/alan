@@ -29,8 +29,8 @@ export const appMethods = {
       githubUpdatedTime: 0,
       railwayUpdatedTime: 0,
       bubbles: [
-        { ...bubbleMethods.create('ai', FIRST_QUESTION), createdTime: Date.now() - 1000 },
-        bubbleMethods.create('human', desc),
+        { ...bubbleMethods.create('ai', FIRST_QUESTION), createdTime: now },
+        { ...bubbleMethods.create('human', desc), createdTime: now + 1 },
       ],
       status: 'waiting',
       waitingOrder: waitingAppCount + 1,
@@ -63,7 +63,6 @@ export const appMethods = {
         }),
         ...contents
           .filter((c) => newContentIds.includes(c.id))
-          .sort((a, b) => a.createdTime - b.createdTime)
           .map((content) => bubbleMethods.create('github', content)),
       ],
       githubUpdatedTime: Date.now(),
@@ -86,7 +85,6 @@ export const appMethods = {
         }),
         ...contents
           .filter((c) => newContentIds.includes(c.id))
-          .sort((a, b) => a.createdTime - b.createdTime)
           .map((content) => bubbleMethods.create('railway', content)),
       ],
       railwayUpdatedTime: Date.now(),
