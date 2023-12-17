@@ -14,8 +14,8 @@ const CrossMark = () => {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="10" cy="10" r="10" fill="#ec0000" />
-      <path d="M13.5355 6.46454L6.46445 13.5356" stroke="white" strokeWidth="2" />
-      <path d="M13.5355 13.5356L6.46445 6.46452" stroke="white" strokeWidth="2" />
+      <path d="M14.1355 6.46454L7.06445 13.5356" stroke="white" strokeWidth="2" />
+      <path d="M14.1355 13.5356L7.06445 6.46452" stroke="white" strokeWidth="2" />
     </svg>
   );
 };

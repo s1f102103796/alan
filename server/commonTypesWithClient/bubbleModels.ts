@@ -6,7 +6,12 @@ import {
   rwDeploymentIdParser,
 } from '../service/idParsers';
 
-export const GH_ACTION_TYPES = ['Test', 'Deploy client', 'pages build and deployment'] as const;
+export const GH_ACTION_TYPES = [
+  'Test',
+  'Lint fix',
+  'Deploy client',
+  'pages build and deployment',
+] as const;
 export const GH_STATUSES = [
   'completed',
   'action_required',
@@ -32,6 +37,7 @@ const ghActionParser = z.object({
   status: z.enum(GH_STATUSES),
   url: z.string(),
   branch: z.string(),
+  branchUrl: z.string(),
   commitId: commitIdParser,
   commitUrl: z.string(),
   createdTime: z.number(),
@@ -69,6 +75,7 @@ const rwDeploymentParser = z.object({
   status: z.enum(RW_STATUSES),
   url: z.string(),
   branch: z.string(),
+  branchUrl: z.string(),
   commitId: commitIdParser,
   commitUrl: z.string(),
   createdTime: z.number(),

@@ -1,13 +1,8 @@
-import type {
-  ActiveAppModel,
-  AppModelBase,
-  WaitingAppModel,
-} from '$/commonTypesWithClient/appModels';
+import type { AppModelBase, WaitingAppModel } from '$/commonTypesWithClient/appModels';
 import { APP_STATUSES, type AppModel } from '$/commonTypesWithClient/appModels';
 import type { AppId, Maybe } from '$/commonTypesWithClient/branded';
 import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
 import {
-  GH_ACTION_TYPES,
   bubbleTypeParser,
   parseGHAction,
   parseRWDeployment,
@@ -20,6 +15,7 @@ import {
   createUrls,
   indexToDisplayId,
   projectIdToUrl,
+  toBranchUrl,
   toCommitUrl,
   toGHActionUrl,
   toRWDeployUrl,
@@ -63,6 +59,7 @@ const toBubble = (
           status: bubble.GitHubAction.status,
           url: toGHActionUrl(indexToDisplayId(app.index), bubble.GitHubAction.id),
           branch: bubble.GitHubAction.branch,
+          branchUrl: toBranchUrl(indexToDisplayId(app.index), bubble.GitHubAction.branch),
           commitId: bubble.GitHubAction.commitId,
           commitUrl: toCommitUrl(indexToDisplayId(app.index), bubble.GitHubAction.commitId),
           createdTime: bubble.GitHubAction.createdAt.getTime(),
@@ -85,6 +82,7 @@ const toBubble = (
             deployment: bubble.RailwayDeployment.id,
           }),
           branch: bubble.RailwayDeployment.branch,
+          branchUrl: toBranchUrl(indexToDisplayId(app.index), bubble.RailwayDeployment.branch),
           commitId: bubble.RailwayDeployment.commitId,
           commitUrl: toCommitUrl(indexToDisplayId(app.index), bubble.RailwayDeployment.commitId),
           createdTime: bubble.RailwayDeployment.createdAt.getTime(),
@@ -180,18 +178,4 @@ export const appQuery = {
         orderBy: { index: 'asc' },
       })
       .then((app) => (app !== null ? toWaitingAppModel(app, [app.id]) : undefined)),
-  findLatestTestBubble: async (tx: Prisma.TransactionClient, app: ActiveAppModel) => {
-    const bubble = await tx.bubble.findFirst({
-      where: { appId: app.id, GitHubAction: { type: GH_ACTION_TYPES[0] } },
-      include: PRISMA_APP_INCLUDE.bubbles.include,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return bubble === null
-      ? undefined
-      : toBubble(
-          { index: app.index, projectId: app.railway.projectId, serviceId: app.railway.serviceId },
-          bubble
-        );
-  },
 };

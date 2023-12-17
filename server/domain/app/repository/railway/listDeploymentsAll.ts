@@ -6,8 +6,7 @@ import { railwayClient } from '$/service/railwayClient';
 import { customAssert } from '$/service/returnStatus';
 import { gql } from '@apollo/client';
 import type { Prisma } from '@prisma/client';
-import { appQuery } from '../../query/appQuery';
-import { toCommitUrl, toRWDeployUrl } from '../../query/utils';
+import { toBranchUrl, toCommitUrl, toRWDeployUrl } from '../../query/utils';
 
 export const listDeploymentsAllOnRailwayRepo = async (
   tx: Prisma.TransactionClient,
@@ -69,28 +68,32 @@ export const listDeploymentsAllOnRailwayRepo = async (
 
     if (res === null) break;
 
-    const latestTest = await appQuery.findLatestTestBubble(tx, app);
-    customAssert(latestTest?.type === 'github', 'エラーならロジック修正必須');
-
     list.push(
       ...res.data.deployments.edges.map(({ node }) => {
+        const createdTime = new Date(node.createdAt).getTime();
+        const nearestGitHub = app.bubbles
+          .flatMap((b) => (b.type === 'github' && b.createdTime < createdTime ? b : []))
+          .at(-1);
         const oldBubble = app.bubbles.flatMap((b) =>
           b.type === 'railway' && b.content.id === node.id ? b : []
         )[0];
 
+        customAssert(nearestGitHub, 'エラーならロジック修正必須');
+
         return parseRWDeployment({
           id: node.id,
-          title: latestTest.content.title,
+          title: nearestGitHub.content.title,
           status: node.status,
           url: toRWDeployUrl({
             project: app.railway.projectId,
             service: app.railway.serviceId,
             deployment: node.id,
           }),
-          branch: latestTest.content.branch,
-          commitId: latestTest.content.commitId,
-          commitUrl: toCommitUrl(app.displayId, latestTest.content.commitId),
-          createdTime: new Date(node.createdAt).getTime(),
+          branch: nearestGitHub.content.branch,
+          branchUrl: toBranchUrl(app.displayId, nearestGitHub.content.branch),
+          commitId: nearestGitHub.content.commitId,
+          commitUrl: toCommitUrl(app.displayId, nearestGitHub.content.commitId),
+          createdTime,
           updatedTime:
             oldBubble === undefined || oldBubble.content.status !== node.status
               ? Date.now()

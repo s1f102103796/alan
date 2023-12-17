@@ -13,6 +13,7 @@ import type { GHActionModel, RWDeploymentModel } from 'commonTypesWithClient/bub
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Spacer } from 'src/components/Spacer';
+import { BranchIcon } from 'src/components/icons/BranchIcon';
 import { ChatGPTIcon } from 'src/components/icons/ChatGPTIcon';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { HumanIcon } from 'src/components/icons/HumanIcon';
@@ -41,25 +42,40 @@ const CustomContent = (props: {
         {props.icon}
       </Avatar>
       <Message.CustomContent>
-        <Link href={props.content.url} target="_brank">
-          <div className={styles.contentTitle}>{props.title}</div>
-        </Link>
-        <Spacer axis="y" size={12} />
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <StatusIcon status={props.status} />
-          <Spacer axis="x" size={8} />
+          <Spacer axis="x" size={10} />
+          <Link href={props.content.url} target="_brank" style={{ flex: 1 }}>
+            <div className={styles.contentTitle}>{props.title}</div>
+          </Link>
+        </div>
+        <Spacer axis="y" size={8} />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ height: '20px' }}>
+            <Spacer axis="y" size={2} />
+            <BranchIcon size={20} fill="#fff" />
+          </div>
+          <Spacer axis="x" size={4} />
+          <Link href={props.content.branchUrl} target="_brank" className={styles.commitLink}>
+            {props.content.branch}
+          </Link>
+          <Spacer axis="x" size={6} />
+          <div>-</div>
+          <Spacer axis="x" size={6} />
           <Link href={props.content.commitUrl} target="_brank" className={styles.commitLink}>
             {props.content.commitId.slice(0, 7)}
           </Link>
-          <Spacer axis="x" size={60} />
-          <RunningTimer
-            start={props.content.createdTime}
-            end={
-              props.status === 'failure' || props.status === 'success'
-                ? props.content.updatedTime
-                : undefined
-            }
-          />
+          <Spacer axis="x" size={40} />
+          <div style={{ marginLeft: 'auto' }}>
+            <RunningTimer
+              start={props.content.createdTime}
+              end={
+                props.status === 'failure' || props.status === 'success'
+                  ? props.content.updatedTime
+                  : undefined
+              }
+            />
+          </div>
         </div>
       </Message.CustomContent>
       <Message.Footer

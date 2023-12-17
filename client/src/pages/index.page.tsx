@@ -52,8 +52,10 @@ const Home = () => {
       .$patch({ body: { appId: currentApp.id } })
       .then((app) =>
         setApps((apps) => {
-          // eslint-disable-next-line max-nested-callbacks
-          const hasDiff = apps.some((a) => JSON.stringify(a) !== JSON.stringify(app));
+          const hasDiff = apps.some(
+            // eslint-disable-next-line max-nested-callbacks
+            (a) => a.id === app.id && JSON.stringify(a) !== JSON.stringify(app)
+          );
           // eslint-disable-next-line max-nested-callbacks
           return hasDiff ? apps.map((a) => (a.id === app.id ? app : a)) : apps;
         })

@@ -51,19 +51,17 @@ export const deploymentStatusToIconStatus = (deployment: RWDeploymentModel): App
   }
 };
 
-export const useAppStatus = (app: AppModel) =>
+export const useAppStatus = (app: AppModel): AppModel['status'] =>
   useMemo(() => {
     if (app.status !== 'running') return app.status;
 
-    const latestStatus = app.bubbles
-      .flatMap((b) =>
-        b.type === 'railway'
-          ? deploymentStatusToIconStatus(b.content)
-          : b.type === 'github'
-          ? actionStatusToIconStatus(b.content)
-          : []
-      )
-      .at(-1);
+    const statuses = app.bubbles.flatMap((b) =>
+      b.type === 'railway'
+        ? deploymentStatusToIconStatus(b.content)
+        : b.type === 'github'
+        ? actionStatusToIconStatus(b.content)
+        : []
+    );
 
-    return latestStatus ?? app.status;
+    return statuses.some((s) => s === 'running') ? 'running' : statuses.at(-1) ?? app.status;
   }, [app]);

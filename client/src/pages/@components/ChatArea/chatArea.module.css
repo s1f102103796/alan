@@ -42,10 +42,6 @@
   text-decoration: underline;
 }
 
-.commitLink {
-  margin-right: auto;
-}
-
 .commitLink:hover {
   text-decoration: underline;
 }
