@@ -4,7 +4,13 @@ import api from '$/githubApi/$api';
 import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
 import aspida from '@aspida/fetch';
 import { URL } from 'url';
-import { indexToUrls, toBranchUrl, toCommitUrl, toGHActionUrl } from '../query/utils';
+import {
+  displayIdToApiOrigin,
+  indexToUrls,
+  toBranchUrl,
+  toCommitUrl,
+  toGHActionUrl,
+} from '../query/utils';
 
 const githubApiClient = api(
   aspida(undefined, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } })
@@ -25,7 +31,7 @@ export const githubRepo = {
     await Promise.all([
       ...[
         { name: 'CNAME', value: new URL(urls.site).host },
-        { name: 'API_ORIGIN', value: `https://${repoName}-production.up.railway.app` },
+        { name: 'API_ORIGIN', value: displayIdToApiOrigin(repoName) },
       ].map((body) =>
         githubApiClient.repos._owner(GITHUB_OWNER)._repo(repoName).actions.variables.$post({ body })
       ),
