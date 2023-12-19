@@ -72,7 +72,11 @@ export const listDeploymentsAllOnRailwayRepo = async (
       ...res.data.deployments.edges.map(({ node }) => {
         const createdTime = new Date(node.createdAt).getTime();
         const nearestGitHub = app.bubbles
-          .flatMap((b) => (b.type === 'github' && b.createdTime < createdTime ? b : []))
+          .flatMap((b) =>
+            b.type === 'github' && b.content.type === 'Deploy client' && b.createdTime < createdTime
+              ? b
+              : []
+          )
           .at(-1);
         const oldBubble = app.bubbles.flatMap((b) =>
           b.type === 'railway' && b.content.id === node.id ? b : []

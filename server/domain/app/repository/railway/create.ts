@@ -60,104 +60,96 @@ export const createOnRailwayRepo = async (app: WaitingAppModel): Promise<Railway
   const serviceId = pj.data.project.services.edges[0].node.id;
   const urls = indexToUrls(app.index);
 
-  await railwayClient
-    .mutate({
-      mutation: gql`
-        mutation Mutation(
-          $environmentId: String!
-          $projectId: String!
-          $serviceId: String!
-          $origin: String!
-          $firebase: String!
-        ) {
-          variableCollectionUpsert(
-            input: {
-              environmentId: $environmentId
-              projectId: $projectId
-              serviceId: $serviceId
-              variables: {
-                API_DATABASE_URL: "\${{Postgres.DATABASE_URL}}"
-                API_BASE_PATH: "/api"
-                CORS_ORIGIN: $origin
-                FIREBASE_SERVER_KEY: $firebase
-              }
-            }
-          )
-        }
-      `,
-      variables: {
-        environmentId,
-        projectId,
-        serviceId,
-        origin: urls.site,
-        firebase: FIREBASE_SERVER_KEY,
-      },
-    })
-    .catch((e) => e.message);
-
-  await railwayClient
-    .mutate({
-      mutation: gql`
-        mutation Mutation($environmentId: String!, $serviceId: String!) {
-          serviceDomainCreate(input: { environmentId: $environmentId, serviceId: $serviceId }) {
-            domain
-          }
-        }
-      `,
-      variables: { environmentId, serviceId },
-    })
-    .catch((e) => e.message);
-
-  await railwayClient
-    .mutate({
-      mutation: gql`
-        mutation Mutation($serviceId: String!) {
-          serviceInstanceUpdate(
+  await railwayClient.mutate({
+    mutation: gql`
+      mutation Mutation(
+        $environmentId: String!
+        $projectId: String!
+        $serviceId: String!
+        $origin: String!
+        $firebase: String!
+      ) {
+        variableCollectionUpsert(
+          input: {
+            environmentId: $environmentId
+            projectId: $projectId
             serviceId: $serviceId
-            input: {
-              healthcheckPath: "/api/health"
-              rootDirectory: "/server"
-              watchPatterns: ["/server/**"]
+            variables: {
+              API_DATABASE_URL: "\${{Postgres.DATABASE_URL}}"
+              API_BASE_PATH: "/api"
+              CORS_ORIGIN: $origin
+              FIREBASE_SERVER_KEY: $firebase
             }
-          )
-        }
-      `,
-      variables: { serviceId },
-    })
-    .catch((e) => e.message);
-
-  await railwayClient
-    .mutate({
-      mutation: gql`
-        mutation Mutation(
-          $environmentId: String!
-          $projectId: String!
-          $serviceId: String!
-          $repo: String!
-        ) {
-          deploymentTriggerCreate(
-            input: {
-              branch: "main"
-              checkSuites: true
-              environmentId: $environmentId
-              projectId: $projectId
-              serviceId: $serviceId
-              provider: "node"
-              repository: $repo
-            }
-          ) {
-            id
           }
+        )
+      }
+    `,
+    variables: {
+      environmentId,
+      projectId,
+      serviceId,
+      origin: urls.site,
+      firebase: FIREBASE_SERVER_KEY,
+    },
+  });
+
+  await railwayClient.mutate({
+    mutation: gql`
+      mutation Mutation($environmentId: String!, $serviceId: String!) {
+        serviceDomainCreate(input: { environmentId: $environmentId, serviceId: $serviceId }) {
+          domain
         }
-      `,
-      variables: {
-        environmentId,
-        projectId,
-        serviceId,
-        repo: `${GITHUB_OWNER}/${repoName}`,
-      },
-    })
-    .catch((e) => e.message);
+      }
+    `,
+    variables: { environmentId, serviceId },
+  });
+
+  await railwayClient.mutate({
+    mutation: gql`
+      mutation Mutation($serviceId: String!) {
+        serviceInstanceUpdate(
+          serviceId: $serviceId
+          input: {
+            healthcheckPath: "/api/health"
+            rootDirectory: "/server"
+            watchPatterns: ["/server/**"]
+          }
+        )
+      }
+    `,
+    variables: { serviceId },
+  });
+
+  await railwayClient.mutate({
+    mutation: gql`
+      mutation Mutation(
+        $environmentId: String!
+        $projectId: String!
+        $serviceId: String!
+        $repo: String!
+      ) {
+        deploymentTriggerCreate(
+          input: {
+            branch: "main"
+            checkSuites: true
+            environmentId: $environmentId
+            projectId: $projectId
+            serviceId: $serviceId
+            provider: "node"
+            repository: $repo
+          }
+        ) {
+          id
+        }
+      }
+    `,
+    variables: {
+      environmentId,
+      projectId,
+      serviceId,
+      repo: `${GITHUB_OWNER}/${repoName}`,
+    },
+  });
 
   return { url: projectIdToUrl(projectId), environmentId, projectId, serviceId };
 };
