@@ -19,5 +19,5 @@
     "incremental": true
   },
   "include": ["**/*.ts", "**/*.js", ".eslintrc.js"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "appRepositories"]
 }

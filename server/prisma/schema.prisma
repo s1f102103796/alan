@@ -14,7 +14,6 @@ model GitHubAction {
   status    String
   branch    String
   commitId  String
-  createdAt DateTime
   updatedAt DateTime
   Bubble    Bubble   @relation(fields: [bubbleId], references: [id])
   bubbleId  String   @unique
@@ -26,7 +25,6 @@ model RailwayDeployment {
   status    String
   branch    String
   commitId  String
-  createdAt DateTime
   updatedAt DateTime
   Bubble    Bubble   @relation(fields: [bubbleId], references: [id])
   bubbleId  String   @unique
@@ -53,7 +51,6 @@ model App {
   projectId        String?
   serviceId        String?
   createdAt        DateTime
-  statusUpdatedAt  DateTime
   githubUpdatedAt  DateTime
   railwayUpdatedAt DateTime
   bubbles          Bubble[]

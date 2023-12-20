@@ -11,7 +11,6 @@ import { AppList } from './@components/AppList/AppList';
 import { BasicHeader } from './@components/BasicHeader/BasicHeader';
 import { ChatArea } from './@components/ChatArea/ChatArea';
 import { InfoArea } from './@components/InfoArea/InfoArea';
-import { WaitingContent } from './@components/WaitingContent/WaitingContent';
 import styles from './index.module.css';
 
 export type OptionalQuery = {
@@ -95,19 +94,16 @@ const Home = () => {
           <div className={styles.appList}>
             <AppList sortedApps={sortedApps} currentApp={currentApp} append={appendApp} />
           </div>
-          {currentApp &&
-            (currentApp.status === 'waiting' ? (
-              <WaitingContent app={currentApp} />
-            ) : (
-              <>
-                <div className={styles.chatArea}>
-                  <ChatArea app={currentApp} />
-                </div>
-                <div className={styles.infoArea}>
-                  <InfoArea app={currentApp} />
-                </div>
-              </>
-            ))}
+          {currentApp && (
+            <>
+              <div className={styles.chatArea}>
+                <ChatArea app={currentApp} />
+              </div>
+              <div className={styles.infoArea}>
+                <InfoArea app={currentApp} />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

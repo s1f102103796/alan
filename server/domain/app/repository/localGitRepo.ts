@@ -10,11 +10,7 @@ import type { GitDiffModel } from './llmRepo';
 
 export type LocalGitFile = { source: string; content: string };
 
-export type LocalGitModel = {
-  appId: AppId;
-  message: string;
-  files: LocalGitFile[];
-};
+export type LocalGitModel = { appId: AppId; message: string; files: LocalGitFile[] };
 
 export const testBranch = 'deus/test';
 
@@ -55,10 +51,7 @@ export const localGitRepo = {
       files: listFiles(dirPath).flatMap((file) =>
         isBinaryPath(file) || file.includes('/.git/')
           ? []
-          : {
-              source: file.replace(`${dirPath}/`, ''),
-              content: readFileSync(file, 'utf8'),
-            }
+          : { source: file.replace(`${dirPath}/`, ''), content: readFileSync(file, 'utf8') }
       ),
     };
   },

@@ -1,10 +1,10 @@
-import type { RailwayModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
+import type { InitAppModel, RailwayModel } from '$/commonTypesWithClient/appModels';
 import { FIREBASE_SERVER_KEY, GITHUB_OWNER } from '$/service/envValues';
 import { railwayClient } from '$/service/railwayClient';
 import { gql } from '@apollo/client';
 import { indexToUrls, projectIdToUrl } from '../../query/utils';
 
-export const createOnRailwayRepo = async (app: WaitingAppModel): Promise<RailwayModel> => {
+export const createOnRailwayRepo = async (app: InitAppModel): Promise<RailwayModel> => {
   const repoName = app.displayId;
   const res1 = await railwayClient
     .mutate({

@@ -7,7 +7,6 @@ export const appRepo = {
       where: { id: app.id },
       update: {
         name: app.name,
-        statusUpdatedAt: new Date(app.statusUpdatedTime),
         githubUpdatedAt: new Date(app.githubUpdatedTime),
         railwayUpdatedAt: new Date(app.railwayUpdatedTime),
         status: app.status,
@@ -21,7 +20,6 @@ export const appRepo = {
         index: app.index,
         name: app.name,
         createdAt: new Date(app.createdTime),
-        statusUpdatedAt: new Date(app.statusUpdatedTime),
         githubUpdatedAt: new Date(app.githubUpdatedTime),
         railwayUpdatedAt: new Date(app.railwayUpdatedTime),
         status: app.status,
@@ -52,6 +50,7 @@ export const appRepo = {
         switch (bubble.type) {
           case 'ai':
           case 'human':
+          case 'system':
             break;
           case 'github':
             await tx.gitHubAction.upsert({
@@ -67,7 +66,6 @@ export const appRepo = {
                 status: bubble.content.status,
                 branch: bubble.content.branch,
                 commitId: bubble.content.commitId,
-                createdAt: new Date(bubble.content.createdTime),
                 updatedAt: new Date(bubble.content.updatedTime),
                 Bubble: { connect: { id: bubble.id } },
               },
@@ -86,7 +84,6 @@ export const appRepo = {
                 status: bubble.content.status,
                 branch: bubble.content.branch,
                 commitId: bubble.content.commitId,
-                createdAt: new Date(bubble.content.createdTime),
                 updatedAt: new Date(bubble.content.updatedTime),
                 Bubble: { connect: { id: bubble.id } },
               },

@@ -1,7 +1,7 @@
 import type { AppId, DisplayId, GitHubId, UserId } from './branded';
 import type { BubbleModel } from './bubbleModels';
 
-export const APP_STATUSES = ['waiting', 'running', 'failure', 'success', 'closed'] as const;
+export const APP_STATUSES = ['waiting', 'init', 'running', 'failure', 'success', 'closed'] as const;
 
 export type UserModel = {
   id: UserId;
@@ -25,7 +25,6 @@ export type AppModelBase = {
   displayId: DisplayId;
   name: string;
   createdTime: number;
-  statusUpdatedTime: number;
   githubUpdatedTime: number;
   railwayUpdatedTime: number;
   bubbles: BubbleModel[];
@@ -38,6 +37,13 @@ export type WaitingAppModel = AppModelBase & {
   railway?: undefined;
 };
 
+export type InitAppModel = AppModelBase & {
+  status: (typeof APP_STATUSES)[1];
+  waitingOrder?: undefined;
+  urls?: undefined;
+  railway?: undefined;
+};
+
 export type ActiveAppModel = AppModelBase & {
   status: 'running' | 'failure' | 'success' | 'closed';
   waitingOrder?: undefined;
@@ -45,4 +51,4 @@ export type ActiveAppModel = AppModelBase & {
   railway: RailwayModel;
 };
 
-export type AppModel = WaitingAppModel | ActiveAppModel;
+export type AppModel = WaitingAppModel | InitAppModel | ActiveAppModel;

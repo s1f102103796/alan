@@ -2,8 +2,10 @@ import type { AppModel } from '$/commonTypesWithClient/appModels';
 import { type UserModel } from '$/commonTypesWithClient/appModels';
 import type { AppId, Maybe } from '$/commonTypesWithClient/branded';
 import { prismaClient, transaction } from '$/service/prismaClient';
+import { customAssert } from '$/service/returnStatus';
 import { setTimeout } from 'timers/promises';
 import { appMethods } from '../model/appMethods';
+import { bubbleMethods } from '../model/bubbleMethods';
 import { appQuery } from '../query/appQuery';
 import { appRepo } from '../repository/appRepo';
 import { githubRepo } from '../repository/githubRepo';
@@ -37,9 +39,14 @@ export const appUseCase = {
     transaction(async (tx) => {
       const app = await appQuery.findByIdOrThrow(tx, appId);
 
-      if (app.status === 'waiting' || Date.now() - app.railwayUpdatedTime < 10_000) return app;
+      if (
+        app.status === 'waiting' ||
+        app.status === 'init' ||
+        Date.now() - app.railwayUpdatedTime < 10_000
+      )
+        return app;
 
-      const list = await railwayRepo.listDeploymentsAll(tx, app);
+      const list = await railwayRepo.listDeploymentsAll(app);
       const newApp = appMethods.upsertRailwayBubbles(app, list);
       await appRepo.save(tx, newApp);
     }, 'RepeatableRead'),
@@ -50,24 +57,56 @@ export const appUseCase = {
     while (true) {
       prevTime = Date.now();
 
-      const waiting = await appQuery.findWaitingHead(prismaClient);
+      const inited = await transaction(async (tx) => {
+        const waiting = await appQuery.findWaitingHead(tx);
 
-      if (waiting === undefined) continue;
+        if (waiting === undefined) return;
 
-      await githubRepo.create(waiting).catch(() => null);
-      const railway = await railwayRepo.create(waiting).catch(() => null);
+        const inited = appMethods.init(waiting);
+
+        const res = await githubRepo.create(inited).catch(() => null);
+
+        if (res === null) return;
+
+        await appRepo.save(tx, inited);
+
+        return inited;
+      }, 'RepeatableRead');
+
+      if (inited === undefined) continue;
+
+      const railway = await railwayRepo.create(inited).catch(() => null);
 
       if (railway === null) continue;
 
-      const app = appMethods.init(waiting, railway);
+      const running = await transaction(async (tx) => {
+        const initedApp = await appQuery.findByIdOrThrow(tx, inited.id);
 
-      await appRepo.save(prismaClient, app);
-      await localGitRepo
-        .getFiles(app)
-        .then((localGit) => llmRepo.initApp(app, localGit))
-        .then((gitDiff) =>
-          gitDiff !== null ? localGitRepo.pushToRemote(app, gitDiff) : undefined
-        );
+        customAssert(initedApp.status === 'init', 'エラーならロジック修正必須');
+
+        const running = appMethods.run(initedApp, railway);
+        await appRepo.save(tx, running);
+
+        return running;
+      }, 'RepeatableRead');
+
+      const localGit = await localGitRepo.getFiles(running);
+      const gitDiff = await llmRepo.initApp(running, localGit);
+
+      if (gitDiff !== null) {
+        await localGitRepo.pushToRemote(running, gitDiff);
+        await transaction(async (tx) => {
+          const app = appMethods.addBubble(
+            await appQuery.findByIdOrThrow(tx, running.id),
+            bubbleMethods.createAiOrHuman(
+              'ai',
+              `「${gitDiff.newMessage}」をGitHubにPushしました。`,
+              Date.now()
+            )
+          );
+          await appRepo.save(tx, app);
+        }, 'RepeatableRead');
+      }
 
       await setTimeout(600_000 - Date.now() + prevTime);
     }

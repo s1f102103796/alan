@@ -1,4 +1,4 @@
-import type { ActiveAppModel } from 'commonTypesWithClient/appModels';
+import type { AppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { Spacer } from 'src/components/Spacer';
@@ -13,7 +13,7 @@ import styles from './infoArea.module.css';
 
 const imgHeight = '(100vh - 48px - 48px)';
 
-export const InfoArea = (props: { app: ActiveAppModel }) => {
+export const InfoArea = (props: { app: AppModel }) => {
   const iframe = useRef<HTMLIFrameElement>(null);
   const reload = () => {
     if (iframe.current) iframe.current.src = props.app.urls?.site ?? '';
@@ -104,7 +104,7 @@ export const InfoArea = (props: { app: ActiveAppModel }) => {
           </div>
         </>
       ) : (
-        <div>デプロイ中...</div>
+        <div>インフラ構築待機中...</div>
       )}
     </div>
   );

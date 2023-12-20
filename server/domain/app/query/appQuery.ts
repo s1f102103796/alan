@@ -6,6 +6,7 @@ import {
   bubbleTypeParser,
   parseGHAction,
   parseRWDeployment,
+  systemStatusParser,
 } from '$/commonTypesWithClient/bubbleModels';
 import { appIdParser, bubbleIdParser, userIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
@@ -35,6 +36,7 @@ type PrismaBubble = Bubble & {
 
 type PrismaApp = App & { bubbles: PrismaBubble[] };
 
+// eslint-disable-next-line complexity
 const toBubble = (
   app: { index: number; projectId: string | null; serviceId: string | null },
   bubble: PrismaBubble
@@ -46,6 +48,8 @@ const toBubble = (
     case 'ai':
     case 'human':
       return { ...base, type, content: bubble.content };
+    case 'system':
+      return { ...base, type, content: systemStatusParser.parse(bubble.content) };
     case 'github':
       customAssert(bubble.GitHubAction, 'エラーならロジック修正必須');
 
@@ -62,7 +66,7 @@ const toBubble = (
           branchUrl: toBranchUrl(indexToDisplayId(app.index), bubble.GitHubAction.branch),
           commitId: bubble.GitHubAction.commitId,
           commitUrl: toCommitUrl(indexToDisplayId(app.index), bubble.GitHubAction.commitId),
-          createdTime: bubble.GitHubAction.createdAt.getTime(),
+          createdTime: bubble.createdAt.getTime(),
           updatedTime: bubble.GitHubAction.updatedAt.getTime(),
         }),
       };
@@ -85,7 +89,7 @@ const toBubble = (
           branchUrl: toBranchUrl(indexToDisplayId(app.index), bubble.RailwayDeployment.branch),
           commitId: bubble.RailwayDeployment.commitId,
           commitUrl: toCommitUrl(indexToDisplayId(app.index), bubble.RailwayDeployment.commitId),
-          createdTime: bubble.RailwayDeployment.createdAt.getTime(),
+          createdTime: bubble.createdAt.getTime(),
           updatedTime: bubble.RailwayDeployment.updatedAt.getTime(),
         }),
       };
@@ -96,6 +100,7 @@ const toBubble = (
 
 const toAppModelBase = (app: PrismaApp): AppModelBase => {
   const bubbles = app.bubbles.map((bubble) => toBubble(app, bubble));
+
   return {
     id: appIdParser.parse(app.id),
     userId: userIdParser.parse(app.userId),
@@ -103,7 +108,6 @@ const toAppModelBase = (app: PrismaApp): AppModelBase => {
     displayId: indexToDisplayId(app.index),
     name: app.name,
     createdTime: app.createdAt.getTime(),
-    statusUpdatedTime: app.statusUpdatedAt.getTime(),
     githubUpdatedTime: app.railwayUpdatedAt.getTime(),
     railwayUpdatedTime: app.railwayUpdatedAt.getTime(),
     bubbles,
@@ -111,8 +115,6 @@ const toAppModelBase = (app: PrismaApp): AppModelBase => {
 };
 
 const toWaitingAppModel = (app: PrismaApp, waitingIds: string[]): WaitingAppModel => {
-  customAssert(app.status !== 'status', 'エラーならロジック修正必須');
-
   return {
     ...toAppModelBase(app),
     status: 'waiting',
@@ -124,6 +126,7 @@ const toAppModel = (app: PrismaApp, waitingIds: string[]): AppModel => {
   const status = z.enum(APP_STATUSES).parse(app.status);
 
   if (status === 'waiting') return toWaitingAppModel(app, waitingIds);
+  if (status === 'init') return { ...toAppModelBase(app), status: 'init' };
 
   customAssert(app.environmentId !== null, 'エラーならロジック修正必須');
   customAssert(app.projectId !== null, 'エラーならロジック修正必須');

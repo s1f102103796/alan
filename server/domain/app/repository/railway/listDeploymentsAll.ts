@@ -5,13 +5,9 @@ import { parseRWDeployment } from '$/commonTypesWithClient/bubbleModels';
 import { railwayClient } from '$/service/railwayClient';
 import { customAssert } from '$/service/returnStatus';
 import { gql } from '@apollo/client';
-import type { Prisma } from '@prisma/client';
 import { toBranchUrl, toCommitUrl, toRWDeployUrl } from '../../query/utils';
 
-export const listDeploymentsAllOnRailwayRepo = async (
-  tx: Prisma.TransactionClient,
-  app: ActiveAppModel
-) => {
+export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
   const list: RWDeploymentModel[] = [];
   let after: string | undefined = undefined;
 

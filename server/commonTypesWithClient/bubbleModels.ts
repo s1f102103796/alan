@@ -6,13 +6,14 @@ import {
   rwDeploymentIdParser,
 } from '../service/idParsers';
 
-export const GH_ACTION_TYPES = [
+const GH_ACTION_TYPES = [
   'Test',
   'Lint fix',
   'Deploy client',
   'pages build and deployment',
 ] as const;
-export const GH_STATUSES = [
+
+const GH_STATUSES = [
   'completed',
   'action_required',
   'cancelled',
@@ -54,7 +55,7 @@ export const parseGHAction = (val: {
   [Key in keyof Omit<GHActionModel, 'model'>]: GHActionModel[Key] extends string ? string : number;
 }) => ghActionParser.parse({ ...val, model: 'github' });
 
-export const RW_STATUSES = [
+const RW_STATUSES = [
   'BUILDING',
   'CRASHED',
   'DEPLOYING',
@@ -92,18 +93,34 @@ export const parseRWDeployment = (val: {
     : number;
 }) => rwDeploymentParser.parse({ ...val, model: 'railway' });
 
-export const BUBBLE_TYPES = ['ai', 'human', 'github', 'railway'] as const;
+const SYSTEM_STATUSES = ['first_question', 'waiting_init', 'init_infra', 'create_app'] as const;
+
+export type SystemStatus = (typeof SYSTEM_STATUSES)[number];
+export const systemStatusParser = z.enum(SYSTEM_STATUSES);
+
+export const BUBBLE_TYPES = ['ai', 'human', 'github', 'railway', 'system'] as const;
 export const bubbleTypeParser = z.enum(BUBBLE_TYPES);
 
-const bubbleParser = z
-  .object({ id: bubbleIdParser, createdTime: z.number() })
-  .and(
-    z.union([
-      z.object({ type: z.literal(BUBBLE_TYPES[0]), content: z.string() }),
-      z.object({ type: z.literal(BUBBLE_TYPES[1]), content: z.string() }),
-      z.object({ type: z.literal(BUBBLE_TYPES[2]), content: ghActionParser }),
-      z.object({ type: z.literal(BUBBLE_TYPES[3]), content: rwDeploymentParser }),
-    ])
-  );
+const systemBubbleParser = z.object({
+  id: bubbleIdParser,
+  createdTime: z.number(),
+  type: z.literal(BUBBLE_TYPES[4]),
+  content: systemStatusParser,
+});
+
+const bubbleParser = systemBubbleParser.or(
+  z
+    .object({ id: bubbleIdParser, createdTime: z.number() })
+    .and(
+      z.union([
+        z.object({ type: z.literal(BUBBLE_TYPES[0]), content: z.string() }),
+        z.object({ type: z.literal(BUBBLE_TYPES[1]), content: z.string() }),
+        z.object({ type: z.literal(BUBBLE_TYPES[2]), content: ghActionParser }),
+        z.object({ type: z.literal(BUBBLE_TYPES[3]), content: rwDeploymentParser }),
+      ])
+    )
+);
+
+export type SystemBubbleModel = z.infer<typeof systemBubbleParser>;
 
 export type BubbleModel = z.infer<typeof bubbleParser>;

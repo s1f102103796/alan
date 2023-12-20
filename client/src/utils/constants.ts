@@ -8,3 +8,5 @@ export const CSS_VARS = {
   primitive: 'var(--primitive)',
   warning: 'var(--warning)',
 };
+
+export const FIRST_QUESTION = 'どんなアプリが欲しいですか？';

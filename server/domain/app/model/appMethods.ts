@@ -1,12 +1,16 @@
-import { FIRST_QUESTION } from '$/commonConstantsWithClient';
 import type {
   ActiveAppModel,
   AppModel,
+  InitAppModel,
   RailwayModel,
   UserModel,
   WaitingAppModel,
 } from '$/commonTypesWithClient/appModels';
-import type { GHActionModel, RWDeploymentModel } from '$/commonTypesWithClient/bubbleModels';
+import type {
+  BubbleModel,
+  GHActionModel,
+  RWDeploymentModel,
+} from '$/commonTypesWithClient/bubbleModels';
 import { appIdParser } from '$/service/idParsers';
 import { randomUUID } from 'crypto';
 import { indexToDisplayId, indexToUrls } from '../query/utils';
@@ -25,26 +29,37 @@ export const appMethods = {
       displayId: indexToDisplayId(index),
       name: desc.slice(0, 15),
       createdTime: now,
-      statusUpdatedTime: now,
       githubUpdatedTime: 0,
       railwayUpdatedTime: 0,
       bubbles: [
-        { ...bubbleMethods.create('ai', FIRST_QUESTION), createdTime: now },
-        { ...bubbleMethods.create('human', desc), createdTime: now + 1 },
+        bubbleMethods.createSystem('first_question', now),
+        bubbleMethods.createAiOrHuman('human', desc, now + 1),
+        bubbleMethods.createSystem('waiting_init', now + 2),
       ],
       status: 'waiting',
       waitingOrder: waitingAppCount + 1,
     };
   },
-  init: (app: WaitingAppModel, railway: RailwayModel): ActiveAppModel => {
+  init: (app: WaitingAppModel): InitAppModel => {
+    return {
+      ...app,
+      status: 'init',
+      waitingOrder: undefined,
+      bubbles: [...app.bubbles, bubbleMethods.createSystem('init_infra', Date.now())],
+    };
+  },
+  run: (app: InitAppModel, railway: RailwayModel): ActiveAppModel => {
     return {
       ...app,
       status: 'running',
       urls: indexToUrls(app.index),
       railway,
       waitingOrder: undefined,
-      statusUpdatedTime: Date.now(),
+      bubbles: [...app.bubbles, bubbleMethods.createSystem('create_app', Date.now() + 1000)], // Deploy serverの次に表示したいので1秒足す
     };
+  },
+  addBubble: <T extends AppModel>(app: T, bubble: BubbleModel): T => {
+    return { ...app, bubbles: [...app.bubbles, bubble] };
   },
   upsertGitHubBubbles: (app: AppModel, contents: GHActionModel[]): AppModel => {
     const newContentIds = contents.flatMap((c) =>
@@ -61,9 +76,7 @@ export const appMethods = {
 
           return existingContent === undefined ? b : { ...b, content: existingContent };
         }),
-        ...contents
-          .filter((c) => newContentIds.includes(c.id))
-          .map((content) => bubbleMethods.create('github', content)),
+        ...contents.filter((c) => newContentIds.includes(c.id)).map(bubbleMethods.createGitHub),
       ],
       githubUpdatedTime: Date.now(),
     };
@@ -83,9 +96,7 @@ export const appMethods = {
 
           return existingContent === undefined ? b : { ...b, content: existingContent };
         }),
-        ...contents
-          .filter((c) => newContentIds.includes(c.id))
-          .map((content) => bubbleMethods.create('railway', content)),
+        ...contents.filter((c) => newContentIds.includes(c.id)).map(bubbleMethods.createRailway),
       ],
       railwayUpdatedTime: Date.now(),
     };

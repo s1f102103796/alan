@@ -9,11 +9,7 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react';
 import type { AppModel } from 'commonTypesWithClient/appModels';
-import type { GHActionModel, RWDeploymentModel } from 'commonTypesWithClient/bubbleModels';
-import Link from 'next/link';
-import type { ReactNode } from 'react';
 import { Spacer } from 'src/components/Spacer';
-import { BranchIcon } from 'src/components/icons/BranchIcon';
 import { ChatGPTIcon } from 'src/components/icons/ChatGPTIcon';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { HumanIcon } from 'src/components/icons/HumanIcon';
@@ -25,66 +21,10 @@ import {
 } from 'src/pages/@hooks/useAppStatus';
 import { CSS_VARS } from 'src/utils/constants';
 import { formatTimestamp } from 'src/utils/dayjs';
-import { RunningTimer } from '../RunningTimer';
 import { StatusIcon } from '../StatusIcon/StatusIcon';
+import { CustomContent } from './CustomContent';
+import { SystemContent } from './SystemContent';
 import styles from './chatArea.module.css';
-
-const CustomContent = (props: {
-  content: GHActionModel | RWDeploymentModel;
-  status: AppModel['status'];
-  title: string;
-  icon: ReactNode;
-}) => {
-  return (
-    <Message model={{ type: 'custom' } as MessageModel} avatarPosition="tl">
-      <Avatar>
-        <Spacer axis="y" size={20} />
-        {props.icon}
-      </Avatar>
-      <Message.CustomContent>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <StatusIcon status={props.status} />
-          <Spacer axis="x" size={10} />
-          <Link href={props.content.url} target="_brank" style={{ flex: 1 }}>
-            <div className={styles.contentTitle}>{props.title}</div>
-          </Link>
-        </div>
-        <Spacer axis="y" size={8} />
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ height: '20px' }}>
-            <Spacer axis="y" size={2} />
-            <BranchIcon size={20} fill="#fff" />
-          </div>
-          <Spacer axis="x" size={4} />
-          <Link href={props.content.branchUrl} target="_brank" className={styles.commitLink}>
-            {props.content.branch}
-          </Link>
-          <Spacer axis="x" size={6} />
-          <div>-</div>
-          <Spacer axis="x" size={6} />
-          <Link href={props.content.commitUrl} target="_brank" className={styles.commitLink}>
-            {props.content.commitId.slice(0, 7)}
-          </Link>
-          <Spacer axis="x" size={40} />
-          <div style={{ marginLeft: 'auto' }}>
-            <RunningTimer
-              start={props.content.createdTime}
-              end={
-                props.status === 'failure' || props.status === 'success'
-                  ? props.content.updatedTime
-                  : undefined
-              }
-            />
-          </div>
-        </div>
-      </Message.CustomContent>
-      <Message.Footer
-        style={{ color: '#fff' }}
-        sentTime={formatTimestamp(props.content.createdTime)}
-      />
-    </Message>
-  );
-};
 
 export const ChatArea = (props: { app: AppModel }) => {
   const isClosed = props.app.status === 'closed';
@@ -115,52 +55,64 @@ export const ChatArea = (props: { app: AppModel }) => {
             >
               {
                 // eslint-disable-next-line complexity
-                props.app.bubbles.map((bubble) =>
-                  bubble.type === 'github' ? (
-                    <CustomContent
-                      key={bubble.id}
-                      title={
-                        bubble.content.type === bubble.content.title
-                          ? bubble.content.type
-                          : `${bubble.content.type} - ${bubble.content.title}`
-                      }
-                      content={bubble.content}
-                      status={actionStatusToIconStatus(bubble.content)}
-                      icon={<GithubIcon size={36} fill="#fff" />}
-                    />
-                  ) : bubble.type === 'railway' ? (
-                    <CustomContent
-                      key={bubble.id}
-                      title={`Deploy server - ${bubble.content.title}`}
-                      content={bubble.content}
-                      status={deploymentStatusToIconStatus(bubble.content)}
-                      icon={<RailwayIcon size={36} fill="#fff" />}
-                    />
-                  ) : (
-                    <Message
-                      key={bubble.id}
-                      model={
-                        {
-                          type: 'custom',
-                          direction: bubble.type === 'human' ? 'outgoing' : undefined,
-                          position: 'first',
-                        } as MessageModel
-                      }
-                      avatarPosition={bubble.type === 'human' ? 'tr' : 'tl'}
-                    >
-                      <Avatar>
-                        <Spacer axis="y" size={20} />
-                        {bubble.type === 'human' ? (
-                          <HumanIcon size={36} fill="#fff" />
-                        ) : (
-                          <ChatGPTIcon size={36} fill="#fff" />
-                        )}
-                      </Avatar>
-                      <Message.CustomContent>{bubble.content}</Message.CustomContent>
-                      <Message.Footer sentTime={formatTimestamp(bubble.createdTime)} />
-                    </Message>
-                  )
-                )
+                props.app.bubbles.map((bubble) => {
+                  switch (bubble.type) {
+                    case 'github':
+                      return (
+                        <CustomContent
+                          key={bubble.id}
+                          title={
+                            bubble.content.type === bubble.content.title
+                              ? bubble.content.type
+                              : `${bubble.content.type} - ${bubble.content.title}`
+                          }
+                          content={bubble.content}
+                          status={actionStatusToIconStatus(bubble.content)}
+                          icon={<GithubIcon size={36} fill="#fff" />}
+                        />
+                      );
+                    case 'railway':
+                      return (
+                        <CustomContent
+                          key={bubble.id}
+                          title={`Deploy server - ${bubble.content.title}`}
+                          content={bubble.content}
+                          status={deploymentStatusToIconStatus(bubble.content)}
+                          icon={<RailwayIcon size={36} fill="#fff" />}
+                        />
+                      );
+                    case 'system':
+                      return <SystemContent key={bubble.id} app={props.app} bubble={bubble} />;
+                    case 'ai':
+                    case 'human':
+                      return (
+                        <Message
+                          key={bubble.id}
+                          model={
+                            {
+                              type: 'custom',
+                              direction: bubble.type === 'human' ? 'outgoing' : undefined,
+                              position: 'first',
+                            } as MessageModel
+                          }
+                          avatarPosition={bubble.type === 'human' ? 'tr' : 'tl'}
+                        >
+                          <Avatar>
+                            <Spacer axis="y" size={20} />
+                            {bubble.type === 'human' ? (
+                              <HumanIcon size={36} fill="#fff" />
+                            ) : (
+                              <ChatGPTIcon size={36} fill="#fff" />
+                            )}
+                          </Avatar>
+                          <Message.CustomContent>{bubble.content}</Message.CustomContent>
+                          <Message.Footer sentTime={formatTimestamp(bubble.createdTime)} />
+                        </Message>
+                      );
+                    default:
+                      throw new Error(bubble satisfies never);
+                  }
+                })
               }
             </MessageList>
             <MessageInput

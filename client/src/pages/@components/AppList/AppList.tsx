@@ -1,4 +1,3 @@
-import { FIRST_QUESTION } from 'commonConstantsWithClient';
 import type { AppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -10,6 +9,7 @@ import { useAppStatus } from 'src/pages/@hooks/useAppStatus';
 import { useLoading } from 'src/pages/@hooks/useLoading';
 import { pagesPath } from 'src/utils/$path';
 import { apiClient } from 'src/utils/apiClient';
+import { FIRST_QUESTION } from 'src/utils/constants';
 import { formatShortTimestamp } from 'src/utils/dayjs';
 import styles from './appList.module.css';
 
@@ -22,6 +22,7 @@ const StatusCircle = (props: { app: AppModel }) => {
       style={{
         background: {
           waiting: '#aaa',
+          init: '#ff0',
           running: '#ff0',
           success: '#14b869',
           failure: '#ec0000',

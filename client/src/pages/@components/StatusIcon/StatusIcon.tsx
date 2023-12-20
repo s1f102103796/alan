@@ -23,6 +23,7 @@ const CrossMark = () => {
 export const StatusIcon = (props: { status: AppModel['status'] }) => {
   return {
     waiting: <div className={styles.loader} />,
+    init: <div className={styles.loader} />,
     running: <div className={styles.loader} />,
     success: <CheckMark />,
     failure: <CrossMark />,

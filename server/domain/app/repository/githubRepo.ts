@@ -1,4 +1,4 @@
-import type { ActiveAppModel, WaitingAppModel } from '$/commonTypesWithClient/appModels';
+import type { ActiveAppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
 import { parseGHAction, type GHActionModel } from '$/commonTypesWithClient/bubbleModels';
 import api from '$/githubApi/$api';
 import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
@@ -17,7 +17,7 @@ const githubApiClient = api(
 );
 
 export const githubRepo = {
-  create: async (app: WaitingAppModel) => {
+  create: async (app: InitAppModel) => {
     const repoName = app.displayId;
     const urls = indexToUrls(app.index);
 
@@ -28,13 +28,16 @@ export const githubRepo = {
         body: { owner: GITHUB_OWNER, name: repoName, include_all_branches: true },
       });
 
-    await Promise.all([
-      ...[
+    await Promise.all(
+      [
         { name: 'CNAME', value: new URL(urls.site).host },
         { name: 'API_ORIGIN', value: displayIdToApiOrigin(repoName) },
       ].map((body) =>
         githubApiClient.repos._owner(GITHUB_OWNER)._repo(repoName).actions.variables.$post({ body })
-      ),
+      )
+    );
+
+    await Promise.all([
       githubApiClient.repos
         ._owner(GITHUB_OWNER)
         ._repo(repoName)
@@ -45,7 +48,7 @@ export const githubRepo = {
         .pages.$post({ body: { build_type: 'legacy', source: { branch: 'gh-pages' } } }),
     ]);
   },
-  listActionsAll: async (app: ActiveAppModel) => {
+  listActionsAll: async (app: InitAppModel | ActiveAppModel) => {
     const list: GHActionModel[] = [];
     const perPage = 100;
     let page = 0;

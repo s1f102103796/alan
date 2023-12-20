@@ -1,39 +1,33 @@
-import type {
-  BubbleModel,
-  GHActionModel,
-  RWDeploymentModel,
+import type { SystemStatus } from '$/commonTypesWithClient/bubbleModels';
+import {
+  type BubbleModel,
+  type GHActionModel,
+  type RWDeploymentModel,
 } from '$/commonTypesWithClient/bubbleModels';
 import { bubbleIdParser } from '$/service/idParsers';
-import { customAssert } from '$/service/returnStatus';
 import { randomUUID } from 'crypto';
 
 export const bubbleMethods = {
-  create: (
-    type: BubbleModel['type'],
-    content: string | GHActionModel | RWDeploymentModel
-  ): BubbleModel => {
-    const id = bubbleIdParser.parse(randomUUID());
-
-    if (type === 'github') {
-      customAssert(
-        typeof content !== 'string' && content.model === 'github',
-        'エラーならロジック修正必須'
-      );
-
-      return { id, type, content, createdTime: content.createdTime };
-    }
-
-    if (type === 'railway') {
-      customAssert(
-        typeof content !== 'string' && content.model === 'railway',
-        'エラーならロジック修正必須'
-      );
-
-      return { id, type, content, createdTime: content.createdTime };
-    }
-
-    customAssert(typeof content === 'string', 'エラーならロジック修正必須');
-
-    return { id, type, content, createdTime: Date.now() };
+  createSystem: (content: SystemStatus, createdTime: number): BubbleModel => {
+    return { id: bubbleIdParser.parse(randomUUID()), type: 'system', content, createdTime };
+  },
+  createGitHub: (content: GHActionModel): BubbleModel => {
+    return {
+      id: bubbleIdParser.parse(randomUUID()),
+      type: 'github',
+      content,
+      createdTime: content.createdTime,
+    };
+  },
+  createRailway: (content: RWDeploymentModel): BubbleModel => {
+    return {
+      id: bubbleIdParser.parse(randomUUID()),
+      type: 'railway',
+      content,
+      createdTime: content.createdTime,
+    };
+  },
+  createAiOrHuman: (type: 'ai' | 'human', content: string, createdTime: number) => {
+    return { id: bubbleIdParser.parse(randomUUID()), type, content, createdTime };
   },
 };
