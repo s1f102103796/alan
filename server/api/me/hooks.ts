@@ -1,6 +1,6 @@
 import type { UserModel } from '$/commonTypesWithClient/appModels';
-import { getUserModel } from '$/service/firebaseAdmin';
-import { githubIdParser, userIdParser } from '$/service/idParsers';
+import { userUseCase } from '$/domain/user/userCase/userUseCase';
+import { getUserRecord } from '$/service/firebaseAdmin';
 import { defineHooks } from './$relay';
 
 export type AdditionalRequest = {
@@ -9,21 +9,13 @@ export type AdditionalRequest = {
 
 export default defineHooks(() => ({
   preHandler: async (req, res) => {
-    const user = await getUserModel(req.cookies.session);
+    const user = await getUserRecord(req.cookies.session);
 
     if (user === null) {
       res.status(401).send();
       return;
     }
 
-    req.user = {
-      id: userIdParser.parse(user.uid),
-      githubId: githubIdParser.parse(
-        user.providerData.find(({ providerId }) => providerId === 'github.com')?.uid
-      ),
-      email: user.email ?? '',
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-    };
+    req.user = await userUseCase.findOrCreateUser(user);
   },
 }));

@@ -7,6 +7,16 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model User {
+  id          String   @id
+  githubId    String
+  email       String
+  displayName String?
+  photoURL    String?
+  createdAt   DateTime
+  apps        App[]
+}
+
 model GitHubAction {
   id        String   @id
   type      String
@@ -43,7 +53,6 @@ model Bubble {
 
 model App {
   id               String   @id
-  userId           String
   index            Int
   name             String
   status           String
@@ -54,4 +63,6 @@ model App {
   githubUpdatedAt  DateTime
   railwayUpdatedAt DateTime
   bubbles          Bubble[]
+  User             User     @relation(fields: [userId], references: [id])
+  userId           String
 }

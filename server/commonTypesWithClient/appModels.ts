@@ -9,6 +9,7 @@ export type UserModel = {
   email: string;
   displayName: string | undefined;
   photoURL: string | undefined;
+  createdTime: number;
 };
 
 export type RailwayModel = {
