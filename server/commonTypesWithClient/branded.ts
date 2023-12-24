@@ -11,3 +11,4 @@ export type CommitId = Branded<'CommitId'>;
 export type GitHubId = Branded<'GitHubId'>;
 export type GHActionId = Branded<'GHActionId'>;
 export type RWDeploymentId = Branded<'RWDeploymentId'>;
+export type GHStepId = Branded<'GHStepId'>;

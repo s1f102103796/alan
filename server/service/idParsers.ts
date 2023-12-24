@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import type { CommitId, GHActionId, RWDeploymentId } from '../commonTypesWithClient/branded';
+import type {
+  CommitId,
+  GHActionId,
+  GHStepId,
+  RWDeploymentId,
+} from '../commonTypesWithClient/branded';
 import {
   type AppId,
   type BubbleId,
@@ -18,3 +23,4 @@ export const commitIdParser = createIdParser<CommitId>();
 export const githubIdParser = createIdParser<GitHubId>();
 export const ghActionIdParser = createIdParser<GHActionId>();
 export const rwDeploymentIdParser = createIdParser<RWDeploymentId>();
+export const ghStepIdParser = createIdParser<GHStepId>();

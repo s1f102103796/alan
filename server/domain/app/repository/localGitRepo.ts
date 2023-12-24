@@ -2,7 +2,7 @@ import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { AppId } from '$/commonTypesWithClient/branded';
 import { GITHUB_TOKEN } from '$/service/envValues';
 import { customAssert } from '$/service/returnStatus';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'fs';
 import isBinaryPath from 'is-binary-path';
 import { dirname } from 'path';
 import simpleGit, { ResetMode } from 'simple-git';
@@ -14,7 +14,8 @@ export type LocalGitModel = { appId: AppId; message: string; files: LocalGitFile
 
 export const testBranch = 'deus/test';
 
-const typesBranch = 'copy-with-types';
+const typesBranch = 'copy-deus-types';
+const mainTypesBranch = 'copy-main-types';
 
 const listFiles = (dir: string): string[] =>
   readdirSync(dir, { withFileTypes: true }).flatMap((dirent) =>
@@ -31,7 +32,15 @@ export const localGitRepo = {
     const { dirPath, gitPath } = genPathes(app);
 
     if (!existsSync(dirPath)) {
-      await simpleGit().clone(`https://${gitPath}`, dirPath, ['-b', typesBranch]);
+      await simpleGit().clone(`https://${gitPath}`, dirPath);
+      await simpleGit(dirPath)
+        .checkout(typesBranch)
+        .reset(ResetMode.HARD, [`origin/${typesBranch}`])
+        .catch(() =>
+          simpleGit(dirPath)
+            .checkout(mainTypesBranch)
+            .reset(ResetMode.HARD, [`origin/${mainTypesBranch}`])
+        );
     } else {
       await simpleGit(dirPath)
         .fetch('origin', typesBranch)
@@ -39,15 +48,15 @@ export const localGitRepo = {
         .reset(ResetMode.HARD, [`origin/${typesBranch}`]);
     }
 
-    const message = await simpleGit(dirPath)
-      .log({ format: '%B', maxCount: 1 })
+    const log = await simpleGit(dirPath)
+      .log({ maxCount: 1 })
       .then((e) => e.latest);
 
-    customAssert(message, 'エラーならロジック修正必須');
+    customAssert(log, 'エラーならロジック修正必須');
 
     return {
       appId: app.id,
-      message,
+      message: log.message,
       files: listFiles(dirPath).flatMap((file) =>
         isBinaryPath(file) || file.includes('/.git/')
           ? []
@@ -58,7 +67,15 @@ export const localGitRepo = {
   pushToRemote: async (app: AppModel, gitDiff: GitDiffModel) => {
     const { dirPath, gitPath } = genPathes(app);
 
-    await simpleGit(dirPath).fetch().reset(ResetMode.HARD, ['origin/main']);
+    await simpleGit(dirPath)
+      .fetch()
+      .reset(ResetMode.HARD, [`origin/${testBranch}`])
+      .catch(() => simpleGit(dirPath).reset(ResetMode.HARD, ['origin/main']));
+
+    gitDiff.deletedFiles.forEach((source) => {
+      const filePath = `${dirPath}/${source}`;
+      if (existsSync(filePath)) unlinkSync(filePath);
+    });
 
     gitDiff.diffs.forEach((file) => {
       const filePath = `${dirPath}/${file.source}`;

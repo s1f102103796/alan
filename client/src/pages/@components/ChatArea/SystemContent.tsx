@@ -29,6 +29,8 @@ export const SystemContent = (props: { app: AppModel; bubble: SystemBubbleModel 
                 return `「${props.app.name}」のインフラ構築を開始しています。`;
               case 'create_app':
                 return `「${props.app.name}」のアプリ開発を開始しています。`;
+              case 'retry_test':
+                return 'テストに失敗したコードを修正しています。';
               default:
                 throw new Error(props.bubble.content satisfies never);
             }

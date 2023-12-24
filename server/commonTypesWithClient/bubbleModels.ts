@@ -6,12 +6,7 @@ import {
   rwDeploymentIdParser,
 } from '../service/idParsers';
 
-const GH_ACTION_TYPES = [
-  'Test',
-  'Lint fix',
-  'Deploy client',
-  'pages build and deployment',
-] as const;
+const GH_ACTION_TYPES = ['Test', 'Deploy client', 'pages build and deployment'] as const;
 
 const GH_STATUSES = [
   'completed',
@@ -30,12 +25,14 @@ const GH_STATUSES = [
   'pending',
 ] as const;
 
+export const ghStatusParser = z.enum(GH_STATUSES);
+
 const ghActionParser = z.object({
   id: ghActionIdParser,
   model: z.literal('github'),
   type: z.enum(GH_ACTION_TYPES),
   title: z.string(),
-  status: z.enum(GH_STATUSES),
+  status: ghStatusParser,
   url: z.string(),
   branch: z.string(),
   branchUrl: z.string(),
@@ -93,7 +90,13 @@ export const parseRWDeployment = (val: {
     : number;
 }) => rwDeploymentParser.parse({ ...val, model: 'railway' });
 
-const SYSTEM_STATUSES = ['first_question', 'waiting_init', 'init_infra', 'create_app'] as const;
+const SYSTEM_STATUSES = [
+  'first_question',
+  'waiting_init',
+  'init_infra',
+  'create_app',
+  'retry_test',
+] as const;
 
 export type SystemStatus = (typeof SYSTEM_STATUSES)[number];
 export const systemStatusParser = z.enum(SYSTEM_STATUSES);
