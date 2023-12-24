@@ -6,9 +6,9 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Spacer } from 'src/components/Spacer';
 import { BranchIcon } from 'src/components/icons/BranchIcon';
-import { formatTimestamp } from 'src/utils/dayjs';
 import { RunningTimer } from '../RunningTimer';
 import { StatusIcon } from '../StatusIcon/StatusIcon';
+import { NameLabel } from './NameLabel';
 import styles from './chatArea.module.css';
 
 export const CustomContent = (props: {
@@ -20,10 +20,16 @@ export const CustomContent = (props: {
   return (
     <Message model={{ type: 'custom' } as MessageModel} avatarPosition="tl">
       <Avatar>
-        <Spacer axis="y" size={20} />
+        <Spacer axis="y" size={26} />
+        <Spacer axis="x" size={4} />
         {props.icon}
       </Avatar>
       <Message.CustomContent>
+        <NameLabel
+          name={props.content.model === 'github' ? 'GitHub Actions' : 'Railway'}
+          createdTime={props.content.createdTime}
+        />
+        <Spacer axis="y" size={8} />
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <StatusIcon status={props.status} />
           <Spacer axis="x" size={10} />
@@ -31,8 +37,9 @@ export const CustomContent = (props: {
             <div className={styles.contentTitle}>{props.title}</div>
           </Link>
         </div>
-        <Spacer axis="y" size={8} />
+        <Spacer axis="y" size={6} />
         <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Spacer axis="x" size={24} />
           <div style={{ height: '20px' }}>
             <Spacer axis="y" size={2} />
             <BranchIcon size={20} fill="#fff" />
@@ -60,10 +67,6 @@ export const CustomContent = (props: {
           </div>
         </div>
       </Message.CustomContent>
-      <Message.Footer
-        style={{ color: '#fff' }}
-        sentTime={formatTimestamp(props.content.createdTime)}
-      />
     </Message>
   );
 };

@@ -30,9 +30,7 @@ export const InfoArea = (props: { app: AppModel }) => {
             </div>
           )}
           <Spacer axis="x" size={8} />
-          <span>
-            No.{props.app.index} - {props.app.name}
-          </span>
+          <span>{props.app.name}</span>
         </div>
       </div>
       {props.app.urls ? (
@@ -51,7 +49,7 @@ export const InfoArea = (props: { app: AppModel }) => {
             </div>
           </div>
           <div className={styles.rightContent}>
-            <Spacer axis="y" size={24} />
+            <Spacer axis="y" size={8} />
             <div className={styles.linkContainer}>
               {[
                 {

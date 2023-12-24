@@ -24,7 +24,12 @@ export const appMethods = {
 
     return {
       id,
-      userId: user.id,
+      author: {
+        userId: user.id,
+        githubId: user.githubId,
+        name: user.displayName ?? user.githubId,
+        photoURL: user.photoURL,
+      },
       index,
       displayId: indexToDisplayId(index),
       name: desc.slice(0, 15),

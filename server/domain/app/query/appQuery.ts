@@ -10,7 +10,7 @@ import {
 } from '$/commonTypesWithClient/bubbleModels';
 import { appIdParser, bubbleIdParser, userIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
-import type { App, Bubble, GitHubAction, Prisma, RailwayDeployment } from '@prisma/client';
+import type { App, Bubble, GitHubAction, Prisma, RailwayDeployment, User } from '@prisma/client';
 import { z } from 'zod';
 import {
   createUrls,
@@ -23,6 +23,7 @@ import {
 } from './utils';
 
 const PRISMA_APP_INCLUDE = {
+  User: true,
   bubbles: {
     include: { GitHubAction: true, RailwayDeployment: true },
     orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
@@ -34,7 +35,7 @@ type PrismaBubble = Bubble & {
   RailwayDeployment: RailwayDeployment | null;
 };
 
-type PrismaApp = App & { bubbles: PrismaBubble[] };
+type PrismaApp = App & { User: User; bubbles: PrismaBubble[] };
 
 // eslint-disable-next-line complexity
 const toBubble = (
@@ -103,7 +104,12 @@ const toAppModelBase = (app: PrismaApp): AppModelBase => {
 
   return {
     id: appIdParser.parse(app.id),
-    userId: userIdParser.parse(app.userId),
+    author: {
+      userId: userIdParser.parse(app.userId),
+      githubId: app.User.githubId,
+      name: app.User.displayName ?? app.User.githubId,
+      photoURL: app.User.photoURL ?? undefined,
+    },
     index: app.index,
     displayId: indexToDisplayId(app.index),
     name: app.name,

@@ -10,7 +10,6 @@ import { useLoading } from 'src/pages/@hooks/useLoading';
 import { pagesPath } from 'src/utils/$path';
 import { apiClient } from 'src/utils/apiClient';
 import { FIRST_QUESTION } from 'src/utils/constants';
-import { formatShortTimestamp } from 'src/utils/dayjs';
 import styles from './appList.module.css';
 
 const StatusCircle = (props: { app: AppModel }) => {
@@ -53,7 +52,7 @@ export const AppList = (props: {
   return (
     <div className={styles.container}>
       <div className={styles.createBtn}>
-        <PrimeButton label="アプリ新規作成" width="100%" onClick={() => setOpened(true)} />
+        <PrimeButton label="アプリ新規生成" width="100%" onClick={() => setOpened(true)} />
       </div>
       <div className={styles.itemContainer}>
         {props.sortedApps.map((app) => (
@@ -70,7 +69,8 @@ export const AppList = (props: {
                 <StatusCircle app={app} />
                 <div />
                 <span>No.{app.index}</span>
-                <span className={styles.date}>{formatShortTimestamp(app.createdTime)}</span>
+                <Spacer axis="x" size={6} />
+                <span className={styles.author}>{app.author.name}</span>
               </div>
               <Spacer axis="y" size={6} />
               <div className={styles.title}>{app.name}</div>
@@ -81,7 +81,7 @@ export const AppList = (props: {
       <Modal open={opened}>
         <ModalHeader text={FIRST_QUESTION} />
         <ModalBody content={<Textarea rows={8} value={desc} width="400px" onChange={setDesc} />} />
-        <ModalFooter okText="新規作成" ok={createApp} cancel={() => setOpened(false)} />
+        <ModalFooter okText="新規生成" ok={createApp} cancel={() => setOpened(false)} />
       </Modal>
     </div>
   );

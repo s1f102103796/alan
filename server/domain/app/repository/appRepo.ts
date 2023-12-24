@@ -16,7 +16,7 @@ export const appRepo = {
       },
       create: {
         id: app.id,
-        userId: app.userId,
+        userId: app.author.userId,
         index: app.index,
         name: app.name,
         createdAt: new Date(app.createdTime),

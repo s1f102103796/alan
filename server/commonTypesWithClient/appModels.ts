@@ -21,7 +21,7 @@ export type RailwayModel = {
 
 export type AppModelBase = {
   id: AppId;
-  userId: UserId;
+  author: { userId: UserId; githubId: string; name: string; photoURL: string | undefined };
   index: number;
   displayId: DisplayId;
   name: string;

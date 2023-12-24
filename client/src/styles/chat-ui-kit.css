@@ -3,7 +3,7 @@
   margin-top: 16px;
   color: #fff !important;
   background: #fff1 !important;
-  border: 1px solid #fffa;
+  border: none;
 }
 
 .cs-message__sent-time {

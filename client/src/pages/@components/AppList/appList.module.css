@@ -55,7 +55,10 @@
   padding: 1px 6px 2px;
 }
 
-.date {
+.author {
   margin-left: auto;
+  overflow: hidden;
   font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

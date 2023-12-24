@@ -5,16 +5,19 @@ import type { SystemBubbleModel } from 'commonTypesWithClient/bubbleModels';
 import { Spacer } from 'src/components/Spacer';
 import { ChatGPTIcon } from 'src/components/icons/ChatGPTIcon';
 import { FIRST_QUESTION } from 'src/utils/constants';
-import { formatTimestamp } from 'src/utils/dayjs';
+import { NameLabel } from './NameLabel';
 
 export const SystemContent = (props: { app: AppModel; bubble: SystemBubbleModel }) => {
   return (
-    <Message model={{ type: 'custom', position: 'first' } as MessageModel} avatarPosition="tl">
+    <Message model={{ type: 'custom' } as MessageModel} avatarPosition="tl">
       <Avatar>
-        <Spacer axis="y" size={20} />
-        <ChatGPTIcon size={36} fill="#fff" />
+        <Spacer axis="y" size={26} />
+        <Spacer axis="x" size={4} />
+        <ChatGPTIcon size={32} fill="#fff" />
       </Avatar>
       <Message.CustomContent>
+        <NameLabel name="GPT4-turbo" createdTime={props.bubble.createdTime} />
+        <Spacer axis="y" size={6} />
         {
           // eslint-disable-next-line complexity
           (() => {
@@ -37,7 +40,6 @@ export const SystemContent = (props: { app: AppModel; bubble: SystemBubbleModel 
           })()
         }
       </Message.CustomContent>
-      <Message.Footer sentTime={formatTimestamp(props.bubble.createdTime)} />
     </Message>
   );
 };

@@ -9,10 +9,10 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react';
 import type { AppModel } from 'commonTypesWithClient/appModels';
+import Link from 'next/link';
 import { Spacer } from 'src/components/Spacer';
 import { ChatGPTIcon } from 'src/components/icons/ChatGPTIcon';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
-import { HumanIcon } from 'src/components/icons/HumanIcon';
 import { RailwayIcon } from 'src/components/icons/RailwayIcon';
 import {
   actionStatusToIconStatus,
@@ -20,9 +20,10 @@ import {
   useAppStatus,
 } from 'src/pages/@hooks/useAppStatus';
 import { CSS_VARS } from 'src/utils/constants';
-import { formatTimestamp } from 'src/utils/dayjs';
+import { AuthorIcon } from '../AuthorIcon';
 import { StatusIcon } from '../StatusIcon/StatusIcon';
 import { CustomContent } from './CustomContent';
+import { NameLabel } from './NameLabel';
 import { SystemContent } from './SystemContent';
 import styles from './chatArea.module.css';
 
@@ -35,8 +36,15 @@ export const ChatArea = (props: { app: AppModel }) => {
       <div className={styles.header}>
         <StatusIcon status={appStatus} />
         <Spacer axis="x" size={12} />
-        <span className={styles.modelLabel}>GPT4-turbo</span>
-        <span>{formatTimestamp(props.app.createdTime)}</span>
+        <span className={styles.indexLabel}>No.{props.app.index}</span>
+        <Link
+          className={styles.authorLink}
+          href={`https://github.com/${props.app.author.githubId}`}
+          target="_brank"
+        >
+          <AuthorIcon size={24} photoURL={props.app.author.photoURL} />
+          {props.app.author.name}
+        </Link>
       </div>
       <div style={{ flex: 1, position: 'relative' }}>
         <MainContainer className={styles.mainContainer}>
@@ -68,7 +76,7 @@ export const ChatArea = (props: { app: AppModel }) => {
                           }
                           content={bubble.content}
                           status={actionStatusToIconStatus(bubble.content)}
-                          icon={<GithubIcon size={36} fill="#fff" />}
+                          icon={<GithubIcon size={32} fill="#fff" />}
                         />
                       );
                     case 'railway':
@@ -78,35 +86,50 @@ export const ChatArea = (props: { app: AppModel }) => {
                           title={`Deploy server - ${bubble.content.title}`}
                           content={bubble.content}
                           status={deploymentStatusToIconStatus(bubble.content)}
-                          icon={<RailwayIcon size={36} fill="#fff" />}
+                          icon={<RailwayIcon size={32} fill="#fff" />}
                         />
                       );
                     case 'system':
                       return <SystemContent key={bubble.id} app={props.app} bubble={bubble} />;
                     case 'ai':
+                      return (
+                        <Message
+                          key={bubble.id}
+                          model={{ type: 'custom' } as MessageModel}
+                          avatarPosition="tl"
+                        >
+                          <Avatar>
+                            <Spacer axis="y" size={26} />
+                            <Spacer axis="x" size={4} />
+                            <ChatGPTIcon size={32} fill="#fff" />
+                          </Avatar>
+                          <Message.CustomContent>
+                            <NameLabel name="GPT4-turbo" createdTime={bubble.createdTime} />
+                            <Spacer axis="y" size={6} />
+                            <div>{bubble.content}</div>
+                          </Message.CustomContent>
+                        </Message>
+                      );
                     case 'human':
                       return (
                         <Message
                           key={bubble.id}
-                          model={
-                            {
-                              type: 'custom',
-                              direction: bubble.type === 'human' ? 'outgoing' : undefined,
-                              position: 'first',
-                            } as MessageModel
-                          }
-                          avatarPosition={bubble.type === 'human' ? 'tr' : 'tl'}
+                          model={{ type: 'custom', direction: 'outgoing' } as MessageModel}
+                          avatarPosition="tr"
                         >
                           <Avatar>
-                            <Spacer axis="y" size={20} />
-                            {bubble.type === 'human' ? (
-                              <HumanIcon size={36} fill="#fff" />
-                            ) : (
-                              <ChatGPTIcon size={36} fill="#fff" />
-                            )}
+                            <Spacer axis="y" size={26} />
+                            <Spacer axis="x" size={4} />
+                            <AuthorIcon size={32} photoURL={props.app.author.photoURL} />
                           </Avatar>
-                          <Message.CustomContent>{bubble.content}</Message.CustomContent>
-                          <Message.Footer sentTime={formatTimestamp(bubble.createdTime)} />
+                          <Message.CustomContent>
+                            <NameLabel
+                              name={props.app.author.name}
+                              createdTime={bubble.createdTime}
+                            />
+                            <Spacer axis="y" size={6} />
+                            <div>{bubble.content}</div>
+                          </Message.CustomContent>
                         </Message>
                       );
                     default:
