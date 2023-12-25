@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { Spacer } from 'src/components/Spacer';
 import { TextInput } from 'src/components/TextInput/TextInput';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
+import { LockIcon } from 'src/components/icons/LockIcon';
 import { RailwayIcon } from 'src/components/icons/RailwayIcon';
 import { ReloadIcon } from 'src/components/icons/ReloadIcon';
 import { SiteIcon } from 'src/components/icons/SIteIcon';
@@ -22,16 +23,7 @@ export const InfoArea = (props: { app: AppModel }) => {
   return (
     <div className={styles.container}>
       <div className={styles.appName}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Spacer axis="x" size={8} />
-          {props.app.urls && (
-            <div className={styles.reload} onClick={reload}>
-              <ReloadIcon fill="#fff" size={24} />
-            </div>
-          )}
-          <Spacer axis="x" size={8} />
-          <span>{props.app.name}</span>
-        </div>
+        <span>{props.app.name}</span>
       </div>
       {props.app.urls ? (
         <>
@@ -42,8 +34,18 @@ export const InfoArea = (props: { app: AppModel }) => {
               src={props.app.urls.site}
               className={styles.iframe}
               allow="fullscreen"
-              style={{ borderRadius: `calc(${imgHeight} * 0.055)` }}
+              style={{ borderRadius: `0 0 calc(${imgHeight} * 0.055) calc(${imgHeight} * 0.055)` }}
             />
+            <div className={styles.header}>
+              <div className={styles.addressBar}>
+                <LockIcon size={10} fill="#222" />
+                <Spacer axis="x" size={4} />
+                <span>{new URL(props.app.urls.site).host}</span>
+                <div className={styles.reload} onClick={reload}>
+                  <ReloadIcon fill="#222" size={20} />
+                </div>
+              </div>
+            </div>
             <div className={styles.notch}>
               <img src={staticPath.images.iphone_png} style={{ width: '100%' }} />
             </div>
