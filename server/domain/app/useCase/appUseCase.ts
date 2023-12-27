@@ -20,7 +20,7 @@ import { localGitRepo } from '../repository/localGitRepo';
 import { railwayRepo } from '../repository/railwayRepo';
 
 const initWaitingHead = () =>
-  transaction<InitAppModel | undefined>(async (tx) => {
+  transaction<InitAppModel | undefined>('RepeatableRead', async (tx) => {
     const waiting = await appQuery.findWaitingHead(tx);
 
     if (waiting === undefined) return;
@@ -34,10 +34,10 @@ const initWaitingHead = () =>
     await appRepo.save(tx, inited);
 
     return inited;
-  }, 'RepeatableRead');
+  });
 
 const runApp = (inited: InitAppModel, railway: RailwayModel) =>
-  transaction<ActiveAppModel>(async (tx) => {
+  transaction<ActiveAppModel>('RepeatableRead', async (tx) => {
     const initedApp = await appQuery.findByIdOrThrow(tx, inited.id);
 
     customAssert(initedApp.status === 'init', 'エラーならロジック修正必須');
@@ -46,10 +46,10 @@ const runApp = (inited: InitAppModel, railway: RailwayModel) =>
     await appRepo.save(tx, running);
 
     return running;
-  }, 'RepeatableRead');
+  });
 
 const retryTest = (app: ActiveAppModel) =>
-  transaction<ActiveAppModel>(async (tx) => {
+  transaction<ActiveAppModel>('RepeatableRead', async (tx) => {
     const retriedApp = await appQuery.findByIdOrThrow(tx, app.id);
 
     customAssert(retriedApp.status === 'running', 'エラーならロジック修正必須');
@@ -58,11 +58,11 @@ const retryTest = (app: ActiveAppModel) =>
     await appRepo.save(tx, retrying);
 
     return retrying;
-  }, 'RepeatableRead');
+  });
 
 const pushGitDiff = async (running: ActiveAppModel, gitDiff: GitDiffModel) => {
   await localGitRepo.pushToRemote(running, gitDiff);
-  await transaction(async (tx) => {
+  await transaction('RepeatableRead', async (tx) => {
     const app = appMethods.addBubble(
       await appQuery.findByIdOrThrow(tx, running.id),
       bubbleMethods.createAiOrHuman(
@@ -72,7 +72,7 @@ const pushGitDiff = async (running: ActiveAppModel, gitDiff: GitDiffModel) => {
       )
     );
     await appRepo.save(tx, app);
-  }, 'RepeatableRead');
+  } );
 };
 
 const retryFailedTest = async () => {
@@ -104,7 +104,7 @@ const retryFailedTest = async () => {
 
 export const appUseCase = {
   create: (user: UserModel, desc: string) =>
-    transaction<AppModel>(async (tx) => {
+    transaction<AppModel>('Serializable', async (tx) => {
       const [count, waitingCount] = await Promise.all([
         appQuery.countAll(tx),
         appQuery.countWaitings(tx),
@@ -113,9 +113,9 @@ export const appUseCase = {
       await appRepo.save(tx, app);
 
       return app;
-    }, 'Serializable'),
+    } ),
   updateGHActions: (appId: Maybe<AppId>) =>
-    transaction(async (tx) => {
+    transaction('RepeatableRead', async (tx) => {
       const app = await appQuery.findByIdOrThrow(tx, appId);
 
       if (app.status === 'waiting' || Date.now() - app.githubUpdatedTime < 10_000) return app;
@@ -123,9 +123,9 @@ export const appUseCase = {
       const list = await githubRepo.listActionsAll(app);
       const newApp = appMethods.upsertGitHubBubbles(app, list);
       await appRepo.save(tx, newApp);
-    }, 'RepeatableRead'),
+    }),
   updateRWDeployments: (appId: Maybe<AppId>) =>
-    transaction(async (tx) => {
+    transaction('RepeatableRead', async (tx) => {
       const app = await appQuery.findByIdOrThrow(tx, appId);
 
       if (
@@ -140,7 +140,7 @@ export const appUseCase = {
       const newApp = appMethods.upsertRailwayBubbles(app, list);
 
       await appRepo.save(tx, newApp);
-    }, 'RepeatableRead'),
+    }),
   initOneByOne: async () => {
     let prevTime = 0;
 

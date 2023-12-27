@@ -6,8 +6,8 @@ import { userQuery } from '../query/userQuery';
 import { userRepo } from '../repository/userRepo';
 
 export const userUseCase = {
-  findOrCreateUser: (userRecord: UserRecord) =>
-    transaction<UserModel>(async (tx) => {
+  findOrCreate: (userRecord: UserRecord) =>
+    transaction<UserModel>('RepeatableRead', async (tx) => {
       const user = await userQuery.findById(tx, userRecord.uid);
       if (user !== null) return user;
 
@@ -15,5 +15,5 @@ export const userUseCase = {
       await userRepo.save(tx, newUser);
 
       return newUser;
-    }, 'RepeatableRead'),
+    }),
 };

@@ -16,6 +16,6 @@ export default defineHooks(() => ({
       return;
     }
 
-    req.user = await userUseCase.findOrCreateUser(user);
+    req.user = await userUseCase.findOrCreate(user);
   },
 }));
