@@ -72,7 +72,7 @@ const pushGitDiff = async (running: ActiveAppModel, gitDiff: GitDiffModel) => {
       )
     );
     await appRepo.save(tx, app);
-  } );
+  });
 };
 
 const retryFailedTest = async () => {
@@ -113,7 +113,7 @@ export const appUseCase = {
       await appRepo.save(tx, app);
 
       return app;
-    } ),
+    }),
   updateGHActions: (appId: Maybe<AppId>) =>
     transaction('RepeatableRead', async (tx) => {
       const app = await appQuery.findByIdOrThrow(tx, appId);

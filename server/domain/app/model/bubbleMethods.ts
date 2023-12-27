@@ -27,7 +27,7 @@ export const bubbleMethods = {
       createdTime: content.createdTime,
     };
   },
-  createAiOrHuman: (type: 'ai' | 'human', content: string, createdTime: number) => {
+  createAiOrHuman: (type: 'ai' | 'human', content: string, createdTime: number): BubbleModel => {
     return { id: bubbleIdParser.parse(randomUUID()), type, content, createdTime };
   },
 };

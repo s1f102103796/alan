@@ -24,6 +24,11 @@ const GITHUB_TOKEN = z.string().parse(process.env.GITHUB_TOKEN);
 const RAILWAY_TOKEN = z.string().parse(process.env.RAILWAY_TOKEN);
 const DISPLAY_ID_PREFIX = z.string().parse(process.env.DISPLAY_ID_PREFIX);
 const BASE_DOMAIN = z.string().parse(process.env.BASE_DOMAIN);
+const S3_CUSTOM_ENDPOINT = z
+  .string()
+  .url()
+  .optional()
+  .parse(process.env.S3_CUSTOM_ENDPOINT === '' ? undefined : process.env.S3_CUSTOM_ENDPOINT);
 
 export {
   API_BASE_PATH,
@@ -41,6 +46,7 @@ export {
   RAILWAY_TOKEN,
   S3_ACCESS_KEY,
   S3_BUCKET,
+  S3_CUSTOM_ENDPOINT,
   S3_ENDPOINT,
   S3_REGION,
   S3_SECRET_KEY,

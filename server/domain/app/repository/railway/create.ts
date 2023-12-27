@@ -1,5 +1,14 @@
 import type { InitAppModel, RailwayModel } from '$/commonTypesWithClient/appModels';
-import { FIREBASE_SERVER_KEY, GITHUB_OWNER } from '$/service/envValues';
+import {
+  FIREBASE_SERVER_KEY,
+  GITHUB_OWNER,
+  S3_ACCESS_KEY,
+  S3_BUCKET,
+  S3_CUSTOM_ENDPOINT,
+  S3_ENDPOINT,
+  S3_REGION,
+  S3_SECRET_KEY,
+} from '$/service/envValues';
 import { railwayClient } from '$/service/railwayClient';
 import { gql } from '@apollo/client';
 import { indexToUrls, projectIdToUrl } from '../../query/utils';
@@ -79,6 +88,12 @@ export const createOnRailwayRepo = async (app: InitAppModel): Promise<RailwayMod
               API_BASE_PATH: "/api"
               CORS_ORIGIN: $origin
               FIREBASE_SERVER_KEY: $firebase
+              S3_ENDPOINT: $s3Endpoint
+              S3_BUCKET: $s3Bucket
+              S3_ACCESS_KEY: $s3AccessKey
+              S3_SECRET_KEY: $s3SecretKey
+              S3_REGION: $s3Region
+              S3_CUSTOM_ENDPOINT: $s3CustomEndpoint
             }
           }
         )
@@ -90,6 +105,12 @@ export const createOnRailwayRepo = async (app: InitAppModel): Promise<RailwayMod
       serviceId,
       origin: urls.site,
       firebase: FIREBASE_SERVER_KEY,
+      s3Endpoint: S3_ENDPOINT,
+      s3Bucket: S3_BUCKET,
+      s3AccessKey: S3_ACCESS_KEY,
+      s3SecretKey: S3_SECRET_KEY,
+      s3Region: S3_REGION,
+      s3CustomEndpoint: S3_CUSTOM_ENDPOINT,
     },
   });
 
