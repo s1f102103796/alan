@@ -6,19 +6,20 @@ import { SignalIcon } from 'src/components/Notch/SignalIcon';
 import { WifiIcon } from 'src/components/Notch/WifiIcon';
 import { Spacer } from 'src/components/Spacer';
 import { TextInput } from 'src/components/TextInput/TextInput';
-import { ClockIcon } from 'src/components/icons/ClockIcon';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { LockIcon } from 'src/components/icons/LockIcon';
 import { RailwayIcon } from 'src/components/icons/RailwayIcon';
 import { ReloadIcon } from 'src/components/icons/ReloadIcon';
 import { SiteIcon } from 'src/components/icons/SIteIcon';
 import { VscodeIcon } from 'src/components/icons/VscodeIcon';
+import { useCurrentTime } from 'src/pages/@hooks/useCurrentTime';
 import { staticPath } from 'src/utils/$path';
 import styles from './infoArea.module.css';
 
 const imgHeight = '(100vh - 48px - 48px)';
 
 export const InfoArea = (props: { app: AppModel }) => {
+  const { formattedTimeElm } = useCurrentTime();
   const iframe = useRef<HTMLIFrameElement>(null);
   const reload = () => {
     if (iframe.current) iframe.current.src = props.app.urls?.site ?? '';
@@ -54,9 +55,7 @@ export const InfoArea = (props: { app: AppModel }) => {
               <img src={staticPath.images.iphone_png} style={{ width: '100%' }} />
             </div>
             <div className={styles.notchContent}>
-              <div className={styles.notchGroup}>
-                <ClockIcon />
-              </div>
+              <div className={styles.notchGroup}>{formattedTimeElm}</div>
               <div className={styles.notchGroup}>
                 <SignalIcon fill="#BDBDBD" />
                 <WifiIcon fill="#222" />
