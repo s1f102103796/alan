@@ -62,18 +62,18 @@
 
 .statusBar {
   position: relative;
-  top: 15%;
+  top: 12.5%;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   width: calc(100% - 16px);
-  height: 20px;
-  padding: 4px 0;
+  height: 30%;
 }
 
 .statusGroup {
   z-index: 100;
   display: flex;
+  gap: 1%;
   align-items: center;
   justify-content: center;
   width: 30%;

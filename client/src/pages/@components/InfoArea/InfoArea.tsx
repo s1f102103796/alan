@@ -46,9 +46,9 @@ export const InfoArea = (props: { app: AppModel }) => {
                   <ClockIcon />
                 </div>
                 <div className={styles.statusGroup}>
-                  <SignalIcon size={24} fill="#BDBDBD" />
-                  <WifiIcon size={24} fill="#222" />
-                  <BatteryIcon size={24} fill="#222" chargePercent={100} />
+                  <SignalIcon size={20} fill="#BDBDBD" />
+                  <WifiIcon size={20} fill="#222" />
+                  <BatteryIcon size={20} fill="#222" chargePercent={100} />
                 </div>
               </div>
               <div className={styles.addressBar}>
