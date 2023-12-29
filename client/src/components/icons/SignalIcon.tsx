@@ -1,6 +1,6 @@
 export const SignalIcon = (props: { size: number; fill: string }) => {
-  const barWidth = 2;
-  const baseHeight = 2;
+  const barWidth = 3;
+  const baseHeight = 3;
   const heightIncrement = 2;
   const borderRadius = 1;
 
@@ -14,31 +14,31 @@ export const SignalIcon = (props: { size: number; fill: string }) => {
     >
       <rect
         x="3"
-        y={24 - baseHeight}
+        y={17 - baseHeight}
         width={barWidth}
         height={baseHeight}
         rx={borderRadius}
         ry={borderRadius}
       />
       <rect
-        x="7"
-        y={24 - (baseHeight + heightIncrement * 1)}
+        x="8"
+        y={17 - (baseHeight + heightIncrement * 1)}
         width={barWidth}
         height={baseHeight + heightIncrement * 1}
         rx={borderRadius}
         ry={borderRadius}
       />
       <rect
-        x="11"
-        y={24 - (baseHeight + heightIncrement * 2)}
+        x="13"
+        y={17 - (baseHeight + heightIncrement * 2)}
         width={barWidth}
         height={baseHeight + heightIncrement * 2}
         rx={borderRadius}
         ry={borderRadius}
       />
       <rect
-        x="15"
-        y={24 - (baseHeight + heightIncrement * 3)}
+        x="18"
+        y={17 - (baseHeight + heightIncrement * 3)}
         width={barWidth}
         height={baseHeight + heightIncrement * 3}
         rx={borderRadius}

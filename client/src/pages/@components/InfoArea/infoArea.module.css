@@ -51,12 +51,36 @@
   left: 0;
   left: 11.5%;
   display: flex;
-  align-items: end;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   width: 77.5%;
   height: calc(9.2% + 36px - 5.5%);
   padding-bottom: 6px;
   background: #fff;
+}
+
+.statusBar {
+  position: relative;
+  top: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 16px);
+  height: 20px;
+  padding: 4px 0;
+}
+
+.statusGroup {
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30%;
+  font-size: 12px;
+  font-weight: bold;
+  color: #222;
+  text-align: center;
 }
 
 .addressBar {
