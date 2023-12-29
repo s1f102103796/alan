@@ -1,17 +1,11 @@
-export const SignalIcon = (props: { size: number; fill: string }) => {
+export const SignalIcon = (props: { fill: string }) => {
   const barWidth = 3;
   const baseHeight = 3;
   const heightIncrement = 2;
   const borderRadius = 1;
 
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={props.size}
-      height={props.size}
-      viewBox="0 0 24 24"
-      fill={props.fill}
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={props.fill}>
       <rect
         x="3"
         y={17 - baseHeight}

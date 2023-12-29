@@ -1,18 +1,18 @@
 import type { AppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { useRef } from 'react';
+import { BatteryIcon } from 'src/components/Notch/BatteryIcon';
+import { SignalIcon } from 'src/components/Notch/SignalIcon';
+import { WifiIcon } from 'src/components/Notch/WifiIcon';
 import { Spacer } from 'src/components/Spacer';
 import { TextInput } from 'src/components/TextInput/TextInput';
-import { BatteryIcon } from 'src/components/icons/BatteryIcon';
 import { ClockIcon } from 'src/components/icons/ClockIcon';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { LockIcon } from 'src/components/icons/LockIcon';
 import { RailwayIcon } from 'src/components/icons/RailwayIcon';
 import { ReloadIcon } from 'src/components/icons/ReloadIcon';
 import { SiteIcon } from 'src/components/icons/SIteIcon';
-import { SignalIcon } from 'src/components/icons/SignalIcon';
 import { VscodeIcon } from 'src/components/icons/VscodeIcon';
-import { WifiIcon } from 'src/components/icons/WifiIcon';
 import { staticPath } from 'src/utils/$path';
 import styles from './infoArea.module.css';
 
@@ -41,16 +41,6 @@ export const InfoArea = (props: { app: AppModel }) => {
               style={{ borderRadius: `0 0 calc(${imgHeight} * 0.055) calc(${imgHeight} * 0.055)` }}
             />
             <div className={styles.header}>
-              <div className={styles.statusBar}>
-                <div className={styles.statusGroup}>
-                  <ClockIcon />
-                </div>
-                <div className={styles.statusGroup}>
-                  <SignalIcon size={20} fill="#BDBDBD" />
-                  <WifiIcon size={20} fill="#222" />
-                  <BatteryIcon size={20} fill="#222" chargePercent={100} />
-                </div>
-              </div>
               <div className={styles.addressBar}>
                 <LockIcon size={10} fill="#222" />
                 <Spacer axis="x" size={4} />
@@ -62,6 +52,16 @@ export const InfoArea = (props: { app: AppModel }) => {
             </div>
             <div className={styles.notch}>
               <img src={staticPath.images.iphone_png} style={{ width: '100%' }} />
+            </div>
+            <div className={styles.notchContent}>
+              <div className={styles.notchGroup}>
+                <ClockIcon />
+              </div>
+              <div className={styles.notchGroup}>
+                <SignalIcon fill="#BDBDBD" />
+                <WifiIcon fill="#222" />
+                <BatteryIcon fill="#222" />
+              </div>
             </div>
           </div>
           <div className={styles.rightContent}>

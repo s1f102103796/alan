@@ -1,4 +1,4 @@
-export const WifiIcon = (props: { size: number; fill: string }) => {
+export const WifiIcon = (props: { fill: string }) => {
   const scaleFactor = 1.2;
   const centerX = 10;
   const centerY = 10;
@@ -6,8 +6,6 @@ export const WifiIcon = (props: { size: number; fill: string }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={props.size}
-      height={props.size}
       viewBox="0 0 24 24"
       fill="none"
       stroke={props.fill}
