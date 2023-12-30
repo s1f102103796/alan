@@ -5,7 +5,7 @@ import { parseRWDeployment } from '$/commonTypesWithClient/bubbleModels';
 import { railwayClient } from '$/service/railwayClient';
 import { customAssert } from '$/service/returnStatus';
 import { gql } from '@apollo/client';
-import { toBranchUrl, toCommitUrl, toRWDeployUrl } from '../../query/utils';
+import { displayIdToApiOrigin, toBranchUrl, toCommitUrl, toRWDeployUrl } from '../../query/utils';
 
 export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
   const list: RWDeploymentModel[] = [];
@@ -64,8 +64,8 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
 
     if (res === null) break;
 
-    list.push(
-      ...res.data.deployments.edges.map(({ node }) => {
+    const deployments = await Promise.all(
+      res.data.deployments.edges.map(async ({ node }) => {
         const createdTime = new Date(node.createdAt).getTime();
         const nearestGitHub = app.bubbles
           .flatMap((b) =>
@@ -80,10 +80,17 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
 
         customAssert(nearestGitHub, 'エラーならロジック修正必須');
 
+        const status =
+          oldBubble?.content.status !== 'SUCCESS' && node.status === 'SUCCESS'
+            ? await fetch(`${displayIdToApiOrigin(app.displayId)}/api/health`)
+                .then((res) => (res.status === 200 ? ('SUCCESS' as const) : ('DEPLOYING' as const)))
+                .catch(() => 'DEPLOYING' as const)
+            : node.status;
+
         return parseRWDeployment({
           id: node.id,
           title: nearestGitHub.content.title,
-          status: node.status,
+          status,
           url: toRWDeployUrl({
             project: app.railway.projectId,
             service: app.railway.serviceId,
@@ -101,6 +108,8 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
         });
       })
     );
+
+    list.push(...deployments);
 
     if (!res.data.deployments.pageInfo.hasNextPage) break;
 
