@@ -39,12 +39,12 @@ export const CustomContent = (props: {
         </div>
         <Spacer axis="y" size={6} />
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Spacer axis="x" size={24} />
+          <Spacer axis="x" size={2} />
           <div style={{ height: '20px' }}>
             <Spacer axis="y" size={2} />
             <BranchIcon size={20} fill="#fff" />
           </div>
-          <Spacer axis="x" size={4} />
+          <Spacer axis="x" size={8} />
           <Link href={props.content.branchUrl} target="_brank" className={styles.commitLink}>
             {props.content.branch}
           </Link>

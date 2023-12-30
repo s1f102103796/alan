@@ -26,7 +26,8 @@ export const RunningTimer = (props: { start: number; end: number | undefined }) 
   return (
     <span>
       {h > 0 ? `${h}h` : ''}
-      {m}m{s}s
+      {m > 0 ? `${m}m` : ''}
+      {s}s
     </span>
   );
 };
