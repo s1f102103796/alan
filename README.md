@@ -30,6 +30,32 @@ $ cp server/.env.example server/.env
 $ cp docker/dev/.env.example docker/dev/.env
 ```
 
+`server/.env` の以下の環境変数を変更する
+
+```sh
+FIREBASE_SERVER_KEY={"type": "service_account", "project_id": "xxxx", ...}
+OPENAI_KEY=OpenAIのAPIキー
+GITHUB_OWNER=GitHubのユーザー名（例：hoge）
+GITHUB_TEMPLATE=deus-template
+GITHUB_TOKEN=GitHubのトークン
+RAILWAY_TOKEN=Railwaysのトークン
+DISPLAY_ID_PREFIX=作成されるレポのプレフィックスを設定（例：deus-hoge）
+BASE_DOMAIN=作成されるレポのドメインを設定（例：deus-hoge.com）
+```
+
+以下のリンクから各トークンを取得する
+
+- [Firebase Service Account Key](https://firebase.google.com/docs/admin/setup#initialize_the_sdk_in_non-google_environments)
+- [OpenAI API Key](https://platform.openai.com/api-keys)
+- [Railway Token](https://docs.railway.app/guides/public-api#creating-a-token)
+- [GitHub Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
+  - `Classic`のトークンを生成する
+  - 権限は`repo`と`workflow`にチェックを入れる
+
+### テンプレートの作成
+
+[deus-template](https://github.com/deus-app/deus-template)をフォークまたはクローンして、`GITHUB_TEMPLATE`で指定したリポジトリ名に作成する
+
 ### ミドルウェアのセットアップ
 
 ```sh
