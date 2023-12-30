@@ -12,6 +12,7 @@ const FIREBASE_AUTH_EMULATOR_HOST = z
   .optional()
   .parse(process.env.FIREBASE_AUTH_EMULATOR_HOST);
 const FIREBASE_SERVER_KEY = z.string().parse(process.env.FIREBASE_SERVER_KEY);
+const SUPABASE_JWT_SECRET = z.string().parse(process.env.SUPABASE_JWT_SECRET);
 const S3_ENDPOINT = z.string().url().optional().parse(process.env.S3_ENDPOINT);
 const S3_BUCKET = z.string().parse(process.env.S3_BUCKET);
 const S3_ACCESS_KEY = z.string().parse(process.env.S3_ACCESS_KEY);
@@ -50,4 +51,5 @@ export {
   S3_ENDPOINT,
   S3_REGION,
   S3_SECRET_KEY,
+  SUPABASE_JWT_SECRET,
 };

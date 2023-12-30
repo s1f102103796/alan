@@ -1,6 +1,5 @@
 import type { InitAppModel, RailwayModel } from '$/commonTypesWithClient/appModels';
 import {
-  FIREBASE_SERVER_KEY,
   GITHUB_OWNER,
   S3_ACCESS_KEY,
   S3_BUCKET,
@@ -8,6 +7,7 @@ import {
   S3_ENDPOINT,
   S3_REGION,
   S3_SECRET_KEY,
+  SUPABASE_JWT_SECRET,
 } from '$/service/envValues';
 import { railwayClient } from '$/service/railwayClient';
 import { gql } from '@apollo/client';
@@ -76,7 +76,13 @@ export const createOnRailwayRepo = async (app: InitAppModel): Promise<RailwayMod
         $projectId: String!
         $serviceId: String!
         $origin: String!
-        $firebase: String!
+        $supabase: String!
+        $s3Endpoint: String!
+        $s3Bucket: String!
+        $s3AccessKey: String!
+        $s3SecretKey: String!
+        $s3Region: String!
+        $s3CustomEndpoint: String!
       ) {
         variableCollectionUpsert(
           input: {
@@ -87,7 +93,7 @@ export const createOnRailwayRepo = async (app: InitAppModel): Promise<RailwayMod
               API_DATABASE_URL: "\${{Postgres.DATABASE_URL}}"
               API_BASE_PATH: "/api"
               CORS_ORIGIN: $origin
-              FIREBASE_SERVER_KEY: $firebase
+              SUPABASE_JWT_SECRET: $supabase
               S3_ENDPOINT: $s3Endpoint
               S3_BUCKET: $s3Bucket
               S3_ACCESS_KEY: $s3AccessKey
@@ -104,7 +110,7 @@ export const createOnRailwayRepo = async (app: InitAppModel): Promise<RailwayMod
       projectId,
       serviceId,
       origin: urls.site,
-      firebase: FIREBASE_SERVER_KEY,
+      supabase: SUPABASE_JWT_SECRET,
       s3Endpoint: S3_ENDPOINT,
       s3Bucket: S3_BUCKET,
       s3AccessKey: S3_ACCESS_KEY,

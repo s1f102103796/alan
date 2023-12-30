@@ -41,6 +41,7 @@
   display: block;
   width: 77.5%;
   height: calc(93% - 9.2% - 36px);
+  background: #fff;
   border: none;
 }
 
