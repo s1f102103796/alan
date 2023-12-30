@@ -109,6 +109,11 @@
   color: #222;
 }
 
+.notchGroup svg {
+  width: 33%;
+  height: auto;
+}
+
 .linkContainer {
   display: flex;
   flex-wrap: wrap;

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRef } from 'react';
 import { BatteryIcon } from 'src/components/Notch/BatteryIcon';
 import { SignalIcon } from 'src/components/Notch/SignalIcon';
+import { TimeDisplayHHMM } from 'src/components/Notch/TimeDisplayHHMM ';
 import { WifiIcon } from 'src/components/Notch/WifiIcon';
 import { Spacer } from 'src/components/Spacer';
 import { TextInput } from 'src/components/TextInput/TextInput';
@@ -19,7 +20,7 @@ import styles from './infoArea.module.css';
 const imgHeight = '(100vh - 48px - 48px)';
 
 export const InfoArea = (props: { app: AppModel }) => {
-  const { formattedTimeElm } = useCurrentTime();
+  const { currentTime } = useCurrentTime();
   const iframe = useRef<HTMLIFrameElement>(null);
   const reload = () => {
     if (iframe.current) iframe.current.src = props.app.urls?.site ?? '';
@@ -55,7 +56,9 @@ export const InfoArea = (props: { app: AppModel }) => {
               <img src={staticPath.images.iphone_png} style={{ width: '100%' }} />
             </div>
             <div className={styles.notchContent}>
-              <div className={styles.notchGroup}>{formattedTimeElm}</div>
+              <div className={styles.notchGroup}>
+                <TimeDisplayHHMM date={currentTime} />
+              </div>
               <div className={styles.notchGroup}>
                 <SignalIcon fill="#BDBDBD" />
                 <WifiIcon fill="#222" />

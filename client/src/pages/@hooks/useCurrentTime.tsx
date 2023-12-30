@@ -11,14 +11,7 @@ export const useCurrentTime = () => {
     return () => clearInterval(timerId);
   }, []);
 
-  const formatTime = (date: Date) => {
-    return `${date.getHours().toString().padStart(2, '0')}:${date
-      .getMinutes()
-      .toString()
-      .padStart(2, '0')}`;
-  };
-
   return {
-    formattedTimeElm: <span>{formatTime(currentTime)}</span>,
+    currentTime,
   };
 };
