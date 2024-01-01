@@ -39,7 +39,7 @@ export const appMethods = {
       bubbles: [
         bubbleMethods.createSystem('first_question', now),
         bubbleMethods.createAiOrHuman('human', desc, now + 1),
-        bubbleMethods.createSystem('waiting_init', now + 2),
+        ...(waitingAppCount === 0 ? [] : [bubbleMethods.createSystem('waiting_init', now + 2)]),
       ],
       status: 'waiting',
       waitingOrder: waitingAppCount + 1,
@@ -60,7 +60,7 @@ export const appMethods = {
       urls: indexToUrls(app.index),
       railway,
       waitingOrder: undefined,
-      bubbles: [...app.bubbles, bubbleMethods.createSystem('create_app', Date.now() + 1000)], // Deploy serverの次に表示したいので1秒足す
+      bubbles: [...app.bubbles, bubbleMethods.createSystem('created_infra', Date.now())],
     };
   },
   retry: (app: ActiveAppModel): ActiveAppModel => {

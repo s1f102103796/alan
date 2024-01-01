@@ -4,6 +4,7 @@ import api from '$/githubApi/$api';
 import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
 import { customAssert } from '$/service/returnStatus';
 import aspida from '@aspida/fetch';
+import { setTimeout } from 'timers/promises';
 import { URL } from 'url';
 import type { GHStepModel } from '../model/githubModels';
 import { GH_STEP_TYPES, parseGHStep } from '../model/githubModels';
@@ -16,11 +17,23 @@ import {
 } from '../query/utils';
 
 const githubApiClient = api(
-  aspida(undefined, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } })
+  aspida(undefined, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }, throwHttpErrors: true })
 );
+
+let calledApiTimes: number[] = [];
+
+const waitApiCallingLimit = async () => {
+  const now = Date.now();
+  const todayCalledTimes = calledApiTimes.filter((t) => t > now - 24 * 60 * 60 * 1000);
+  calledApiTimes = [...todayCalledTimes, now];
+
+  if (todayCalledTimes.length > 4500) await setTimeout(60_000);
+};
 
 export const githubRepo = {
   create: async (app: InitAppModel) => {
+    await waitApiCallingLimit();
+
     const repoName = app.displayId;
     const urls = indexToUrls(app.index);
 
@@ -29,6 +42,9 @@ export const githubRepo = {
       ._repo(GITHUB_TEMPLATE)
       .generate.$post({
         body: { owner: GITHUB_OWNER, name: repoName, include_all_branches: true },
+      })
+      .catch((e) => {
+        console.log(e.message);
       });
 
     await Promise.all(

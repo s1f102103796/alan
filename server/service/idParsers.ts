@@ -12,6 +12,7 @@ import {
   type GitHubId,
   type UserId,
 } from '../commonTypesWithClient/branded';
+import type { AppEventId } from './branded';
 
 const createIdParser = <T extends string>() => z.string() as unknown as z.ZodType<T>;
 
@@ -24,3 +25,4 @@ export const githubIdParser = createIdParser<GitHubId>();
 export const ghActionIdParser = createIdParser<GHActionId>();
 export const rwDeploymentIdParser = createIdParser<RWDeploymentId>();
 export const ghStepIdParser = createIdParser<GHStepId>();
+export const appEventIdParser = createIdParser<AppEventId>();

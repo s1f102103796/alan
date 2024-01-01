@@ -1,5 +1,6 @@
 import server from '$/$server';
 import { appUseCase } from '$/domain/app/useCase/appUseCase';
+import { appEventUseCase } from '$/domain/appEvent/useCase/appEventUseCase';
 import { API_BASE_PATH, CORS_ORIGIN } from '$/service/envValues';
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
@@ -20,8 +21,10 @@ export const initServer = (serverFactory?: FastifyServerFactory) => {
 };
 
 export const init = (serverFactory?: FastifyServerFactory) => {
-  appUseCase.initOneByOne();
   appUseCase.watchBubbleContents();
+  appEventUseCase.createGitHub();
+  appEventUseCase.createRailway();
+  appEventUseCase.startDevelopment();
 
   return initServer(serverFactory);
 };

@@ -28,10 +28,12 @@ export const SystemContent = (props: { app: AppModel; bubble: SystemBubbleModel 
                 return `API制限回避のため順番にインフラを構築します。\n開始まで残り${
                   props.app.waitingOrder ?? 0
                 }人です。`;
+              case 'completed_github':
+                return 'GitHubリポジトリを作成しました。';
               case 'init_infra':
-                return `「${props.app.name}」のインフラ構築を開始しています。`;
-              case 'create_app':
-                return `「${props.app.name}」のアプリ開発を開始しています。`;
+                return 'インフラのセットアップを開始しています。';
+              case 'created_infra':
+                return 'インフラのセットアップが完了しました。';
               case 'retry_test':
                 return 'テストに失敗したコードを修正しています。';
               default:

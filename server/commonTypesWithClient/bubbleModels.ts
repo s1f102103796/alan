@@ -94,7 +94,8 @@ const SYSTEM_STATUSES = [
   'first_question',
   'waiting_init',
   'init_infra',
-  'create_app',
+  'created_infra',
+  'completed_github',
   'retry_test',
 ] as const;
 

@@ -47,12 +47,13 @@ model Bubble {
   createdAt         DateTime
   App               App                @relation(fields: [appId], references: [id])
   appId             String
+  events            AppEvent[]
   GitHubAction      GitHubAction?
   RailwayDeployment RailwayDeployment?
 }
 
 model App {
-  id               String   @id
+  id               String     @id
   index            Int
   name             String
   status           String
@@ -63,6 +64,21 @@ model App {
   githubUpdatedAt  DateTime
   railwayUpdatedAt DateTime
   bubbles          Bubble[]
-  User             User     @relation(fields: [userId], references: [id])
+  events           AppEvent[]
+  User             User       @relation(fields: [userId], references: [id])
   userId           String
+}
+
+model AppEvent {
+  id           String   @id
+  type         String
+  subscriberId String
+  status       String
+  createdAt    DateTime
+  updatedAt    DateTime
+  failedCount  Int
+  App          App      @relation(fields: [appId], references: [id])
+  appId        String
+  Bubble       Bubble   @relation(fields: [bubbleId], references: [id])
+  bubbleId     String
 }

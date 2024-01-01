@@ -3,11 +3,14 @@ import type {
   AppModel,
   InitAppModel,
   RailwayModel,
+  WaitingAppModel,
 } from '$/commonTypesWithClient/appModels';
 import { type UserModel } from '$/commonTypesWithClient/appModels';
 import type { AppId, Maybe } from '$/commonTypesWithClient/branded';
+import { appEventUseCase } from '$/domain/appEvent/useCase/appEventUseCase';
 import { prismaClient, transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
+import type { Prisma } from '@prisma/client';
 import { setTimeout } from 'timers/promises';
 import { appMethods } from '../model/appMethods';
 import { bubbleMethods } from '../model/bubbleMethods';
@@ -18,35 +21,6 @@ import type { GitDiffModel } from '../repository/llmRepo';
 import { llmRepo } from '../repository/llmRepo';
 import { localGitRepo } from '../repository/localGitRepo';
 import { railwayRepo } from '../repository/railwayRepo';
-
-const initWaitingHead = () =>
-  transaction<InitAppModel | undefined>('RepeatableRead', async (tx) => {
-    const waiting = await appQuery.findWaitingHead(tx);
-
-    if (waiting === undefined) return;
-
-    const inited = appMethods.init(waiting);
-
-    const res = await githubRepo.create(inited).catch(() => null);
-
-    if (res === null) return;
-
-    await appRepo.save(tx, inited);
-
-    return inited;
-  });
-
-const runApp = (inited: InitAppModel, railway: RailwayModel) =>
-  transaction<ActiveAppModel>('RepeatableRead', async (tx) => {
-    const initedApp = await appQuery.findByIdOrThrow(tx, inited.id);
-
-    customAssert(initedApp.status === 'init', 'エラーならロジック修正必須');
-
-    const running = appMethods.run(initedApp, railway);
-    await appRepo.save(tx, running);
-
-    return running;
-  });
 
 const retryTest = (app: ActiveAppModel) =>
   transaction<ActiveAppModel>('RepeatableRead', async (tx) => {
@@ -111,8 +85,42 @@ export const appUseCase = {
       ]);
       const app = appMethods.create(user, count, waitingCount, desc);
       await appRepo.save(tx, app);
+      await appEventUseCase.dispach(tx, 'AppCreated', app);
 
       return app;
+    }),
+  init: async (tx: Prisma.TransactionClient, waiting: WaitingAppModel) => {
+    const inited = appMethods.init(waiting);
+    await appRepo.save(tx, inited);
+
+    return inited;
+  },
+  completeGitHubInit: async (tx: Prisma.TransactionClient, inited: InitAppModel) => {
+    const bubble = bubbleMethods.createSystem('completed_github', Date.now());
+    const app = appMethods.addBubble(inited, bubble);
+    await appRepo.save(tx, app);
+    await appEventUseCase.dispach(tx, 'GitHubCreated', app);
+  },
+  completeRailwayInit: async (
+    tx: Prisma.TransactionClient,
+    inited: InitAppModel,
+    railway: RailwayModel
+  ) => {
+    const running = appMethods.run(inited, railway);
+    await appRepo.save(tx, running);
+    await appEventUseCase.dispach(tx, 'RailwayCreated', running);
+  },
+  pushedGitDiff: (app: AppModel, gitDiff: GitDiffModel) =>
+    transaction('RepeatableRead', async (tx) => {
+      const newApp = appMethods.addBubble(
+        await appQuery.findByIdOrThrow(tx, app.id),
+        bubbleMethods.createAiOrHuman(
+          'ai',
+          `「${gitDiff.newMessage}」をGitHubにPushしました。`,
+          Date.now()
+        )
+      );
+      await appRepo.save(tx, newApp);
     }),
   updateGHActions: (appId: Maybe<AppId>) =>
     transaction('RepeatableRead', async (tx) => {
@@ -141,30 +149,6 @@ export const appUseCase = {
 
       await appRepo.save(tx, newApp);
     }),
-  initOneByOne: async () => {
-    let prevTime = 0;
-
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      prevTime = Date.now();
-
-      const inited = await initWaitingHead();
-
-      if (inited === undefined) continue;
-
-      const railway = await railwayRepo.create(inited).catch(() => null);
-
-      if (railway === null) continue;
-
-      const running = await runApp(inited, railway);
-      const localGit = await localGitRepo.getFiles(running);
-      const gitDiff = await llmRepo.initApp(running, localGit);
-
-      if (gitDiff !== null) await pushGitDiff(running, gitDiff);
-
-      await setTimeout(600_000 - Date.now() + prevTime);
-    }
-  },
   watchBubbleContents: async () => {
     let prevTime = 0;
 
