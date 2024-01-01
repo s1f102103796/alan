@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export const useCurrentTime = () => {
+export const DigitalClock = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -11,7 +11,10 @@ export const useCurrentTime = () => {
     return () => clearInterval(timerId);
   }, []);
 
-  return {
-    currentTime,
-  };
+  return (
+    <span>
+      {currentTime.getHours().toString().padStart(2, '0')}:
+      {currentTime.getMinutes().toString().padStart(2, '0')}
+    </span>
+  );
 };

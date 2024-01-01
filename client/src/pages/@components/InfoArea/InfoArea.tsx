@@ -2,7 +2,6 @@ import type { AppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { BatteryIcon } from 'src/components/Notch/BatteryIcon';
-import { ClockIcon } from 'src/components/Notch/ClockIcon';
 import { SignalIcon } from 'src/components/Notch/SignalIcon';
 import { WifiIcon } from 'src/components/Notch/WifiIcon';
 import { Spacer } from 'src/components/Spacer';
@@ -13,14 +12,13 @@ import { RailwayIcon } from 'src/components/icons/RailwayIcon';
 import { ReloadIcon } from 'src/components/icons/ReloadIcon';
 import { SiteIcon } from 'src/components/icons/SIteIcon';
 import { VscodeIcon } from 'src/components/icons/VscodeIcon';
-import { useCurrentTime } from 'src/pages/@hooks/useCurrentTime';
 import { staticPath } from 'src/utils/$path';
+import { DigitalClock } from '../DigitalClock';
 import styles from './infoArea.module.css';
 
 const imgHeight = '(100vh - 48px - 48px)';
 
 export const InfoArea = (props: { app: AppModel }) => {
-  const { currentTime } = useCurrentTime();
   const iframe = useRef<HTMLIFrameElement>(null);
   const reload = () => {
     if (iframe.current) iframe.current.src = props.app.urls?.site ?? '';
@@ -57,7 +55,7 @@ export const InfoArea = (props: { app: AppModel }) => {
             </div>
             <div className={styles.notchContent}>
               <div className={styles.notchGroup}>
-                <ClockIcon date={currentTime} />
+                <DigitalClock />
               </div>
               <div className={styles.notchGroup}>
                 <SignalIcon fill="#BDBDBD" />
