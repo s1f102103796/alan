@@ -2,8 +2,8 @@ import type { AppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { BatteryIcon } from 'src/components/Notch/BatteryIcon';
+import { ClockIcon } from 'src/components/Notch/ClockIcon';
 import { SignalIcon } from 'src/components/Notch/SignalIcon';
-import { TimeDisplayHHMM } from 'src/components/Notch/TimeDisplayHHMM ';
 import { WifiIcon } from 'src/components/Notch/WifiIcon';
 import { Spacer } from 'src/components/Spacer';
 import { TextInput } from 'src/components/TextInput/TextInput';
@@ -57,7 +57,7 @@ export const InfoArea = (props: { app: AppModel }) => {
             </div>
             <div className={styles.notchContent}>
               <div className={styles.notchGroup}>
-                <TimeDisplayHHMM date={currentTime} />
+                <ClockIcon date={currentTime} />
               </div>
               <div className={styles.notchGroup}>
                 <SignalIcon fill="#BDBDBD" />

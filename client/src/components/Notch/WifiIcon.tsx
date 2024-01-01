@@ -1,25 +1,16 @@
 export const WifiIcon = (props: { fill: string }) => {
-  const scaleFactor = 1.2;
-  const centerX = 10;
-  const centerY = 10;
-
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+      viewBox="0 0 28 28"
       fill="none"
       stroke={props.fill}
-      strokeWidth="2"
+      strokeWidth="2.5"
     >
-      <g
-        transform={`scale(${scaleFactor}) translate(${-centerX * (scaleFactor - 1)} ${
-          -centerY * (scaleFactor - 1)
-        })`}
-      >
-        <path d="M5.53 10C8.35 7 15.64 7 18.46 10" />
-        <path d="M8.53 13C10.36 11.09 13.63 11.09 15.46 13" />
-        <path d="M10.53 15.55C11.25 14.87 12.77 14.87 13.46 15.55" />
-      </g>
+      <path d="M5 12.5C10 7 17 7 23 12.5" />
+      <path d="M8 15.75C11 12 17 12 20 15.75" />
+      <path d="M11.15 18.5C12 17 16 17 16.85 18.5" />
+      <polygon points="14,20 13,19 15,19" />
     </svg>
   );
 };
