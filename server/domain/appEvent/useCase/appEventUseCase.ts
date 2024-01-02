@@ -7,7 +7,7 @@ import { appUseCase } from '$/domain/app/useCase/appUseCase';
 import { transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
-import type { AppEventType, SubscriberId } from '../model/appEventModels';
+import type { AppEventDispatcher, AppEventType, SubscriberId } from '../model/appEventModels';
 import { appEventMethods, appSubscriberDict } from '../model/appEventModels';
 import { appEventQuery } from '../query/appEventQuery';
 import { appEventRepo } from '../repository/appEventRepo';
@@ -39,6 +39,7 @@ const subscribe = async (tx: Prisma.TransactionClient, subscriberId: SubscriberI
 const develop = async (app: AppModel) => {
   const localGit = await localGitRepo.getFiles(app);
   const gitDiff = await llmRepo.initApp(app, localGit);
+
   if (gitDiff !== null) {
     await localGitRepo.pushToRemote(app, gitDiff);
     await appUseCase.pushedGitDiff(app, gitDiff);
@@ -46,12 +47,20 @@ const develop = async (app: AppModel) => {
 };
 
 export const appEventUseCase = {
-  dispach: async (tx: Prisma.TransactionClient, type: AppEventType, app: AppModel) => {
+  create: async (
+    tx: Prisma.TransactionClient,
+    type: AppEventType,
+    app: AppModel
+  ): Promise<AppEventDispatcher> => {
     const events = appEventMethods.create(type, app);
     await Promise.all(events.map((ev) => appEventRepo.save(tx, ev)));
 
-    const subs = appSubscriberDict()[type];
-    events.forEach((ev) => subs.find((sub) => sub.id === ev.subscriberId)?.fn());
+    return {
+      dispatch: () => {
+        const subs = appSubscriberDict()[type];
+        events.forEach((ev) => subs.find((sub) => sub.id === ev.subscriberId)?.fn());
+      },
+    };
   },
   createGitHub: async () => {
     if (isCreatingGitHub) return;
@@ -86,8 +95,9 @@ export const appEventUseCase = {
             await appEventRepo.save(tx, appEventMethods.complete(event));
 
             customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
-            await appUseCase.completeGitHubInit(tx, event.app);
-          })
+
+            return await appUseCase.completeGitHubInit(tx, event.app);
+          }).then(({ dispatch }) => dispatch())
         )
         .catch(() =>
           transaction('RepeatableRead', async (tx) => {
@@ -119,9 +129,10 @@ export const appEventUseCase = {
             await appEventRepo.save(tx, appEventMethods.complete(event));
 
             customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
-            await appUseCase.completeRailwayInit(tx, event.app, railway);
+            return await appUseCase.completeRailwayInit(tx, event.app, railway);
           })
         )
+        .then(({ dispatch }) => dispatch())
         .catch(() =>
           transaction('RepeatableRead', async (tx) => {
             const event = await appEventQuery.findByIdOrThrow(tx, published.id);

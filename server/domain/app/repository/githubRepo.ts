@@ -4,7 +4,7 @@ import api from '$/githubApi/$api';
 import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
 import { customAssert } from '$/service/returnStatus';
 import aspida from '@aspida/fetch';
-import { setTimeout } from 'timers/promises';
+import { setInterval, setTimeout } from 'timers/promises';
 import { URL } from 'url';
 import type { GHStepModel } from '../model/githubModels';
 import { GH_STEP_TYPES, parseGHStep } from '../model/githubModels';
@@ -44,7 +44,7 @@ export const githubRepo = {
         body: { owner: GITHUB_OWNER, name: repoName, include_all_branches: true },
       })
       .catch((e) => {
-        console.log(e.message);
+        if (e.response.status !== 422) throw e;
       });
 
     await Promise.all(
@@ -54,18 +54,23 @@ export const githubRepo = {
       ].map((body) =>
         githubApiClient.repos._owner(GITHUB_OWNER)._repo(repoName).actions.variables.$post({ body })
       )
-    );
+    ).catch((e) => {
+      if (e.response.status !== 409) throw e;
+    });
 
-    await Promise.all([
-      githubApiClient.repos
-        ._owner(GITHUB_OWNER)
-        ._repo(repoName)
-        .$patch({ body: { homepage: urls.site } }),
-      githubApiClient.repos
-        ._owner(GITHUB_OWNER)
-        ._repo(repoName)
-        .pages.$post({ body: { build_type: 'legacy', source: { branch: 'gh-pages' } } }),
-    ]);
+    await githubApiClient.repos
+      ._owner(GITHUB_OWNER)
+      ._repo(repoName)
+      .$patch({ body: { homepage: urls.site } });
+
+    for (let i = 30; i > 0; i -= 1) {
+      const res = await fetch(
+        `https://github.com/${GITHUB_OWNER}/${repoName}/blob/main/package.json`
+      );
+      if (res.status === 200) break;
+
+      await setInterval(1000);
+    }
   },
   listActionsAll: async (app: InitAppModel | ActiveAppModel) => {
     const list: GHActionModel[] = [];

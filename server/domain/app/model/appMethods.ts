@@ -60,7 +60,6 @@ export const appMethods = {
       urls: indexToUrls(app.index),
       railway,
       waitingOrder: undefined,
-      bubbles: [...app.bubbles, bubbleMethods.createSystem('created_infra', Date.now())],
     };
   },
   retry: (app: ActiveAppModel): ActiveAppModel => {

@@ -32,8 +32,6 @@ export const SystemContent = (props: { app: AppModel; bubble: SystemBubbleModel 
                 return 'GitHubリポジトリを作成しました。';
               case 'init_infra':
                 return 'インフラのセットアップを開始しています。';
-              case 'created_infra':
-                return 'インフラのセットアップが完了しました。';
               case 'retry_test':
                 return 'テストに失敗したコードを修正しています。';
               default:

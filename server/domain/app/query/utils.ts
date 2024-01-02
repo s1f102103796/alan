@@ -40,7 +40,7 @@ export const createUrls = (app: { index: number }, bubbles: BubbleModel[]) =>
     (b) =>
       b.type === 'github' &&
       b.content.type === 'pages build and deployment' &&
-      b.content.status === 'success'
+      ['cancelled', 'success'].includes(b.content.status)
   ).length >= 2 && bubbles.some((b) => b.type === 'railway' && b.content.status === 'SUCCESS')
     ? indexToUrls(app.index)
     : undefined;

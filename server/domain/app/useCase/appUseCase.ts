@@ -77,16 +77,19 @@ const retryFailedTest = async () => {
 };
 
 export const appUseCase = {
-  create: (user: UserModel, desc: string) =>
-    transaction<AppModel>('Serializable', async (tx) => {
+  create: (user: UserModel, desc: string): Promise<AppModel> =>
+    transaction('Serializable', async (tx) => {
       const [count, waitingCount] = await Promise.all([
         appQuery.countAll(tx),
         appQuery.countWaitings(tx),
       ]);
       const app = appMethods.create(user, count, waitingCount, desc);
       await appRepo.save(tx, app);
-      await appEventUseCase.dispach(tx, 'AppCreated', app);
+      const dispatcher = await appEventUseCase.create(tx, 'AppCreated', app);
 
+      return { app, dispatcher };
+    }).then(({ app, dispatcher }) => {
+      dispatcher.dispatch();
       return app;
     }),
   init: async (tx: Prisma.TransactionClient, waiting: WaitingAppModel) => {
@@ -99,7 +102,8 @@ export const appUseCase = {
     const bubble = bubbleMethods.createSystem('completed_github', Date.now());
     const app = appMethods.addBubble(inited, bubble);
     await appRepo.save(tx, app);
-    await appEventUseCase.dispach(tx, 'GitHubCreated', app);
+
+    return await appEventUseCase.create(tx, 'GitHubCreated', app);
   },
   completeRailwayInit: async (
     tx: Prisma.TransactionClient,
@@ -108,7 +112,8 @@ export const appUseCase = {
   ) => {
     const running = appMethods.run(inited, railway);
     await appRepo.save(tx, running);
-    await appEventUseCase.dispach(tx, 'RailwayCreated', running);
+
+    return await appEventUseCase.create(tx, 'RailwayCreated', running);
   },
   pushedGitDiff: (app: AppModel, gitDiff: GitDiffModel) =>
     transaction('RepeatableRead', async (tx) => {

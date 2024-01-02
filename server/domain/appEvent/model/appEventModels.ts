@@ -32,6 +32,8 @@ export type AppEventModel = {
   failedCount: number;
 };
 
+export type AppEventDispatcher = { dispatch: () => void };
+
 export const appSubscriberDict = (): {
   [Type in AppEventType]: { id: SubscriberId; fn: () => void }[];
 } => ({
@@ -48,6 +50,7 @@ export const appEventMethods = {
     appSubscriberDict()[type].map((sub): AppEventModel => {
       const bubble = app.bubbles.at(-1);
       customAssert(bubble, 'エラーならロジック修正必須');
+
       return {
         id: appEventIdParser.parse(randomUUID()),
         type,
