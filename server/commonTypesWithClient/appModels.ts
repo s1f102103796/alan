@@ -1,11 +1,11 @@
-import type { AppId, DisplayId, GitHubId, UserId } from './branded';
+import type { AppId, DisplayId, GHUserId, UserId } from './branded';
 import type { BubbleModel } from './bubbleModels';
 
 export const APP_STATUSES = ['waiting', 'init', 'running', 'failure', 'success', 'closed'] as const;
 
 export type UserModel = {
   id: UserId;
-  githubId: GitHubId;
+  githubId: GHUserId;
   email: string;
   displayName: string | undefined;
   photoURL: string | undefined;
@@ -26,7 +26,6 @@ export type AppModelBase = {
   displayId: DisplayId;
   name: string;
   createdTime: number;
-  githubUpdatedTime: number;
   railwayUpdatedTime: number;
   bubbles: BubbleModel[];
 };

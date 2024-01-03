@@ -34,7 +34,6 @@ export const appMethods = {
       displayId: indexToDisplayId(index),
       name: desc.slice(0, 15),
       createdTime: now,
-      githubUpdatedTime: 0,
       railwayUpdatedTime: 0,
       bubbles: [
         bubbleMethods.createSystem('first_question', now),
@@ -88,7 +87,6 @@ export const appMethods = {
         }),
         ...contents.filter((c) => newContentIds.includes(c.id)).map(bubbleMethods.createGitHub),
       ],
-      githubUpdatedTime: Date.now(),
     };
   },
   upsertRailwayBubbles: (app: AppModel, contents: RWDeploymentModel[]): AppModel => {

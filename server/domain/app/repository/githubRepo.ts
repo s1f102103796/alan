@@ -1,78 +1,38 @@
-import type { ActiveAppModel, AppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
+import api from '$/api/$api';
+import type { WorkflowRun } from '$/api/webhooks/github/validator';
+import type { AppModel } from '$/commonTypesWithClient/appModels';
 import { parseGHAction, type GHActionModel } from '$/commonTypesWithClient/bubbleModels';
-import api from '$/githubApi/$api';
-import { GITHUB_OWNER, GITHUB_TEMPLATE, GITHUB_TOKEN } from '$/service/envValues';
+import {
+  API_BASE_PATH,
+  API_ORIGIN,
+  GITHUB_OWNER,
+  GITHUB_WEBHOOK_SECRET,
+} from '$/service/envValues';
+import { githubApiClient } from '$/service/githubApiClient';
 import { customAssert } from '$/service/returnStatus';
 import aspida from '@aspida/fetch';
-import { setInterval, setTimeout } from 'timers/promises';
-import { URL } from 'url';
+import { getApi } from 'ngrok';
 import type { GHStepModel } from '../model/githubModels';
 import { GH_STEP_TYPES, parseGHStep } from '../model/githubModels';
-import {
-  displayIdToApiOrigin,
-  indexToUrls,
-  toBranchUrl,
-  toCommitUrl,
-  toGHActionUrl,
-} from '../query/utils';
-
-const githubApiClient = api(
-  aspida(undefined, { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }, throwHttpErrors: true })
-);
-
-let calledApiTimes: number[] = [];
-
-const waitApiCallingLimit = async () => {
-  const now = Date.now();
-  const todayCalledTimes = calledApiTimes.filter((t) => t > now - 24 * 60 * 60 * 1000);
-  calledApiTimes = [...todayCalledTimes, now];
-
-  if (todayCalledTimes.length > 4500) await setTimeout(60_000);
-};
+import { toBranchUrl, toCommitUrl, toGHActionUrl } from '../query/utils';
 
 export const githubRepo = {
-  create: async (app: InitAppModel) => {
-    await waitApiCallingLimit();
-
-    const repoName = app.displayId;
-    const urls = indexToUrls(app.index);
-
-    await githubApiClient.repos
-      ._owner(GITHUB_OWNER)
-      ._repo(GITHUB_TEMPLATE)
-      .generate.$post({
-        body: { owner: GITHUB_OWNER, name: repoName, include_all_branches: true },
-      })
-      .catch((e) => {
-        if (e.response.status !== 422) throw e;
-      });
-
-    await Promise.all(
-      [
-        { name: 'CNAME', value: new URL(urls.site).host },
-        { name: 'API_ORIGIN', value: displayIdToApiOrigin(repoName) },
-      ].map((body) =>
-        githubApiClient.repos._owner(GITHUB_OWNER)._repo(repoName).actions.variables.$post({ body })
-      )
-    ).catch((e) => {
-      if (e.response.status !== 409) throw e;
-    });
-
-    await githubApiClient.repos
-      ._owner(GITHUB_OWNER)
-      ._repo(repoName)
-      .$patch({ body: { homepage: urls.site } });
-
-    for (let i = 30; i > 0; i -= 1) {
-      const res = await fetch(
-        `https://github.com/${GITHUB_OWNER}/${repoName}/blob/main/package.json`
-      );
-      if (res.status === 200) break;
-
-      await setInterval(1000);
-    }
-  },
-  listActionsAll: async (app: InitAppModel | ActiveAppModel) => {
+  workflowRunToModel: (app: AppModel, workflowRun: WorkflowRun) =>
+    parseGHAction({
+      id: workflowRun.id,
+      type: workflowRun.name,
+      title: workflowRun.display_title,
+      status: workflowRun.status,
+      conclusion: workflowRun.conclusion,
+      url: toGHActionUrl(app.displayId, workflowRun.id),
+      branch: workflowRun.head_branch,
+      branchUrl: toBranchUrl(app.displayId, workflowRun.head_branch),
+      commitId: workflowRun.head_commit.id,
+      commitUrl: toCommitUrl(app.displayId, workflowRun.head_commit.id),
+      createdTime: new Date(workflowRun.created_at).getTime(),
+      updatedTime: new Date(workflowRun.updated_at).getTime(),
+    }),
+  listActionsAll: async (app: AppModel) => {
     const list: GHActionModel[] = [];
     const perPage = 100;
     let page = 0;
@@ -89,23 +49,7 @@ export const githubRepo = {
       if (res === null) break;
 
       totalCount = res.total_count;
-      list.push(
-        ...res.workflow_runs.map((run) =>
-          parseGHAction({
-            id: run.id.toString(),
-            type: run.name,
-            title: run.display_title,
-            status: run.conclusion ?? run.status,
-            url: toGHActionUrl(app.displayId, run.id),
-            branch: run.head_branch,
-            branchUrl: toBranchUrl(app.displayId, run.head_branch),
-            commitId: run.head_commit.id,
-            commitUrl: toCommitUrl(app.displayId, run.head_commit.id),
-            createdTime: new Date(run.created_at).getTime(),
-            updatedTime: new Date(run.updated_at).getTime(),
-          })
-        )
-      );
+      list.push(...res.workflow_runs.map((run) => githubRepo.workflowRunToModel(app, run)));
     }
 
     return list;
@@ -161,9 +105,10 @@ export const githubRepo = {
         });
 
       failedStep = parseGHStep({
-        id: failedJob.id.toString(),
+        id: failedJob.id,
         type,
-        status: failedJob.conclusion ?? failedJob.status,
+        status: failedJob.status,
+        conclusion: failedJob.conclusion,
         log,
         createdTime: new Date(failedJob.started_at).getTime(),
         updatedTime: new Date(failedJob.completed_at).getTime(),
@@ -173,5 +118,43 @@ export const githubRepo = {
     customAssert(failedStep, 'エラーならロジック修正必須');
 
     return failedStep;
+  },
+  resetWebhook: async (app: AppModel) => {
+    const origin = API_ORIGIN.startsWith('http://localhost')
+      ? await getApi()
+          ?.listTunnels()
+          .then((ts) => ts.tunnels.find((t) => t.proto === 'https')?.public_url)
+      : API_ORIGIN;
+    customAssert(origin, 'エラーならロジック修正必須');
+
+    const url = api(
+      aspida(undefined, { baseURL: `${origin}${API_BASE_PATH}` })
+    ).webhooks.github.$path();
+
+    const [oldHook] = await githubApiClient.repos
+      ._owner(GITHUB_OWNER)
+      ._repo(app.displayId)
+      .hooks.$get();
+
+    if (oldHook === undefined) {
+      return await githubApiClient.repos
+        ._owner(GITHUB_OWNER)
+        ._repo(app.displayId)
+        .hooks.$post({
+          body: {
+            config: { url, content_type: 'json', secret: GITHUB_WEBHOOK_SECRET },
+            active: true,
+            events: ['workflow_run'],
+          },
+        });
+    }
+
+    if (oldHook.config.url === url) return;
+
+    await githubApiClient.repos
+      ._owner(GITHUB_OWNER)
+      ._repo(app.displayId)
+      .hooks._hookId(oldHook.id)
+      .config.$post({ body: { url } });
   },
 };

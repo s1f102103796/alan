@@ -18,15 +18,16 @@ model User {
 }
 
 model GitHubAction {
-  id        String   @id
-  type      String
-  title     String
-  status    String
-  branch    String
-  commitId  String
-  updatedAt DateTime
-  Bubble    Bubble   @relation(fields: [bubbleId], references: [id])
-  bubbleId  String   @unique
+  id         String   @id
+  type       String
+  title      String
+  status     String
+  conclusion String?
+  branch     String
+  commitId   String
+  updatedAt  DateTime
+  Bubble     Bubble   @relation(fields: [bubbleId], references: [id])
+  bubbleId   String   @unique
 }
 
 model RailwayDeployment {
@@ -61,7 +62,6 @@ model App {
   projectId        String?
   serviceId        String?
   createdAt        DateTime
-  githubUpdatedAt  DateTime
   railwayUpdatedAt DateTime
   bubbles          Bubble[]
   events           AppEvent[]

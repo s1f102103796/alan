@@ -15,7 +15,7 @@ import { ChatGPTIcon } from 'src/components/icons/ChatGPTIcon';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { RailwayIcon } from 'src/components/icons/RailwayIcon';
 import {
-  actionStatusToIconStatus,
+  actionConclusionToIconStatus,
   deploymentStatusToIconStatus,
   useAppStatus,
 } from 'src/pages/@hooks/useAppStatus';
@@ -75,7 +75,7 @@ export const ChatArea = (props: { app: AppModel }) => {
                               : `${bubble.content.type} - ${bubble.content.title}`
                           }
                           content={bubble.content}
-                          status={actionStatusToIconStatus(bubble.content)}
+                          status={actionConclusionToIconStatus(bubble.content)}
                           icon={<GithubIcon size={32} fill="#fff" />}
                         />
                       );

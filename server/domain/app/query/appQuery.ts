@@ -1,6 +1,6 @@
 import type { AppModelBase, WaitingAppModel } from '$/commonTypesWithClient/appModels';
 import { APP_STATUSES, type AppModel } from '$/commonTypesWithClient/appModels';
-import type { AppId, Maybe } from '$/commonTypesWithClient/branded';
+import type { AppId, DisplayId, Maybe } from '$/commonTypesWithClient/branded';
 import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
 import {
   bubbleTypeParser,
@@ -14,6 +14,7 @@ import type { App, Bubble, GitHubAction, Prisma, RailwayDeployment, User } from 
 import { z } from 'zod';
 import {
   createUrls,
+  displayIdToIndex,
   indexToDisplayId,
   projectIdToUrl,
   toBranchUrl,
@@ -22,7 +23,7 @@ import {
   toRWDeployUrl,
 } from './utils';
 
-const PRISMA_APP_INCLUDE = {
+const APP_INCLUDE = {
   User: true,
   bubbles: {
     include: { GitHubAction: true, RailwayDeployment: true },
@@ -58,10 +59,11 @@ const toBubble = (
         ...base,
         type,
         content: parseGHAction({
-          id: bubble.GitHubAction.id,
+          id: +bubble.GitHubAction.id,
           type: bubble.GitHubAction.type,
           title: bubble.GitHubAction.title,
           status: bubble.GitHubAction.status,
+          conclusion: bubble.GitHubAction.conclusion,
           url: toGHActionUrl(indexToDisplayId(app.index), bubble.GitHubAction.id),
           branch: bubble.GitHubAction.branch,
           branchUrl: toBranchUrl(indexToDisplayId(app.index), bubble.GitHubAction.branch),
@@ -114,7 +116,6 @@ const toAppModelBase = (app: PrismaApp): AppModelBase => {
     displayId: indexToDisplayId(app.index),
     name: app.name,
     createdTime: app.createdAt.getTime(),
-    githubUpdatedTime: app.railwayUpdatedAt.getTime(),
     railwayUpdatedTime: app.railwayUpdatedAt.getTime(),
     bubbles,
   };
@@ -157,34 +158,33 @@ export const appQuery = {
   countAll: (tx: Prisma.TransactionClient) => tx.app.count(),
   countWaitings: (tx: Prisma.TransactionClient) => tx.app.count({ where: { status: 'waiting' } }),
   findAll: (tx: Prisma.TransactionClient) =>
-    tx.app.findMany({ include: PRISMA_APP_INCLUDE, orderBy: { index: 'asc' } }).then((apps) => {
+    tx.app.findMany({ include: APP_INCLUDE, orderBy: { index: 'asc' } }).then((apps) => {
       const waitingIds = apps.filter((app) => app.status === 'waiting').map((app) => app.id);
       return apps.map((app) => toAppModel(app, waitingIds));
     }),
   findByIdOrThrow: (tx: Prisma.TransactionClient, id: Maybe<AppId>) =>
-    tx.app.findMany({ include: PRISMA_APP_INCLUDE, orderBy: { index: 'asc' } }).then((apps) => {
+    tx.app.findMany({ include: APP_INCLUDE, orderBy: { index: 'asc' } }).then((apps) => {
       const waitingIds = apps.filter((app) => app.status === 'waiting').map((app) => app.id);
       return tx.app
-        .findUniqueOrThrow({ where: { id }, include: PRISMA_APP_INCLUDE })
+        .findUniqueOrThrow({ where: { id }, include: APP_INCLUDE })
+        .then((app) => toAppModel(app, waitingIds));
+    }),
+  findByDisplayIdOrThrow: (tx: Prisma.TransactionClient, displayId: DisplayId) =>
+    tx.app.findMany({ include: APP_INCLUDE, orderBy: { index: 'asc' } }).then((apps) => {
+      const waitingIds = apps.filter((app) => app.status === 'waiting').map((app) => app.id);
+      return tx.app
+        .findFirstOrThrow({ where: { index: displayIdToIndex(displayId) }, include: APP_INCLUDE })
         .then((app) => toAppModel(app, waitingIds));
     }),
   findWaitings: (tx: Prisma.TransactionClient) =>
     tx.app
-      .findMany({
-        where: { status: 'waiting' },
-        include: PRISMA_APP_INCLUDE,
-        orderBy: { index: 'asc' },
-      })
+      .findMany({ where: { status: 'waiting' }, include: APP_INCLUDE, orderBy: { index: 'asc' } })
       .then((apps) => {
         const waitingIds = apps.map((app) => app.id);
         return apps.map((app) => toWaitingAppModel(app, waitingIds));
       }),
   findWaitingHead: (tx: Prisma.TransactionClient) =>
     tx.app
-      .findFirst({
-        where: { status: 'waiting' },
-        include: PRISMA_APP_INCLUDE,
-        orderBy: { index: 'asc' },
-      })
+      .findFirst({ where: { status: 'waiting' }, include: APP_INCLUDE, orderBy: { index: 'asc' } })
       .then((app) => (app !== null ? toWaitingAppModel(app, [app.id]) : undefined)),
 };

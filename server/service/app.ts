@@ -21,10 +21,8 @@ export const initServer = (serverFactory?: FastifyServerFactory) => {
 };
 
 export const init = (serverFactory?: FastifyServerFactory) => {
-  appUseCase.watchBubbleContents();
-  appEventUseCase.createGitHub();
-  appEventUseCase.createRailway();
-  appEventUseCase.startDevelopment();
+  appUseCase.callWhenServerStarted();
+  appEventUseCase.callWhenServerStarted();
 
   return initServer(serverFactory);
 };

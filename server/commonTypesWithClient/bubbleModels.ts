@@ -6,33 +6,37 @@ import {
   rwDeploymentIdParser,
 } from '../service/idParsers';
 
-const GH_ACTION_TYPES = ['Test', 'Deploy client', 'pages build and deployment'] as const;
+export const actionTypeParser = z.enum(['Test', 'Deploy client', 'pages build and deployment']);
 
-const GH_STATUSES = [
+export const ghStatusParser = z.enum([
   'completed',
-  'action_required',
-  'cancelled',
-  'failure',
-  'neutral',
-  'skipped',
-  'stale',
-  'success',
-  'timed_out',
   'in_progress',
   'queued',
   'requested',
   'waiting',
   'pending',
-] as const;
+]);
 
-export const ghStatusParser = z.enum(GH_STATUSES);
+export const ghConclusionParser = z
+  .enum([
+    'success',
+    'failure',
+    'neutral',
+    'cancelled',
+    'timed_out',
+    'action_required',
+    'stale',
+    'skipped',
+  ])
+  .or(z.null());
 
 const ghActionParser = z.object({
   id: ghActionIdParser,
   model: z.literal('github'),
-  type: z.enum(GH_ACTION_TYPES),
+  type: actionTypeParser,
   title: z.string(),
   status: ghStatusParser,
+  conclusion: ghConclusionParser,
   url: z.string(),
   branch: z.string(),
   branchUrl: z.string(),
@@ -42,14 +46,17 @@ const ghActionParser = z.object({
   updatedTime: z.number(),
 });
 
-export type GHActionType = (typeof GH_ACTION_TYPES)[number];
-
-export type GHStatus = (typeof GH_STATUSES)[number];
-
+export type GHActionType = z.infer<typeof actionTypeParser>;
+export type GHStatus = z.infer<typeof ghStatusParser>;
+export type GHConclusion = z.infer<typeof ghConclusionParser>;
 export type GHActionModel = z.infer<typeof ghActionParser>;
 
 export const parseGHAction = (val: {
-  [Key in keyof Omit<GHActionModel, 'model'>]: GHActionModel[Key] extends string ? string : number;
+  [Key in keyof Omit<GHActionModel, 'model'>]: GHActionModel[Key] extends string
+    ? string
+    : GHActionModel[Key] extends string | null
+    ? string | null
+    : number;
 }) => ghActionParser.parse({ ...val, model: 'github' });
 
 const RW_STATUSES = [

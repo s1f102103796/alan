@@ -44,39 +44,14 @@ const Home = () => {
         .catch(returnNull),
     [setApps]
   );
-  const updateContents = useCallback(async () => {
-    if (currentApp?.id === undefined) return;
-
-    await apiClient.public.apps.bubbles.update
-      .$patch({ body: { appId: currentApp.id } })
-      .then((app) =>
-        setApps((apps) => {
-          const hasDiff = apps.some(
-            // eslint-disable-next-line max-nested-callbacks
-            (a) => a.id === app.id && JSON.stringify(a) !== JSON.stringify(app)
-          );
-          // eslint-disable-next-line max-nested-callbacks
-          return hasDiff ? apps.map((a) => (a.id === app.id ? app : a)) : apps;
-        })
-      )
-      .catch(returnNull);
-  }, [currentApp?.id, setApps]);
 
   useEffect(() => {
     fetchApps();
 
-    const intervalId = window.setInterval(fetchApps, 10_000);
+    const intervalId = window.setInterval(fetchApps, 5_000);
 
     return () => clearInterval(intervalId);
   }, [fetchApps]);
-
-  useEffect(() => {
-    updateContents();
-
-    const intervalId = window.setInterval(updateContents, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [updateContents]);
 
   useEffect(() => {
     if (apps.length > 0 && currentApp === undefined) {

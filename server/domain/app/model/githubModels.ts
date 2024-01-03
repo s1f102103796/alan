@@ -1,4 +1,4 @@
-import { ghStatusParser } from '$/commonTypesWithClient/bubbleModels';
+import { ghConclusionParser, ghStatusParser } from '$/commonTypesWithClient/bubbleModels';
 import { ghStepIdParser } from '$/service/idParsers';
 import { z } from 'zod';
 
@@ -8,6 +8,7 @@ const ghStepParser = z.object({
   id: ghStepIdParser,
   type: z.enum(GH_STEP_TYPES),
   status: ghStatusParser,
+  conclusion: ghConclusionParser,
   log: z.string(),
   createdTime: z.number(),
   updatedTime: z.number(),
@@ -15,6 +16,4 @@ const ghStepParser = z.object({
 
 export type GHStepModel = z.infer<typeof ghStepParser>;
 
-export const parseGHStep = (val: {
-  [Key in keyof GHStepModel]: GHStepModel[Key] extends string ? string : number;
-}) => ghStepParser.parse(val);
+export const parseGHStep = (val: GHStepModel) => ghStepParser.parse(val);

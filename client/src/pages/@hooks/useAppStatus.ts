@@ -3,28 +3,23 @@ import type { GHActionModel, RWDeploymentModel } from 'commonTypesWithClient/bub
 import { useMemo } from 'react';
 
 // eslint-disable-next-line complexity
-export const actionStatusToIconStatus = (action: GHActionModel): AppModel['status'] => {
-  switch (action.status) {
-    case 'in_progress':
+export const actionConclusionToIconStatus = (action: GHActionModel): AppModel['status'] => {
+  switch (action.conclusion) {
+    case null:
       return 'running';
     case 'cancelled':
     case 'failure':
     case 'timed_out':
       return 'failure';
-    case 'completed':
     case 'skipped':
     case 'stale':
     case 'success':
       return 'success';
     case 'action_required':
     case 'neutral':
-    case 'pending':
-    case 'queued':
-    case 'requested':
-    case 'waiting':
       return 'waiting';
     default:
-      throw new Error(action.status satisfies never);
+      throw new Error(action.conclusion satisfies never);
   }
 };
 
@@ -59,7 +54,7 @@ export const useAppStatus = (app: AppModel): AppModel['status'] =>
       b.type === 'railway'
         ? deploymentStatusToIconStatus(b.content)
         : b.type === 'github'
-        ? actionStatusToIconStatus(b.content)
+        ? actionConclusionToIconStatus(b.content)
         : []
     );
 

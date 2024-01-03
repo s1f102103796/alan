@@ -1,4 +1,5 @@
-import type { GHStatus } from '$/commonTypesWithClient/bubbleModels';
+import type { GHStepId } from '$/commonTypesWithClient/branded';
+import type { GHConclusion, GHStatus } from '$/commonTypesWithClient/bubbleModels';
 import type { DefineMethods } from 'aspida';
 
 export type Methods = DefineMethods<{
@@ -7,7 +8,7 @@ export type Methods = DefineMethods<{
     resBody: {
       total_count: number;
       jobs: {
-        id: number;
+        id: GHStepId;
         run_id: number;
         run_url: string;
         node_id: string;
@@ -15,14 +16,14 @@ export type Methods = DefineMethods<{
         url: string;
         html_url: string;
         status: GHStatus;
-        conclusion: 'success' | 'failure' | null;
+        conclusion: GHConclusion;
         started_at: string;
         completed_at: string;
         name: string;
         steps: {
           name: string;
           status: GHStatus;
-          conclusion: 'success' | 'failure' | null;
+          conclusion: GHConclusion;
           number: number;
           started_at: string;
           completed_at: string;

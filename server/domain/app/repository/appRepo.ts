@@ -7,7 +7,6 @@ export const appRepo = {
       where: { id: app.id },
       update: {
         name: app.name,
-        githubUpdatedAt: new Date(app.githubUpdatedTime),
         railwayUpdatedAt: new Date(app.railwayUpdatedTime),
         status: app.status,
         environmentId: app.railway?.environmentId,
@@ -20,7 +19,6 @@ export const appRepo = {
         index: app.index,
         name: app.name,
         createdAt: new Date(app.createdTime),
-        githubUpdatedAt: new Date(app.githubUpdatedTime),
         railwayUpdatedAt: new Date(app.railwayUpdatedTime),
         status: app.status,
         environmentId: app.railway?.environmentId,
@@ -54,16 +52,18 @@ export const appRepo = {
             break;
           case 'github':
             await tx.gitHubAction.upsert({
-              where: { id: bubble.content.id },
+              where: { id: bubble.content.id.toString() },
               update: {
                 status: bubble.content.status,
+                conclusion: bubble.content.conclusion,
                 updatedAt: new Date(bubble.content.updatedTime),
               },
               create: {
-                id: bubble.content.id,
+                id: bubble.content.id.toString(),
                 type: bubble.content.type,
                 title: bubble.content.title,
                 status: bubble.content.status,
+                conclusion: bubble.content.conclusion,
                 branch: bubble.content.branch,
                 commitId: bubble.content.commitId,
                 updatedAt: new Date(bubble.content.updatedTime),

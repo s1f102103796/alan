@@ -1,9 +1,10 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
-import { githubRepo } from '$/domain/app/repository/githubRepo';
 import { llmRepo } from '$/domain/app/repository/llmRepo';
 import { localGitRepo } from '$/domain/app/repository/localGitRepo';
 import { railwayRepo } from '$/domain/app/repository/railwayRepo';
 import { appUseCase } from '$/domain/app/useCase/appUseCase';
+import { githubUseCase } from '$/domain/app/useCase/githubUseCase';
+import { githubEventRepo } from '$/domain/appEvent/repository/githubEventRepo';
 import { transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
@@ -24,26 +25,26 @@ const subscribe = async (tx: Prisma.TransactionClient, subscriberId: SubscriberI
     await appEventRepo.save(tx, published);
 
     return published;
-  } else {
-    const waiting = await appEventQuery.findHead(tx, subscriberId, 'waiting');
-
-    if (waiting === null) return null;
-
-    const published = appEventMethods.publish(waiting);
-    await appEventRepo.save(tx, published);
-
-    return published;
   }
+
+  const waiting = await appEventQuery.findHead(tx, subscriberId, 'waiting');
+
+  if (waiting === null) return null;
+
+  const published = appEventMethods.publish(waiting);
+  await appEventRepo.save(tx, published);
+
+  return published;
 };
 
 const develop = async (app: AppModel) => {
   const localGit = await localGitRepo.getFiles(app);
   const gitDiff = await llmRepo.initApp(app, localGit);
 
-  if (gitDiff !== null) {
-    await localGitRepo.pushToRemote(app, gitDiff);
-    await appUseCase.pushedGitDiff(app, gitDiff);
-  }
+  if (gitDiff === null) return;
+
+  await localGitRepo.pushToRemote(app, gitDiff);
+  await githubUseCase.pushedGitDiff(app, gitDiff);
 };
 
 export const appEventUseCase = {
@@ -56,11 +57,16 @@ export const appEventUseCase = {
     await Promise.all(events.map((ev) => appEventRepo.save(tx, ev)));
 
     return {
-      dispatch: () => {
+      dispatchAfterTransaction: () => {
         const subs = appSubscriberDict()[type];
         events.forEach((ev) => subs.find((sub) => sub.id === ev.subscriberId)?.fn());
       },
     };
+  },
+  callWhenServerStarted: () => {
+    appEventUseCase.createGitHub();
+    appEventUseCase.createRailway();
+    appEventUseCase.startDevelopment();
   },
   createGitHub: async () => {
     if (isCreatingGitHub) return;
@@ -73,21 +79,19 @@ export const appEventUseCase = {
 
         if (published === null) return null;
 
-        if (published.app.status === 'waiting') {
-          customAssert(published.app.status === 'waiting', 'エラーならロジック修正必須');
+        if (published.app.status !== 'waiting') return published;
 
-          const inited = await appUseCase.init(tx, published.app);
-          return { ...published, app: inited };
-        }
+        customAssert(published.app.status === 'waiting', 'エラーならロジック修正必須');
 
-        return published;
+        const inited = await appUseCase.init(tx, published.app);
+        return { ...published, app: inited };
       });
 
       if (published === null) break;
 
       customAssert(published.app.status === 'init', 'エラーならロジック修正必須');
 
-      await githubRepo
+      await githubEventRepo
         .create(published.app)
         .then(() =>
           transaction('RepeatableRead', async (tx) => {
@@ -96,8 +100,8 @@ export const appEventUseCase = {
 
             customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
 
-            return await appUseCase.completeGitHubInit(tx, event.app);
-          }).then(({ dispatch }) => dispatch())
+            return await githubUseCase.completeGitHubInit(tx, event.app);
+          }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction())
         )
         .catch(() =>
           transaction('RepeatableRead', async (tx) => {
@@ -132,7 +136,7 @@ export const appEventUseCase = {
             return await appUseCase.completeRailwayInit(tx, event.app, railway);
           })
         )
-        .then(({ dispatch }) => dispatch())
+        .then(({ dispatchAfterTransaction }) => dispatchAfterTransaction())
         .catch(() =>
           transaction('RepeatableRead', async (tx) => {
             const event = await appEventQuery.findByIdOrThrow(tx, published.id);

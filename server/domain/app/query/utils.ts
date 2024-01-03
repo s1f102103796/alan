@@ -7,6 +7,11 @@ import { customAssert } from '$/service/returnStatus';
 
 export const indexToDisplayId = (index: number) =>
   displayIdParser.parse(`${DISPLAY_ID_PREFIX}-${index}`);
+export const displayIdToIndex = (displayId: DisplayId) => {
+  const idxText = displayId.split('-').at(-1);
+  customAssert(idxText !== undefined, 'エラーならロジック修正必須');
+  return +idxText;
+};
 export const indexToUrls = (index: number): Required<AppModel>['urls'] => ({
   site: `https://${index}.${BASE_DOMAIN}`,
   github: `https://github.com/${GITHUB_OWNER}/${indexToDisplayId(index)}`,

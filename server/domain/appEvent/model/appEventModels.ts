@@ -32,7 +32,7 @@ export type AppEventModel = {
   failedCount: number;
 };
 
-export type AppEventDispatcher = { dispatch: () => void };
+export type AppEventDispatcher = { dispatchAfterTransaction: () => void };
 
 export const appSubscriberDict = (): {
   [Type in AppEventType]: { id: SubscriberId; fn: () => void }[];

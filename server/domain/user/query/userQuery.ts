@@ -1,10 +1,10 @@
 import type { UserModel } from '$/commonTypesWithClient/appModels';
-import { githubIdParser, userIdParser } from '$/service/idParsers';
+import { ghUserIdParser, userIdParser } from '$/service/idParsers';
 import type { Prisma, User } from '@prisma/client';
 
 const toUser = (prismaUser: User) => ({
   id: userIdParser.parse(prismaUser.id),
-  githubId: githubIdParser.parse(prismaUser.githubId),
+  githubId: ghUserIdParser.parse(prismaUser.githubId),
   email: prismaUser.email,
   displayName: prismaUser.displayName ?? undefined,
   photoURL: prismaUser.photoURL ?? undefined,
