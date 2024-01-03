@@ -43,13 +43,14 @@
     "graphql": "^16.8.1",
     "is-binary-path": "^2.1.0",
     "langchain": "^0.0.208",
-    "ngrok": "^4.3.3",
+    "localtunnel": "^2.0.2",
     "simple-git": "^3.21.0",
     "velona": "^0.8.0",
     "zod": "^3.22.2"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.0",
+    "@types/localtunnel": "^2.0.4",
     "@types/node": "^20.4.10",
     "commonTypesWithClient": "file:./commonTypesWithClient",
     "esbuild": "^0.18.18",

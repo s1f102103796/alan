@@ -54,19 +54,18 @@ model Bubble {
 }
 
 model App {
-  id               String     @id
-  index            Int
-  name             String
-  status           String
-  environmentId    String?
-  projectId        String?
-  serviceId        String?
-  createdAt        DateTime
-  railwayUpdatedAt DateTime
-  bubbles          Bubble[]
-  events           AppEvent[]
-  User             User       @relation(fields: [userId], references: [id])
-  userId           String
+  id            String     @id
+  index         Int
+  name          String
+  status        String
+  environmentId String?
+  projectId     String?
+  serviceId     String?
+  createdAt     DateTime
+  bubbles       Bubble[]
+  events        AppEvent[]
+  User          User       @relation(fields: [userId], references: [id])
+  userId        String
 }
 
 model AppEvent {

@@ -15,9 +15,20 @@ export const appEventStatusParser = z.enum([
   'destroyed',
 ]);
 export type AppEventStatus = z.infer<typeof appEventStatusParser>;
-export const appEventTypeParser = z.enum(['AppCreated', 'GitHubCreated', 'RailwayCreated']);
+export const appEventTypeParser = z.enum([
+  'AppCreated',
+  'GitHubCreated',
+  'MainBranchPushed',
+  'RailwayCreated',
+]);
 export type AppEventType = z.infer<typeof appEventTypeParser>;
-export const appSubscriberIdParser = z.enum(['createGitHub', 'createRailway', 'startDevelopment']);
+export const appSubscriberIdParser = z.enum([
+  'createGitHub',
+  'createRailway',
+  'watchRailway',
+  'watchRailwayOnce',
+  'startDevelopment',
+]);
 export type SubscriberId = z.infer<typeof appSubscriberIdParser>;
 
 export type AppEventModel = {
@@ -42,7 +53,8 @@ export const appSubscriberDict = (): {
     { id: 'createRailway', fn: appEventUseCase.createRailway },
     { id: 'startDevelopment', fn: appEventUseCase.startDevelopment },
   ],
-  RailwayCreated: [],
+  MainBranchPushed: [{ id: 'watchRailway', fn: appEventUseCase.watchRailway }],
+  RailwayCreated: [{ id: 'watchRailwayOnce', fn: appEventUseCase.watchRailwayOnce }],
 });
 
 export const appEventMethods = {

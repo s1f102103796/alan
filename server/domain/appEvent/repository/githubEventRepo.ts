@@ -1,6 +1,9 @@
-import type { InitAppModel } from '$/commonTypesWithClient/appModels';
+import type { AppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
 import { displayIdToApiOrigin, indexToUrls } from '$/domain/app/query/utils';
 import { githubRepo } from '$/domain/app/repository/githubRepo';
+import { llmRepo } from '$/domain/app/repository/llmRepo';
+import { localGitRepo } from '$/domain/app/repository/localGitRepo';
+import { githubUseCase } from '$/domain/app/useCase/githubUseCase';
 import { GITHUB_OWNER, GITHUB_TEMPLATE } from '$/service/envValues';
 import { githubApiClient } from '$/service/githubApiClient';
 import { setInterval, setTimeout } from 'timers/promises';
@@ -58,5 +61,14 @@ export const githubEventRepo = {
 
       await setInterval(1000);
     }
+  },
+  develop: async (app: AppModel) => {
+    const localGit = await localGitRepo.getFiles(app);
+    const gitDiff = await llmRepo.initApp(app, localGit);
+
+    if (gitDiff === null) return;
+
+    await localGitRepo.pushToRemote(app, gitDiff);
+    await githubUseCase.pushedGitDiff(app, gitDiff);
   },
 };

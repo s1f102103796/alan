@@ -39,7 +39,6 @@ GITHUB_OWNER=GitHubのユーザー名（例：hoge）
 GITHUB_TEMPLATE=deus-template
 GITHUB_TOKEN=GitHubのトークン
 GITHUB_WEBHOOK_SECRET=Webhookを検証するための任意のランダム文字列
-NGROK_TOKEN=https://dashboard.ngrok.com/signupでToken取得
 RAILWAY_TOKEN=Railwaysのトークン
 DISPLAY_ID_PREFIX=作成されるレポのプレフィックスを設定（例：deus-hoge）
 BASE_DOMAIN=作成されるレポのドメインを設定（例：deus-hoge.com）

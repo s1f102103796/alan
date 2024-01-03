@@ -13,9 +13,9 @@ import { customAssert } from '$/service/returnStatus';
 import type { App, Bubble, GitHubAction, Prisma, RailwayDeployment, User } from '@prisma/client';
 import { z } from 'zod';
 import {
-  createUrls,
   displayIdToIndex,
   indexToDisplayId,
+  indexToUrls,
   projectIdToUrl,
   toBranchUrl,
   toCommitUrl,
@@ -116,7 +116,6 @@ const toAppModelBase = (app: PrismaApp): AppModelBase => {
     displayId: indexToDisplayId(app.index),
     name: app.name,
     createdTime: app.createdAt.getTime(),
-    railwayUpdatedTime: app.railwayUpdatedAt.getTime(),
     bubbles,
   };
 };
@@ -144,7 +143,16 @@ const toAppModel = (app: PrismaApp, waitingIds: string[]): AppModel => {
   return {
     ...base,
     status,
-    urls: createUrls(app, base.bubbles),
+    urls:
+      base.bubbles.filter(
+        (b) =>
+          b.type === 'github' &&
+          b.content.type === 'pages build and deployment' &&
+          (b.content.conclusion === 'cancelled' || b.content.conclusion === 'success')
+      ).length >= 2 &&
+      base.bubbles.some((b) => b.type === 'railway' && b.content.status === 'SUCCESS')
+        ? indexToUrls(app.index)
+        : undefined,
     railway: {
       url: projectIdToUrl(app.projectId),
       environmentId: app.environmentId,

@@ -2,11 +2,11 @@ import { githubUseCase } from '$/domain/app/useCase/githubUseCase';
 import { GITHUB_WEBHOOK_SECRET } from '$/service/envValues';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { defineController } from './$relay';
-import type { ReqBody, ReqHeaders } from './validator';
+import type { GHWebhookBody, ReqHeaders } from './validator';
 import { headersValidator } from './validator';
 
 // ref: https://docs.github.com/ja/webhooks/using-webhooks/validating-webhook-deliveries#typescript-example
-const verifySignature = (headers: ReqHeaders, body: ReqBody) => {
+const verifySignature = (headers: ReqHeaders, body: GHWebhookBody) => {
   const signature = createHmac('sha256', GITHUB_WEBHOOK_SECRET)
     .update(JSON.stringify(body))
     .digest('hex');
@@ -22,9 +22,7 @@ export default defineController(() => ({
     handler: async ({ headers, body }) => {
       if (!verifySignature(headers, body)) return { status: 401 };
 
-      if (body.workflow_run === undefined) return { status: 200 };
-
-      await githubUseCase.updateByWebhook(body.repository.name, body.workflow_run);
+      await githubUseCase.updateByWebhook(body);
 
       return { status: 200 };
     },

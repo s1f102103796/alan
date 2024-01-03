@@ -23,7 +23,6 @@ const GITHUB_TEMPLATE = z.string().parse(process.env.GITHUB_TEMPLATE);
 const GITHUB_OWNER = z.string().parse(process.env.GITHUB_OWNER);
 const GITHUB_TOKEN = z.string().parse(process.env.GITHUB_TOKEN);
 const GITHUB_WEBHOOK_SECRET = z.string().parse(process.env.GITHUB_WEBHOOK_SECRET);
-const NGROK_TOKEN = z.string().optional().parse(process.env.NGROK_TOKEN);
 const RAILWAY_TOKEN = z.string().parse(process.env.RAILWAY_TOKEN);
 const DISPLAY_ID_PREFIX = z.string().parse(process.env.DISPLAY_ID_PREFIX);
 const BASE_DOMAIN = z.string().parse(process.env.BASE_DOMAIN);
@@ -45,7 +44,6 @@ export {
   GITHUB_TEMPLATE,
   GITHUB_TOKEN,
   GITHUB_WEBHOOK_SECRET,
-  NGROK_TOKEN,
   OPENAI_KEY,
   PORT,
   RAILWAY_TOKEN,

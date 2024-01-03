@@ -2,16 +2,11 @@ import api from '$/api/$api';
 import type { WorkflowRun } from '$/api/webhooks/github/validator';
 import type { AppModel } from '$/commonTypesWithClient/appModels';
 import { parseGHAction, type GHActionModel } from '$/commonTypesWithClient/bubbleModels';
-import {
-  API_BASE_PATH,
-  API_ORIGIN,
-  GITHUB_OWNER,
-  GITHUB_WEBHOOK_SECRET,
-} from '$/service/envValues';
+import { API_BASE_PATH, GITHUB_OWNER, GITHUB_WEBHOOK_SECRET } from '$/service/envValues';
 import { githubApiClient } from '$/service/githubApiClient';
+import { getApiOriginOrLocaltunnelUrl } from '$/service/localtunnel';
 import { customAssert } from '$/service/returnStatus';
 import aspida from '@aspida/fetch';
-import { getApi } from 'ngrok';
 import type { GHStepModel } from '../model/githubModels';
 import { GH_STEP_TYPES, parseGHStep } from '../model/githubModels';
 import { toBranchUrl, toCommitUrl, toGHActionUrl } from '../query/utils';
@@ -120,15 +115,8 @@ export const githubRepo = {
     return failedStep;
   },
   resetWebhook: async (app: AppModel) => {
-    const origin = API_ORIGIN.startsWith('http://localhost')
-      ? await getApi()
-          ?.listTunnels()
-          .then((ts) => ts.tunnels.find((t) => t.proto === 'https')?.public_url)
-      : API_ORIGIN;
-    customAssert(origin, 'エラーならロジック修正必須');
-
     const url = api(
-      aspida(undefined, { baseURL: `${origin}${API_BASE_PATH}` })
+      aspida(undefined, { baseURL: `${getApiOriginOrLocaltunnelUrl()}${API_BASE_PATH}` })
     ).webhooks.github.$path();
 
     const [oldHook] = await githubApiClient.repos
@@ -144,7 +132,7 @@ export const githubRepo = {
           body: {
             config: { url, content_type: 'json', secret: GITHUB_WEBHOOK_SECRET },
             active: true,
-            events: ['workflow_run'],
+            events: ['workflow_run', 'push'],
           },
         });
     }

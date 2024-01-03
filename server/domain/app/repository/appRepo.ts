@@ -7,7 +7,6 @@ export const appRepo = {
       where: { id: app.id },
       update: {
         name: app.name,
-        railwayUpdatedAt: new Date(app.railwayUpdatedTime),
         status: app.status,
         environmentId: app.railway?.environmentId,
         projectId: app.railway?.projectId,
@@ -19,7 +18,6 @@ export const appRepo = {
         index: app.index,
         name: app.name,
         createdAt: new Date(app.createdTime),
-        railwayUpdatedAt: new Date(app.railwayUpdatedTime),
         status: app.status,
         environmentId: app.railway?.environmentId,
         projectId: app.railway?.projectId,

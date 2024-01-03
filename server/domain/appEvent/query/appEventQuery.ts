@@ -37,6 +37,22 @@ export const appEventQuery = {
 
     return toEventModel(prismaEvent, app, bubble);
   },
+  listByStatus: async (
+    tx: Prisma.TransactionClient,
+    status: AppEventStatus
+  ): Promise<AppEventModel[]> => {
+    const prismaEvents = await tx.appEvent.findMany({ where: { status } });
+
+    return Promise.all(
+      prismaEvents.map(async (prismaEvent) => {
+        const app = await appQuery.findByIdOrThrow(tx, appIdParser.parse(prismaEvent.appId));
+        const bubble = app.bubbles.find((b) => b.id === prismaEvent.bubbleId);
+
+        customAssert(bubble, 'エラーならロジック修正必須');
+        return toEventModel(prismaEvent, app, bubble);
+      })
+    );
+  },
   findHead: async (
     tx: Prisma.TransactionClient,
     subscriberId: SubscriberId,

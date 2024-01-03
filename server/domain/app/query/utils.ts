@@ -1,6 +1,5 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { DisplayId } from '$/commonTypesWithClient/branded';
-import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
 import { BASE_DOMAIN, DISPLAY_ID_PREFIX, GITHUB_OWNER } from '$/service/envValues';
 import { displayIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
@@ -39,13 +38,3 @@ export const toRWDeployUrl = (ids: {
 
   return `https://railway.app/project/${ids.project}/service/${ids.service}?id=${ids.deployment}`;
 };
-
-export const createUrls = (app: { index: number }, bubbles: BubbleModel[]) =>
-  bubbles.filter(
-    (b) =>
-      b.type === 'github' &&
-      b.content.type === 'pages build and deployment' &&
-      ['cancelled', 'success'].includes(b.content.status)
-  ).length >= 2 && bubbles.some((b) => b.type === 'railway' && b.content.status === 'SUCCESS')
-    ? indexToUrls(app.index)
-    : undefined;

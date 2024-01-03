@@ -34,7 +34,6 @@ export const appMethods = {
       displayId: indexToDisplayId(index),
       name: desc.slice(0, 15),
       createdTime: now,
-      railwayUpdatedTime: 0,
       bubbles: [
         bubbleMethods.createSystem('first_question', now),
         bubbleMethods.createAiOrHuman('human', desc, now + 1),
@@ -106,7 +105,6 @@ export const appMethods = {
         }),
         ...contents.filter((c) => newContentIds.includes(c.id)).map(bubbleMethods.createRailway),
       ],
-      railwayUpdatedTime: Date.now(),
     };
   },
 };

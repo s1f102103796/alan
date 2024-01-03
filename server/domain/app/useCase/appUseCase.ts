@@ -1,51 +1,15 @@
-import type {
-  AppModel,
-  InitAppModel,
-  RailwayModel,
-  WaitingAppModel,
-} from '$/commonTypesWithClient/appModels';
+import type { AppModel, InitAppModel, RailwayModel } from '$/commonTypesWithClient/appModels';
 import { type UserModel } from '$/commonTypesWithClient/appModels';
+import type { AppId } from '$/commonTypesWithClient/branded';
+import type { RWDeploymentModel } from '$/commonTypesWithClient/bubbleModels';
 import { appEventUseCase } from '$/domain/appEvent/useCase/appEventUseCase';
-import { prismaClient, transaction } from '$/service/prismaClient';
+import { transaction } from '$/service/prismaClient';
+import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
-import { setTimeout } from 'timers/promises';
 import { appMethods } from '../model/appMethods';
 import { appQuery } from '../query/appQuery';
 import { appRepo } from '../repository/appRepo';
-import { railwayRepo } from '../repository/railwayRepo';
 import { githubUseCase } from './githubUseCase';
-
-const watchRWDeployments = async () => {
-  let prevTime = 0;
-
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    prevTime = Date.now();
-
-    const apps = await appQuery.findAll(prismaClient);
-
-    for (const app of apps) {
-      await transaction('RepeatableRead', async (tx) => {
-        const target = await appQuery.findByIdOrThrow(tx, app.id);
-
-        if (
-          target.status === 'waiting' ||
-          target.status === 'init' ||
-          Date.now() - target.railwayUpdatedTime < 10_000
-        ) {
-          return target;
-        }
-
-        const list = await railwayRepo.listDeploymentsAll(target);
-        const newApp = appMethods.upsertRailwayBubbles(app, list);
-
-        await appRepo.save(tx, newApp);
-      }).catch(() => null);
-    }
-
-    await setTimeout(600_000 - Date.now() + prevTime);
-  }
-};
 
 export const appUseCase = {
   create: (user: UserModel, desc: string): Promise<AppModel> =>
@@ -63,12 +27,16 @@ export const appUseCase = {
       dispatcher.dispatchAfterTransaction();
       return app;
     }),
-  init: async (tx: Prisma.TransactionClient, waiting: WaitingAppModel) => {
-    const inited = appMethods.init(waiting);
-    await appRepo.save(tx, inited);
+  init: (appId: AppId) =>
+    transaction('RepeatableRead', async (tx) => {
+      const waiting = await appQuery.findByIdOrThrow(tx, appId);
+      customAssert(waiting.status === 'waiting', 'エラーならロジック修正必須');
 
-    return inited;
-  },
+      const inited = appMethods.init(waiting);
+      await appRepo.save(tx, inited);
+
+      return inited;
+    }),
   completeRailwayInit: async (
     tx: Prisma.TransactionClient,
     inited: InitAppModel,
@@ -79,8 +47,14 @@ export const appUseCase = {
 
     return await appEventUseCase.create(tx, 'RailwayCreated', running);
   },
+  updateRWDeployments: (appId: AppId, deployments: RWDeploymentModel[]) =>
+    transaction('RepeatableRead', async (tx) => {
+      const app = await appQuery.findByIdOrThrow(tx, appId);
+      const newApp = appMethods.upsertRailwayBubbles(app, deployments);
+
+      await appRepo.save(tx, newApp);
+    }),
   callWhenServerStarted: () => {
     githubUseCase.checkAndResetGHActionsWhileServerWasDown();
-    watchRWDeployments();
   },
 };

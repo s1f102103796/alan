@@ -14,7 +14,7 @@ export type Methods = DefineMethods<{
   post: {
     reqBody: {
       config: { url: string; content_type: 'json'; secret: string };
-      events: ['workflow_run'];
+      events: ['workflow_run', 'push'];
       active: boolean;
     };
     resBody: Webhook;

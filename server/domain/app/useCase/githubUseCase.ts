@@ -1,12 +1,11 @@
-import type { WorkflowRun } from '$/api/webhooks/github/validator';
+import type { GHWebhookBody, WorkflowRun } from '$/api/webhooks/github/validator';
 import type { ActiveAppModel, AppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
 import type { DisplayId } from '$/commonTypesWithClient/branded';
 import { appEventUseCase } from '$/domain/appEvent/useCase/appEventUseCase';
-import { API_ORIGIN, NGROK_TOKEN } from '$/service/envValues';
+import { connectLocaltunnelIfLocal } from '$/service/localtunnel';
 import { prismaClient, transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
-import { connect } from 'ngrok';
 import { appMethods } from '../model/appMethods';
 import { bubbleMethods } from '../model/bubbleMethods';
 import { appQuery } from '../query/appQuery';
@@ -70,25 +69,23 @@ const retryFailedTest = async () => {
   );
 };
 
-const connectNgrokIfLocal = async () => {
-  if (!API_ORIGIN.startsWith('http://localhost')) return;
-
-  const origin = await connect({
-    addr: +new URL(API_ORIGIN).port,
-    authtoken: NGROK_TOKEN,
-    region: 'jp',
-    onStatusChange: async (status) => {
-      if (status !== 'closed') return;
-      await connectNgrokIfLocal();
-      const apps = await appQuery.findAll(prismaClient);
-
-      for (const app of apps) {
-        await githubRepo.resetWebhook(app).catch(() => null);
-      }
-    },
+const updateWorkflowRun = (displayId: DisplayId, workflowRun: WorkflowRun) =>
+  transaction('RepeatableRead', async (tx) => {
+    const app = await appQuery.findByDisplayIdOrThrow(tx, displayId);
+    const newApp = appMethods.upsertGitHubBubbles(app, [
+      githubRepo.workflowRunToModel(app, workflowRun),
+    ]);
+    await appRepo.save(tx, newApp);
   });
 
-  console.log('Ngrok: ', origin);
+const dispatchPushedEvent = async (displayId: DisplayId, ref: string) => {
+  if (ref !== 'refs/heads/main') return;
+
+  await transaction('RepeatableRead', async (tx) => {
+    const app = await appQuery.findByDisplayIdOrThrow(tx, displayId);
+
+    return await appEventUseCase.create(tx, 'MainBranchPushed', app);
+  }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
 };
 
 export const githubUseCase = {
@@ -111,16 +108,26 @@ export const githubUseCase = {
       );
       await appRepo.save(tx, newApp);
     }),
-  updateByWebhook: (displayId: DisplayId, workflowRun: WorkflowRun) =>
-    transaction('RepeatableRead', async (tx) => {
-      const app = await appQuery.findByDisplayIdOrThrow(tx, displayId);
-      const newApp = appMethods.upsertGitHubBubbles(app, [
-        githubRepo.workflowRunToModel(app, workflowRun),
-      ]);
-      await appRepo.save(tx, newApp);
-    }),
+  updateByWebhook: async (body: GHWebhookBody) => {
+    if (body.ref !== undefined) {
+      await dispatchPushedEvent(body.repository.name, body.ref);
+      return;
+    }
+
+    if (body.workflow_run === undefined) return;
+
+    await updateWorkflowRun(body.repository.name, body.workflow_run);
+  },
   checkAndResetGHActionsWhileServerWasDown: async () => {
-    await connectNgrokIfLocal();
+    await connectLocaltunnelIfLocal({
+      onReconnect: async () => {
+        const apps = await appQuery.findAll(prismaClient);
+
+        for (const app of apps) {
+          await githubRepo.resetWebhook(app).catch(() => null);
+        }
+      },
+    });
     const apps = await appQuery.findAll(prismaClient);
 
     for (const app of apps) {

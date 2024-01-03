@@ -26,7 +26,6 @@ export type AppModelBase = {
   displayId: DisplayId;
   name: string;
   createdTime: number;
-  railwayUpdatedTime: number;
   bubbles: BubbleModel[];
 };
 
