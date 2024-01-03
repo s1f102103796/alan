@@ -1,10 +1,11 @@
 import type { AppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PrimeButton } from 'src/components/Buttons/Buttons';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'src/components/Modal/Modal';
 import { Spacer } from 'src/components/Spacer';
 import { Textarea } from 'src/components/Textarea/Textarea';
+import { SearchIcon } from 'src/components/icons/SearchIcon';
 import { useAppStatus } from 'src/pages/@hooks/useAppStatus';
 import { useLoading } from 'src/pages/@hooks/useLoading';
 import { pagesPath } from 'src/utils/$path';
@@ -40,6 +41,23 @@ export const AppList = (props: {
   const { addLoading, removeLoading } = useLoading();
   const [opened, setOpened] = useState(false);
   const [desc, setDesc] = useState('');
+  const [searchWord, setSearchWord] = useState('');
+  const filteredApps = useMemo(
+    () =>
+      props.sortedApps.filter((app) =>
+        searchWord === ''
+          ? props.sortedApps
+          : searchWord
+              .replace(/\u3000/g, ' ')
+              .split(' ')
+              .every((word) =>
+                [app.displayId, `No.${app.index}`, app.author.name, app.name]
+                  .join(' ')
+                  .includes(word)
+              )
+      ),
+    [searchWord, props.sortedApps]
+  );
 
   const createApp = async () => {
     addLoading();
@@ -54,8 +72,20 @@ export const AppList = (props: {
       <div className={styles.createBtn}>
         <PrimeButton label="アプリ新規生成" width="100%" onClick={() => setOpened(true)} />
       </div>
+      <div className={styles.searchBox}>
+        <input
+          className={styles.searchInput}
+          type="text"
+          placeholder="スペースで絞り込み"
+          value={searchWord}
+          onChange={(e) => setSearchWord(e.target.value)}
+        />
+        <div className={styles.searchIcon}>
+          <SearchIcon size={18} fill="#fff" />
+        </div>
+      </div>
       <div className={styles.itemContainer}>
-        {props.sortedApps.map((app) => (
+        {filteredApps.map((app) => (
           <Link key={app.id} href={pagesPath.$url({ query: { id: app.displayId } })} shallow>
             <div
               className={styles.appItem}

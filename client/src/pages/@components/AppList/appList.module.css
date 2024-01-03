@@ -6,7 +6,40 @@
 }
 
 .createBtn {
-  padding: 8px 12px;
+  padding: 4px 12px 8px;
+}
+
+.searchBox {
+  position: relative;
+  padding: 4px 12px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 6px 8px 6px 28px;
+  color: #fff;
+  background: #fff1;
+  border: none;
+  border-bottom: 1px solid #777;
+  transition: 0.2s;
+}
+
+.searchInput:focus {
+  border-bottom-color: #fff;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: #bbb;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
 }
 
 .itemContainer {
