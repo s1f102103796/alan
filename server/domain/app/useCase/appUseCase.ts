@@ -1,12 +1,13 @@
 import type { AppModel, InitAppModel, RailwayModel } from '$/commonTypesWithClient/appModels';
 import { type UserModel } from '$/commonTypesWithClient/appModels';
 import type { AppId } from '$/commonTypesWithClient/branded';
-import type { RWDeploymentModel } from '$/commonTypesWithClient/bubbleModels';
+import type { RWDeploymentModel, SystemStatus } from '$/commonTypesWithClient/bubbleModels';
 import { appEventUseCase } from '$/domain/appEvent/useCase/appEventUseCase';
 import { transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
 import { appMethods } from '../model/appMethods';
+import { bubbleMethods } from '../model/bubbleMethods';
 import { appQuery } from '../query/appQuery';
 import { appRepo } from '../repository/appRepo';
 import { githubUseCase } from './githubUseCase';
@@ -36,6 +37,17 @@ export const appUseCase = {
       await appRepo.save(tx, inited);
 
       return inited;
+    }),
+  addSystemBubbleIfNotExists: (appId: AppId, systemStatus: SystemStatus) =>
+    transaction('RepeatableRead', async (tx) => {
+      const app = await appQuery.findByIdOrThrow(tx, appId);
+      if (app.bubbles.some((b) => b.type === 'system' && b.content === systemStatus)) return;
+
+      const newApp = appMethods.addBubble(
+        app,
+        bubbleMethods.createSystem(systemStatus, Date.now())
+      );
+      await appRepo.save(tx, newApp);
     }),
   completeRailwayInit: async (
     tx: Prisma.TransactionClient,

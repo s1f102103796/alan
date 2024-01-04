@@ -8,15 +8,24 @@ import { dirname } from 'path';
 import simpleGit, { ResetMode } from 'simple-git';
 import type { GitDiffModel } from './llmRepo';
 
-export type LocalGitFile = { source: string; content: string };
-
-export type LocalGitModel = { appId: AppId; message: string; files: LocalGitFile[] };
-
-const branches = {
+const remoteBranches = {
+  main: 'main',
   testTypes: 'deus/test-types',
   mainTypes: 'deus/main-types',
   test: 'deus/test',
-  schemaValidation: 'deus/schema-validation',
+  dbSchema: 'deus/db-schema',
+  apiDefinition: 'deus/api-definition',
+} as const;
+
+export type RemoteBranch = (typeof remoteBranches)[keyof typeof remoteBranches];
+
+export type LocalGitFile = { source: string; content: string };
+
+export type LocalGitModel = {
+  appId: AppId;
+  message: string;
+  remoteBranch: RemoteBranch;
+  files: LocalGitFile[];
 };
 
 const listFiles = (dir: string): string[] =>
@@ -24,31 +33,29 @@ const listFiles = (dir: string): string[] =>
     dirent.isFile() ? [`${dir}/${dirent.name}`] : listFiles(`${dir}/${dirent.name}`)
   );
 
-const genPathes = (app: AppModel) => ({
-  dirPath: `appRepositories/${app.displayId}`,
+const genPathes = (app: AppModel, remoteBranch: RemoteBranch) => ({
+  dirPath: `appRepositories/${app.displayId}/${remoteBranch}`,
   gitPath: `github.com/deus-app/${app.displayId}.git`,
 });
 
 export const localGitRepo = {
-  getFiles: async (app: AppModel): Promise<LocalGitModel> => {
-    const { dirPath, gitPath } = genPathes(app);
+  getFiles: async (app: AppModel, remoteBranch: RemoteBranch): Promise<LocalGitModel> => {
+    const { dirPath, gitPath } = genPathes(app, remoteBranch);
 
     if (!existsSync(dirPath)) {
       await simpleGit().clone(`https://${gitPath}`, dirPath);
-      await simpleGit(dirPath)
-        .checkout(branches.testTypes)
-        .reset(ResetMode.HARD, [`origin/${branches.testTypes}`])
-        .catch(() =>
-          simpleGit(dirPath)
-            .checkout(branches.mainTypes)
-            .reset(ResetMode.HARD, [`origin/${branches.mainTypes}`])
-        );
     } else {
-      await simpleGit(dirPath)
-        .fetch('origin', branches.testTypes)
-        .checkout(branches.testTypes)
-        .reset(ResetMode.HARD, [`origin/${branches.testTypes}`]);
+      await simpleGit(dirPath).fetch('origin', remoteBranch);
     }
+
+    await simpleGit(dirPath)
+      .checkout(remoteBranch)
+      .reset(ResetMode.HARD, [`origin/${remoteBranch}`])
+      .catch(() =>
+        simpleGit(dirPath)
+          .checkout(remoteBranches.mainTypes)
+          .reset(ResetMode.HARD, [`origin/${remoteBranches.mainTypes}`])
+      );
 
     const log = await simpleGit(dirPath)
       .log({ maxCount: 1 })
@@ -59,6 +66,7 @@ export const localGitRepo = {
     return {
       appId: app.id,
       message: log.message,
+      remoteBranch,
       files: listFiles(dirPath).flatMap((file) =>
         isBinaryPath(file) || file.includes('/.git/')
           ? []
@@ -66,13 +74,19 @@ export const localGitRepo = {
       ),
     };
   },
-  pushToRemote: async (app: AppModel, gitDiff: GitDiffModel, branchKey: keyof typeof branches) => {
-    const { dirPath, gitPath } = genPathes(app);
+  pushToRemote: async (app: AppModel, gitDiff: GitDiffModel, remoteBranch: RemoteBranch) => {
+    const { dirPath, gitPath } = genPathes(app, remoteBranch);
+
+    if (!existsSync(dirPath)) {
+      await simpleGit().clone(`https://${gitPath}`, dirPath);
+    } else {
+      await simpleGit(dirPath).fetch('origin', remoteBranch);
+    }
 
     await simpleGit(dirPath)
-      .fetch()
-      .reset(ResetMode.HARD, [`origin/${branches[branchKey]}`])
-      .catch(() => simpleGit(dirPath).reset(ResetMode.HARD, ['origin/main']));
+      .checkout(remoteBranch)
+      .reset(ResetMode.HARD, [`origin/${remoteBranch}`])
+      .catch(() => simpleGit(dirPath).reset(ResetMode.HARD, [`origin/${remoteBranches.main}`]));
 
     gitDiff.deletedFiles.forEach((source) => {
       const filePath = `${dirPath}/${source}`;
@@ -90,6 +104,6 @@ export const localGitRepo = {
       .commit(gitDiff.newMessage, {
         '--author': '"github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"',
       })
-      .push(`https://${GITHUB_TOKEN}@${gitPath}`, `HEAD:${branches[branchKey]}`, ['-f']);
+      .push(`https://${GITHUB_TOKEN}@${gitPath}`, `HEAD:${remoteBranch}`, ['-f']);
   },
 };

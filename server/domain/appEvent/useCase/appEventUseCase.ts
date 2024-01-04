@@ -20,9 +20,10 @@ import { railwayEventUseCase } from './railwayEventUseCase';
 const subscribingDict: Record<SubscriberId, boolean> = {
   createGitHub: false,
   createRailway: false,
-  startDevelopment: false,
+  createSchema: false,
   watchRailway: false,
   watchRailwayOnce: false,
+  createApiDefinition: false,
 };
 
 const subscribe = async (
@@ -56,8 +57,9 @@ const subscribe = async (
 
     if (published === null) break;
 
-    await cb(published).catch(() =>
+    await cb(published).catch((e) =>
       transaction('RepeatableRead', async (tx) => {
+        console.log(subscriberId, 'error:', e.message);
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
         await appEventRepo.save(tx, appEventMethods.fail(event));
       })
@@ -92,7 +94,8 @@ export const appEventUseCase = {
     appEventUseCase.createGitHub();
     appEventUseCase.createRailway();
     appEventUseCase.watchRailway();
-    appEventUseCase.startDevelopment();
+    appEventUseCase.createSchema();
+    appEventUseCase.createApiDef();
   },
   createGitHub: () =>
     subscribe('createGitHub', async (published) => {
@@ -100,33 +103,29 @@ export const appEventUseCase = {
 
       customAssert(published.app.status === 'waiting', 'エラーならロジック修正必須');
 
-      await appUseCase.init(published.app.id).then(githubEventRepo.create);
+      await appUseCase.init(published.app.id).then(githubEventRepo.createRemote);
 
-      const { dispatchAfterTransaction } = await transaction('RepeatableRead', async (tx) => {
+      await transaction('RepeatableRead', async (tx) => {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
         await appEventRepo.save(tx, appEventMethods.complete(event));
 
         customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
 
         return await githubUseCase.completeGitHubInit(tx, event.app);
-      });
-
-      dispatchAfterTransaction();
+      }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
     }),
   createRailway: () =>
     subscribe('createRailway', async (published) => {
       customAssert(published.app.status === 'init', 'エラーならロジック修正必須');
 
       const railway = await railwayRepo.create(published.app);
-      const { dispatchAfterTransaction } = await transaction('RepeatableRead', async (tx) => {
+      await transaction('RepeatableRead', async (tx) => {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
         await appEventRepo.save(tx, appEventMethods.complete(event));
 
         customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
         return await appUseCase.completeRailwayInit(tx, event.app, railway);
-      });
-
-      dispatchAfterTransaction();
+      }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
     }),
   watchRailway: () =>
     subscribe('watchRailway', async (published) => {
@@ -140,12 +139,26 @@ export const appEventUseCase = {
       await railwayEventUseCase.watchDeployments(published);
     }),
   watchRailwayOnce: () => subscribe('watchRailwayOnce', railwayEventUseCase.watchDeployments),
-  startDevelopment: () =>
-    subscribe('startDevelopment', async (published) => {
-      await githubEventRepo.develop(published.app);
+  createSchema: () =>
+    subscribe('createSchema', async (published) => {
+      await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_schema');
+      await githubEventRepo.createSchema(published.app);
       await transaction('RepeatableRead', async (tx) => {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
         await appEventRepo.save(tx, appEventMethods.complete(event));
-      });
+
+        return await appEventUseCase.create(tx, 'SchemaCreated', event.app);
+      }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
+    }),
+  createApiDef: () =>
+    subscribe('createApiDefinition', async (published) => {
+      await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_api_def');
+      await githubEventRepo.createApiDef(published.app);
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+
+        return await appEventUseCase.create(tx, 'ApiDefined', event.app);
+      }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
     }),
 };

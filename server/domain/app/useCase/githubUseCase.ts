@@ -13,6 +13,7 @@ import { appRepo } from '../repository/appRepo';
 import { githubRepo } from '../repository/githubRepo';
 import type { GitDiffModel } from '../repository/llmRepo';
 import { llmRepo } from '../repository/llmRepo';
+import type { RemoteBranch } from '../repository/localGitRepo';
 import { localGitRepo } from '../repository/localGitRepo';
 
 const retryTest = (app: ActiveAppModel) =>
@@ -28,7 +29,7 @@ const retryTest = (app: ActiveAppModel) =>
   });
 
 const pushGitDiff = async (running: ActiveAppModel, gitDiff: GitDiffModel) => {
-  await localGitRepo.pushToRemote(running, gitDiff, 'test');
+  await localGitRepo.pushToRemote(running, gitDiff, 'deus/test');
   await transaction('RepeatableRead', async (tx) => {
     const app = appMethods.addBubble(
       await appQuery.findByIdOrThrow(tx, running.id),
@@ -61,7 +62,7 @@ const retryFailedTest = async () => {
       customAssert(app.status === 'running', 'エラーならロジック修正必須');
 
       const retryingApp = await retryTest(app);
-      const localGit = await localGitRepo.getFiles(retryingApp);
+      const localGit = await localGitRepo.getFiles(retryingApp, 'deus/test-types');
       const gitDiff = await llmRepo.retryApp(retryingApp, localGit, failedStep);
 
       if (gitDiff !== null) await pushGitDiff(retryingApp, gitDiff);
@@ -70,12 +71,25 @@ const retryFailedTest = async () => {
 };
 
 const updateWorkflowRun = (displayId: DisplayId, workflowRun: WorkflowRun) =>
+  // eslint-disable-next-line complexity
   transaction('RepeatableRead', async (tx) => {
     const app = await appQuery.findByDisplayIdOrThrow(tx, displayId);
     const newApp = appMethods.upsertGitHubBubbles(app, [
       githubRepo.workflowRunToModel(app, workflowRun),
     ]);
     await appRepo.save(tx, newApp);
+
+    if (workflowRun.status !== 'completed') return;
+
+    switch (workflowRun.name) {
+      case 'pull request test':
+      case 'client deployment':
+      case 'pages build and deployment':
+      case 'test':
+        return;
+      default:
+        throw new Error(workflowRun.name satisfies never);
+    }
   });
 
 const dispatchPushedEvent = async (displayId: DisplayId, ref: string) => {
@@ -96,13 +110,13 @@ export const githubUseCase = {
 
     return await appEventUseCase.create(tx, 'GitHubCreated', app);
   },
-  pushedGitDiff: (app: AppModel, gitDiff: GitDiffModel) =>
+  addGitBubble: (app: AppModel, remoteBranch: RemoteBranch, gitDiff: GitDiffModel) =>
     transaction('RepeatableRead', async (tx) => {
       const newApp = appMethods.addBubble(
         await appQuery.findByIdOrThrow(tx, app.id),
         bubbleMethods.createAiOrHuman(
           'ai',
-          `「${gitDiff.newMessage}」をGitHubにPushしました。`,
+          `「${gitDiff.newMessage}」を${remoteBranch}ブランチにPushしました。`,
           Date.now()
         )
       );

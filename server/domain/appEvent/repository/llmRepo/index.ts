@@ -1,30 +1,29 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { LocalGitFile, LocalGitModel } from '$/domain/app/repository/localGitRepo';
-import { OPENAI_KEY } from '$/service/envValues';
 import { customAssert } from '$/service/returnStatus';
+import SwaggerParser from '@apidevtools/swagger-parser';
 import { exec } from 'child_process';
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
-import { ChatOpenAI } from 'langchain/chat_models/openai';
+import { readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { promisify } from 'util';
 import { z } from 'zod';
-import zodToJsonSchema from 'zod-to-json-schema';
-
-const llm = new ChatOpenAI({
-  modelName: 'gpt-4-1106-preview',
-  temperature: 0,
-  openAIApiKey: OPENAI_KEY,
-}).bind({ response_format: { type: 'json_object' } });
+import { invokeOrThrow } from './invokeOrThrow';
 
 export type GitDiffModel = {
   diffs: LocalGitFile[];
   deletedFiles: string[];
   newMessage: string;
-  localGit: LocalGitModel;
 };
 
-const prismaHeader = `datasource db {
+const sources = {
+  schema: 'server/prisma/schema.prisma',
+  openapi: 'server/openapi.json',
+};
+
+export const llmRepo = {
+  initSchema: async (app: AppModel): Promise<GitDiffModel> => {
+    const prismaHeader = `datasource db {
   provider = "postgresql"
   url      = env("API_DATABASE_URL")
 }
@@ -34,64 +33,26 @@ generator client {
 }
 
 `;
-
-const invokeOrThrow = async <T extends z.AnyZodObject>(
-  app: AppModel,
-  prompt: string,
-  validator: T,
-  additionalPrompts: ['ai' | 'human', string][],
-  count = 3
-): Promise<z.infer<T>> => {
-  const jsonSchema = zodToJsonSchema(validator);
-  const logDir = `logs/${app.displayId}`;
-  const now = Date.now();
-  const input = `${prompt}
-
-ステップ・バイ・ステップで考えましょう。
-返答は以下のJSON schemasに従ってください。
-\`\`\`json
-${JSON.stringify(jsonSchema, null, 2)}
-\`\`\`
-`;
-
-  if (!existsSync(logDir)) mkdirSync(logDir, { recursive: true });
-  writeFileSync(`${logDir}/${now}-input.json`, input, 'utf8');
-
-  return await llm
-    .invoke([
-      [
-        'system',
-        'あなたはTypeScriptのフルスタックエンジニアとしてウェブサービスを開発してください。',
-      ],
-      ['human', input],
-      ...additionalPrompts,
-    ])
-    .then(({ content }) => {
-      customAssert(typeof content === 'string', '不正リクエスト防御');
-      writeFileSync(`${logDir}/${now}-output.json`, content, 'utf8');
-
-      return validator.parse(JSON.parse(content));
-    })
-    .catch((e) => {
-      writeFileSync(`${logDir}/${now}-error-${count}.json`, e.message, 'utf8');
-
-      if (count === 0) throw e;
-
-      return invokeOrThrow(app, prompt, validator, additionalPrompts, count - 1);
-    });
-};
-
-export const llmRepo = {
-  initSchema: async (app: AppModel, localGit: LocalGitModel): Promise<GitDiffModel> => {
     const prompt = `${app.name}によく似たウェブサービスをTypeScriptで開発するための詳細なschema.prismaを作成してください。
 Prismaのフォーマットやリレーションの記述が正しいかをよく確認してください。
 サーバーエンジニアがあなたのschema.prismaを使って開発を行うため、テーブル名やカラム名には長くても良いので人間が理解しやすい命名を心掛けてください。
 schema.prismaにはdatasourceとgeneratorとenumを含めず、modelのみを使用してください。
-`;
+認証にSupabase Authを利用するのでパスワードを保存する必要はありません。
+Supabase Authと連携できるように、必ずUser modelに id/email/name のカラムを含めてください。
+Userのidにauto_incrementは不要です。`;
 
-    let result = await invokeOrThrow(app, prompt, z.object({ prismaSchema: z.string() }), []);
+    const validator = z.object({ prismaSchema: z.string() });
+    let result = await invokeOrThrow(app, prompt, validator, []);
 
     for (let i = 0; i < 3; i += 1) {
+      if (!/model User ?{[^}]+?( id )[^}]+?( email )[^}]+?( name )/.test(result.prismaSchema)) {
+        result = await invokeOrThrow(app, prompt, validator, [
+          ['ai', result.prismaSchema],
+          ['human', 'User modelに指定のカラムが含まれていません。修正してください。'],
+        ]);
+        continue;
+      }
+
       const filePath = join(tmpdir(), `${app.displayId}-${Date.now()}-schema.prisma`);
       writeFileSync(filePath, `${prismaHeader}${result.prismaSchema}`, 'utf8');
       const { stderr } = await promisify(exec)(`npx prisma format --schema ${filePath}`);
@@ -100,19 +61,60 @@ schema.prismaにはdatasourceとgeneratorとenumを含めず、modelのみを使
 
       if (!stderr.includes('Error')) {
         return {
-          diffs: [{ source: 'server/prisma/schema.prisma', content }],
+          diffs: [{ source: sources.schema, content }],
           deletedFiles: [],
           newMessage: 'DBスキーマの定義',
-          localGit,
         };
       }
 
-      result = await invokeOrThrow(app, prompt, z.object({ prismaSchema: z.string() }), [
+      result = await invokeOrThrow(app, prompt, validator, [
         ['ai', result.prismaSchema],
         ['human', `以下のエラーを修正してください。\n${stderr}`],
       ]);
     }
 
     throw new Error('schema.prismaを正しく生成できませんでした。');
+  },
+  initApiDef: async (app: AppModel, localGit: LocalGitModel) => {
+    const schema = localGit.files.find((file) => file.source === sources.schema);
+    customAssert(schema, 'エラーならロジック修正必須');
+
+    const prompt = `以下は${app.name}によく似たウェブサービスをTypeScriptで開発するためのschema.prismaです。
+\`\`\`prisma
+${schema.content}
+\`\`\`
+このSchemaをもとに、REST APIを設計しOpenAPI 3.0をJSON形式で出力してください。
+サービスのユースケースを十分に考慮し、必要なエンドポイントを網羅するように努力してください。
+認証認可が必要なエンドポイントは 'api/private/' 以下に定義してください。
+認証不要の公開エンドポイントは 'api/public/' 以下に定義してください。
+認証にSupabase Authを利用しており、自動的に行われるため今回は考慮する必要がありません。`;
+
+    const validator = z.object({}).passthrough();
+    let result = await invokeOrThrow(app, prompt, validator, []);
+
+    for (let i = 0; i < 3; i += 1) {
+      const filePath = join(tmpdir(), `${app.displayId}-${Date.now()}-openapi.json`);
+      const content = JSON.stringify(result, null, 2);
+      writeFileSync(filePath, content, 'utf8');
+      const err = await SwaggerParser.validate(filePath)
+        .then(() => null)
+        .catch((e) => e.message as string);
+      unlinkSync(filePath);
+
+      if (err === null) {
+        return {
+          diffs: [{ source: sources.openapi, content }],
+          deletedFiles: [],
+          newMessage: 'REST APIエンドポイントの定義',
+        };
+      }
+
+      result = await invokeOrThrow(app, prompt, validator, [
+        ['ai', content],
+        ['human', `以下のエラーを修正してください。\n${err}`],
+      ]);
+    }
+
+    throw new Error('openapi.jsonを正しく生成できませんでした。');
   },
 };

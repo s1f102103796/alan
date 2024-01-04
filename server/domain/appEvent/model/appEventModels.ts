@@ -14,12 +14,15 @@ export const appEventStatusParser = z.enum([
   'completed',
   'destroyed',
 ]);
+
 export type AppEventStatus = z.infer<typeof appEventStatusParser>;
 export const appEventTypeParser = z.enum([
   'AppCreated',
   'GitHubCreated',
   'MainBranchPushed',
   'RailwayCreated',
+  'SchemaCreated',
+  'ApiDefined',
 ]);
 export type AppEventType = z.infer<typeof appEventTypeParser>;
 export const appSubscriberIdParser = z.enum([
@@ -27,7 +30,8 @@ export const appSubscriberIdParser = z.enum([
   'createRailway',
   'watchRailway',
   'watchRailwayOnce',
-  'startDevelopment',
+  'createSchema',
+  'createApiDefinition',
 ]);
 export type SubscriberId = z.infer<typeof appSubscriberIdParser>;
 
@@ -51,10 +55,12 @@ export const appSubscriberDict = (): {
   AppCreated: [{ id: 'createGitHub', fn: appEventUseCase.createGitHub }],
   GitHubCreated: [
     { id: 'createRailway', fn: appEventUseCase.createRailway },
-    { id: 'startDevelopment', fn: appEventUseCase.startDevelopment },
+    { id: 'createSchema', fn: appEventUseCase.createSchema },
   ],
   MainBranchPushed: [{ id: 'watchRailway', fn: appEventUseCase.watchRailway }],
   RailwayCreated: [{ id: 'watchRailwayOnce', fn: appEventUseCase.watchRailwayOnce }],
+  SchemaCreated: [{ id: 'createApiDefinition', fn: appEventUseCase.createApiDef }],
+  ApiDefined: [],
 });
 
 export const appEventMethods = {

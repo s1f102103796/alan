@@ -17,7 +17,6 @@ export type GitDiffModel = {
   diffs: LocalGitFile[];
   deletedFiles: string[];
   newMessage: string;
-  localGit: LocalGitModel;
 };
 
 export const llmRepo = {
@@ -83,7 +82,7 @@ ${input}
 
     return res === null
       ? null
-      : { diffs: res.files, deletedFiles: res.deletedFiles, newMessage: res.message, localGit };
+      : { diffs: res.files, deletedFiles: res.deletedFiles, newMessage: res.message };
   },
   retryApp: async (
     app: AppModel,
@@ -156,6 +155,6 @@ ${failedStep.log}
 
     return res === null
       ? null
-      : { diffs: res.files, deletedFiles: res.deletedFiles, newMessage: res.message, localGit };
+      : { diffs: res.files, deletedFiles: res.deletedFiles, newMessage: res.message };
   },
 };

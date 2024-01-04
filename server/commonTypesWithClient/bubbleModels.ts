@@ -8,7 +8,6 @@ import {
 
 export const actionTypeParser = z.enum([
   'test',
-  'schema validation',
   'client deployment',
   'pull request test',
   'pages build and deployment',
@@ -109,6 +108,8 @@ const SYSTEM_STATUSES = [
   'init_infra',
   'completed_github',
   'retry_test',
+  'creating_schema',
+  'creating_api_def',
 ] as const;
 
 export type SystemStatus = (typeof SYSTEM_STATUSES)[number];

@@ -1,6 +1,7 @@
 import type { AppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
 import { displayIdToApiOrigin, indexToUrls } from '$/domain/app/query/utils';
 import { githubRepo } from '$/domain/app/repository/githubRepo';
+import type { RemoteBranch } from '$/domain/app/repository/localGitRepo';
 import { localGitRepo } from '$/domain/app/repository/localGitRepo';
 import { githubUseCase } from '$/domain/app/useCase/githubUseCase';
 import { llmRepo } from '$/domain/appEvent/repository/llmRepo';
@@ -20,7 +21,7 @@ const waitApiCallingLimit = async () => {
 };
 
 export const githubEventRepo = {
-  create: async (app: InitAppModel) => {
+  createRemote: async (app: InitAppModel) => {
     await waitApiCallingLimit();
 
     const repoName = app.displayId;
@@ -29,9 +30,7 @@ export const githubEventRepo = {
     await githubApiClient.repos
       ._owner(GITHUB_OWNER)
       ._repo(GITHUB_TEMPLATE)
-      .generate.$post({
-        body: { owner: GITHUB_OWNER, name: repoName, include_all_branches: true },
-      })
+      .generate.$post({ body: { owner: GITHUB_OWNER, name: repoName, include_all_branches: true } })
       .catch((e) => {
         if (e.response.status !== 422) throw e;
       });
@@ -63,11 +62,19 @@ export const githubEventRepo = {
       ._repo(repoName)
       .$patch({ body: { homepage: urls.site, default_branch: 'main' } });
   },
-  develop: async (app: AppModel) => {
-    const localGit = await localGitRepo.getFiles(app);
-    const gitDiff = await llmRepo.initSchema(app, localGit);
+  createSchema: async (app: AppModel) => {
+    const gitDiff = await llmRepo.initSchema(app);
+    const branch: RemoteBranch = 'deus/db-schema';
 
-    await localGitRepo.pushToRemote(app, gitDiff, 'schemaValidation');
-    await githubUseCase.pushedGitDiff(app, gitDiff);
+    await localGitRepo.pushToRemote(app, gitDiff, branch);
+    await githubUseCase.addGitBubble(app, branch, gitDiff);
+  },
+  createApiDef: async (app: AppModel) => {
+    const localGit = await localGitRepo.getFiles(app, 'deus/db-schema');
+    const gitDiff = await llmRepo.initApiDef(app, localGit);
+    const branch: RemoteBranch = 'deus/api-definition';
+
+    await localGitRepo.pushToRemote(app, gitDiff, branch);
+    await githubUseCase.addGitBubble(app, branch, gitDiff);
   },
 };
