@@ -12,10 +12,12 @@ export type LocalGitFile = { source: string; content: string };
 
 export type LocalGitModel = { appId: AppId; message: string; files: LocalGitFile[] };
 
-export const testBranch = 'deus/test';
-
-const typesBranch = 'copy-deus-types';
-const mainTypesBranch = 'copy-main-types';
+const branches = {
+  types: 'copy-deus-types',
+  mainTypes: 'copy-main-types',
+  test: 'deus/test',
+  schemaValidation: 'deus/schema-validation',
+};
 
 const listFiles = (dir: string): string[] =>
   readdirSync(dir, { withFileTypes: true }).flatMap((dirent) =>
@@ -34,18 +36,18 @@ export const localGitRepo = {
     if (!existsSync(dirPath)) {
       await simpleGit().clone(`https://${gitPath}`, dirPath);
       await simpleGit(dirPath)
-        .checkout(typesBranch)
-        .reset(ResetMode.HARD, [`origin/${typesBranch}`])
+        .checkout(branches.types)
+        .reset(ResetMode.HARD, [`origin/${branches.types}`])
         .catch(() =>
           simpleGit(dirPath)
-            .checkout(mainTypesBranch)
-            .reset(ResetMode.HARD, [`origin/${mainTypesBranch}`])
+            .checkout(branches.mainTypes)
+            .reset(ResetMode.HARD, [`origin/${branches.mainTypes}`])
         );
     } else {
       await simpleGit(dirPath)
-        .fetch('origin', typesBranch)
-        .checkout(typesBranch)
-        .reset(ResetMode.HARD, [`origin/${typesBranch}`]);
+        .fetch('origin', branches.types)
+        .checkout(branches.types)
+        .reset(ResetMode.HARD, [`origin/${branches.types}`]);
     }
 
     const log = await simpleGit(dirPath)
@@ -64,12 +66,12 @@ export const localGitRepo = {
       ),
     };
   },
-  pushToRemote: async (app: AppModel, gitDiff: GitDiffModel) => {
+  pushToRemote: async (app: AppModel, gitDiff: GitDiffModel, branchKey: keyof typeof branches) => {
     const { dirPath, gitPath } = genPathes(app);
 
     await simpleGit(dirPath)
       .fetch()
-      .reset(ResetMode.HARD, [`origin/${testBranch}`])
+      .reset(ResetMode.HARD, [`origin/${branches[branchKey]}`])
       .catch(() => simpleGit(dirPath).reset(ResetMode.HARD, ['origin/main']));
 
     gitDiff.deletedFiles.forEach((source) => {
@@ -88,6 +90,6 @@ export const localGitRepo = {
       .commit(gitDiff.newMessage, {
         '--author': '"github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"',
       })
-      .push(`https://${GITHUB_TOKEN}@${gitPath}`, `HEAD:${testBranch}`, ['-f']);
+      .push(`https://${GITHUB_TOKEN}@${gitPath}`, `HEAD:${branches[branchKey]}`, ['-f']);
   },
 };

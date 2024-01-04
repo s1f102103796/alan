@@ -1,9 +1,9 @@
 import type { AppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
 import { displayIdToApiOrigin, indexToUrls } from '$/domain/app/query/utils';
 import { githubRepo } from '$/domain/app/repository/githubRepo';
-import { llmRepo } from '$/domain/app/repository/llmRepo';
 import { localGitRepo } from '$/domain/app/repository/localGitRepo';
 import { githubUseCase } from '$/domain/app/useCase/githubUseCase';
+import { llmRepo } from '$/domain/appEvent/repository/llmRepo';
 import { GITHUB_OWNER, GITHUB_TEMPLATE } from '$/service/envValues';
 import { githubApiClient } from '$/service/githubApiClient';
 import { setInterval, setTimeout } from 'timers/promises';
@@ -48,10 +48,6 @@ export const githubEventRepo = {
     });
 
     await githubRepo.resetWebhook(app);
-    await githubApiClient.repos
-      ._owner(GITHUB_OWNER)
-      ._repo(repoName)
-      .$patch({ body: { homepage: urls.site } });
 
     for (let i = 30; i > 0; i -= 1) {
       const res = await fetch(
@@ -61,14 +57,17 @@ export const githubEventRepo = {
 
       await setInterval(1000);
     }
+
+    await githubApiClient.repos
+      ._owner(GITHUB_OWNER)
+      ._repo(repoName)
+      .$patch({ body: { homepage: urls.site, default_branch: 'main' } });
   },
   develop: async (app: AppModel) => {
     const localGit = await localGitRepo.getFiles(app);
-    const gitDiff = await llmRepo.initApp(app, localGit);
+    const gitDiff = await llmRepo.initSchema(app, localGit);
 
-    if (gitDiff === null) return;
-
-    await localGitRepo.pushToRemote(app, gitDiff);
+    await localGitRepo.pushToRemote(app, gitDiff, 'schemaValidation');
     await githubUseCase.pushedGitDiff(app, gitDiff);
   },
 };

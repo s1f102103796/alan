@@ -6,7 +6,12 @@ import {
   rwDeploymentIdParser,
 } from '../service/idParsers';
 
-export const actionTypeParser = z.enum(['Test', 'Deploy client', 'pages build and deployment']);
+export const actionTypeParser = z.enum([
+  'Test',
+  'Schema Validation',
+  'Deploy client',
+  'pages build and deployment',
+]);
 
 export const ghStatusParser = z.enum([
   'completed',

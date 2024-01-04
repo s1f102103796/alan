@@ -28,7 +28,7 @@ const retryTest = (app: ActiveAppModel) =>
   });
 
 const pushGitDiff = async (running: ActiveAppModel, gitDiff: GitDiffModel) => {
-  await localGitRepo.pushToRemote(running, gitDiff);
+  await localGitRepo.pushToRemote(running, gitDiff, 'test');
   await transaction('RepeatableRead', async (tx) => {
     const app = appMethods.addBubble(
       await appQuery.findByIdOrThrow(tx, running.id),
@@ -132,17 +132,17 @@ export const githubUseCase = {
 
     for (const app of apps) {
       await githubRepo.resetWebhook(app).catch(() => null);
-      await githubRepo
-        .listActionsAll(app)
-        .then((list) =>
-          transaction('RepeatableRead', async (tx) => {
-            const target = await appQuery.findByIdOrThrow(tx, app.id);
-            const newApp = appMethods.upsertGitHubBubbles(target, list);
-            await appRepo.save(tx, newApp);
-          })
-        )
-        .then(retryFailedTest)
-        .catch(() => null);
+      // await githubRepo
+      //   .listActionsAll(app)
+      //   .then((list) =>
+      //     transaction('RepeatableRead', async (tx) => {
+      //       const target = await appQuery.findByIdOrThrow(tx, app.id);
+      //       const newApp = appMethods.upsertGitHubBubbles(target, list);
+      //       await appRepo.save(tx, newApp);
+      //     })
+      //   )
+      //   .then(retryFailedTest)
+      //   .catch(() => null);
     }
   },
 };
