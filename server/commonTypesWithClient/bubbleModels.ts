@@ -7,9 +7,10 @@ import {
 } from '../service/idParsers';
 
 export const actionTypeParser = z.enum([
-  'Test',
-  'Schema Validation',
-  'Deploy client',
+  'test',
+  'schema validation',
+  'client deployment',
+  'pull request test',
   'pages build and deployment',
 ]);
 

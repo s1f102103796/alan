@@ -69,7 +69,9 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
         const createdTime = new Date(node.createdAt).getTime();
         const nearestGitHub = app.bubbles
           .flatMap((b) =>
-            b.type === 'github' && b.content.type === 'Deploy client' && b.createdTime < createdTime
+            b.type === 'github' &&
+            b.content.type === 'client deployment' &&
+            b.createdTime < createdTime
               ? b
               : []
           )

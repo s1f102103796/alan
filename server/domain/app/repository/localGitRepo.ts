@@ -13,8 +13,8 @@ export type LocalGitFile = { source: string; content: string };
 export type LocalGitModel = { appId: AppId; message: string; files: LocalGitFile[] };
 
 const branches = {
-  types: 'copy-deus-types',
-  mainTypes: 'copy-main-types',
+  testTypes: 'deus/test-types',
+  mainTypes: 'deus/main-types',
   test: 'deus/test',
   schemaValidation: 'deus/schema-validation',
 };
@@ -36,8 +36,8 @@ export const localGitRepo = {
     if (!existsSync(dirPath)) {
       await simpleGit().clone(`https://${gitPath}`, dirPath);
       await simpleGit(dirPath)
-        .checkout(branches.types)
-        .reset(ResetMode.HARD, [`origin/${branches.types}`])
+        .checkout(branches.testTypes)
+        .reset(ResetMode.HARD, [`origin/${branches.testTypes}`])
         .catch(() =>
           simpleGit(dirPath)
             .checkout(branches.mainTypes)
@@ -45,9 +45,9 @@ export const localGitRepo = {
         );
     } else {
       await simpleGit(dirPath)
-        .fetch('origin', branches.types)
-        .checkout(branches.types)
-        .reset(ResetMode.HARD, [`origin/${branches.types}`]);
+        .fetch('origin', branches.testTypes)
+        .checkout(branches.testTypes)
+        .reset(ResetMode.HARD, [`origin/${branches.testTypes}`]);
     }
 
     const log = await simpleGit(dirPath)

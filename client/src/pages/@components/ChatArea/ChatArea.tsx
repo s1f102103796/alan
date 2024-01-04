@@ -83,7 +83,7 @@ export const ChatArea = (props: { app: AppModel }) => {
                       return (
                         <CustomContent
                           key={bubble.id}
-                          title={`Deploy server - ${bubble.content.title}`}
+                          title={`Server Deployment - ${bubble.content.title}`}
                           content={bubble.content}
                           status={deploymentStatusToIconStatus(bubble.content)}
                           icon={<RailwayIcon size={32} fill="#fff" />}
