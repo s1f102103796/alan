@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
 import type { z } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
+import { codeBlocks } from './prompts';
 
 const llm = new ChatOpenAI({
   modelName: 'gpt-4-1106-preview',
@@ -25,9 +26,7 @@ export const invokeOrThrow = async <T extends z.AnyZodObject>(
 
 ステップ・バイ・ステップで考えましょう。
 返答は以下のJSON schemasに従ってください。
-\`\`\`json
-${JSON.stringify(jsonSchema, null, 2)}
-\`\`\`
+${codeBlocks.valToJson(jsonSchema)}
 `;
 
   if (!existsSync(logDir)) mkdirSync(logDir, { recursive: true });

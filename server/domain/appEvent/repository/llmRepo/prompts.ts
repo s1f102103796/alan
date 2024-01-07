@@ -2,6 +2,35 @@ import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { GHStepModel } from '$/domain/app/model/githubModels';
 import type { LocalGitFile, LocalGitModel } from '$/domain/app/repository/localGitRepo';
 
+export const codeBlocks = {
+  fromText: (text: string, ext: string) => `\`\`\`${ext}
+${text}
+\`\`\``,
+  valToJson: (val: Record<string, unknown> | Record<string, unknown>[]) => `\`\`\`json
+${JSON.stringify(val, null, 2)}
+\`\`\``,
+};
+
+const filterClientCode = (localGit: LocalGitModel) =>
+  localGit.files.filter(
+    (file) =>
+      file.source.startsWith('client/') ||
+      /^server\/api\/.+\/(index\.ts|\$api\.ts)$/.test(file.source)
+  );
+
+const chunks = {
+  clientPostFix: (
+    localGit: LocalGitModel
+  ) => `変更あるいは新たに作成したファイルのみをfilesに含めてください。
+  削除するファイルはfilesに含めず、deletedFilesにファイルパスの配列を指定すること。
+  以下は過去に削除されたファイルのリストです。
+  必要に応じてこのリストにあるファイルをfilesに復元することができます。
+  ${codeBlocks.valToJson(localGit.deletedFiles)}
+  
+  '$'から始まるtsファイルはCIで生成しているため変更不要です。
+  messageには修正内容のコミットメッセージを日本語で記述してください。`,
+};
+
 export const prompts = {
   initSchema: (
     app: AppModel
@@ -13,13 +42,11 @@ schema.prismaにはdatasourceとgeneratorとenumを含めず、modelのみを使
 Supabase Authと連携できるように、必ずUser modelに id/email/name のカラムを含めてください。
 Userのidにauto_incrementは不要です。`,
 
-  initApiDef: (
-    app: AppModel,
-    schema: LocalGitFile
-  ) => `以下は${app.name}によく似たウェブサービスをTypeScriptで開発するためのschema.prismaです。
-\`\`\`prisma
-${schema.content}
-\`\`\`
+  initApiDef: (app: AppModel, schema: LocalGitFile) => `以下は${
+    app.name
+  }によく似たウェブサービスをTypeScriptで開発するためのschema.prismaです。
+${codeBlocks.fromText(schema.content, 'prisma')}
+
 このSchemaをもとに、REST APIを設計しOpenAPI 3.0をJSON形式で出力してください。
 サービスのユースケースを十分に考慮し、必要なエンドポイントを網羅するように努力してください。
 認証認可が必要なエンドポイントは 'api/private/' 以下に定義してください。
@@ -34,68 +61,26 @@ ${schema.content}
     app.name
   }によく似たサービスに変えなければなりません。
 以下は元のTodoアプリのフロントエンドです。
-\`\`\`json
-${JSON.stringify(
-  localGit.files.filter(
-    (file) =>
-      file.source.startsWith('client/') ||
-      /^server\/api\/.+\/(index\.ts|\$api\.ts)$/.test(file.source)
-  ),
-  null,
-  2
-)}
-\`\`\`
+${codeBlocks.valToJson(filterClientCode(localGit))}
 
 バックエンドエンジニアが新しいREST APIをaspidaでserver/apiディレクトリに以下の通り作成しました。
-\`\`\`json
-${JSON.stringify(newApiFiles, null, 2)}
-\`\`\`
+${codeBlocks.valToJson(newApiFiles)}
 
 このAPI定義はclient/src/utils/apiClient.tsでimportしており、あなたはこれをフルに活用してclientディレクトリ以下を書き換えてください。
 新たに必要なnpmパッケージは自動的にpackage.jsonに追加される仕組みがあるので自由に使うことができます。
 
-変更あるいは新たに作成したファイルのみをfilesに含めてください。
-削除するファイルはfilesに含めず、deletedFilesにファイルパスの配列を指定すること。
-以下は過去に削除されたファイルのリストです。
-必要に応じてこのリストにあるファイルをfilesに復元することができます。
-\`\`\`json
-${JSON.stringify(localGit.deletedFiles)}
-\`\`\`
-
-'$'から始まるtsファイルはCIで生成しているため変更不要です。
-messageには変更内容のコミットメッセージを日本語で記述してください。
+${chunks.clientPostFix}
 `,
 
   fixClient: (app: AppModel, localGit: LocalGitModel, failedStep: GHStepModel) => `${
     app.name
   }によく似たサービスのフロントエンドを開発中にエラーが発生しました。
 以下はフロントエンドのソースコードです。
-\`\`\`json
-${JSON.stringify(
-  localGit.files.filter(
-    (file) =>
-      file.source.startsWith('client/') ||
-      /^server\/api\/.+\/(index\.ts|\$api\.ts)$/.test(file.source)
-  ),
-  null,
-  2
-)}
-\`\`\`
+${codeBlocks.valToJson(filterClientCode(localGit))}
 
 GitHub ActionsのCIで以下のエラーが発生したのでこれを修正してください。
-\`\`\`txt
-${failedStep.log}
-\`\`\`
+${codeBlocks.fromText(failedStep.log, 'txt')}
 
-変更あるいは新たに作成したファイルのみをfilesに含めてください。
-削除するファイルはfilesに含めず、deletedFilesにファイルパスの配列を指定すること。
-以下は過去に削除されたファイルのリストです。
-必要に応じてこのリストにあるファイルをfilesに復元することができます。
-\`\`\`json
-${JSON.stringify(localGit.deletedFiles)}
-\`\`\`
-
-'$'から始まるtsファイルはCIで生成しているため変更不要です。
-messageには修正内容のコミットメッセージを日本語で記述してください。
+${chunks.clientPostFix}
 `,
 };

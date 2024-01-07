@@ -1,23 +1,18 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
-import type { LocalGitFile } from '$/domain/app/repository/localGitRepo';
 import { localGitRepo } from '$/domain/app/repository/localGitRepo';
 import { railwayRepo } from '$/domain/app/repository/railwayRepo';
 import { appUseCase } from '$/domain/app/useCase/appUseCase';
 import { githubUseCase } from '$/domain/app/useCase/githubUseCase';
 import { githubEventRepo } from '$/domain/appEvent/repository/githubEventRepo';
-import { listFiles } from '$/service/listFiles';
 import { transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
-import openapi2aspida from 'openapi2aspida';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import type { AppEventDispatcher, AppEventType } from '../model/appEventModels';
 import { appEventMethods, appSubscriberDict } from '../model/appEventModels';
 import { appEventQuery } from '../query/appEventQuery';
 import { appEventRepo } from '../repository/appEventRepo';
-import { llmRepo, sources } from '../repository/llmRepo';
+import { aspidaRepo } from '../repository/aspidaRepo';
+import { llmRepo } from '../repository/llmRepo';
 import { railwayEventUseCase } from './railwayEventUseCase';
 import { subscribe } from './subscribe';
 
@@ -118,37 +113,9 @@ export const appEventUseCase = {
   createClientCode: () =>
     subscribe('createClientCode', async (published) => {
       await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_client_code');
-      const openapi = await localGitRepo.fetchRemoteFileOrThrow(
-        published.app,
-        'deus/api-definition',
-        sources.openapi
-      );
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-client');
-      const tmpApiDir = join(tmpdir(), published.app.displayId);
-      if (!existsSync(tmpApiDir)) mkdirSync(tmpApiDir);
-
-      const openapiPath = join(tmpApiDir, 'openapi.json');
-      writeFileSync(openapiPath, openapi.content, 'utf8');
-      const outputDir = join(tmpApiDir, 'server/api');
-      if (existsSync(outputDir)) rmSync(outputDir, { recursive: true, force: true }); // エラーで残ることがあるのをopenapi2aspidaのために空にしておく
-
-      await Promise.all(
-        openapi2aspida({
-          input: outputDir,
-          openapi: { inputFile: openapiPath, yaml: false, outputDir },
-        })
-      );
-
-      const newApiDir = listFiles(outputDir).map(
-        (file): LocalGitFile => ({
-          source: file.replace(tmpApiDir, ''),
-          content: readFileSync(file, 'utf8'),
-        })
-      );
-
-      rmSync(tmpApiDir, { recursive: true, force: true });
-
-      const gitDiff = await llmRepo.initClient(published.app, localGit, newApiDir);
+      const aspidaFiles = await aspidaRepo.generateFromOpenapi(published.app);
+      const gitDiff = await llmRepo.initClient(published.app, localGit, aspidaFiles);
 
       await localGitRepo.pushToRemoteOrThrow(published.app, localGit, gitDiff, 'deus/test-client');
       await githubUseCase.addGitBubble(published.app, 'deus/test-client', gitDiff);

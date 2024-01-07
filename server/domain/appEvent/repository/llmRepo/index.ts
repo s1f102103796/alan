@@ -19,10 +19,31 @@ export type GitDiffModel = {
   newMessage: string;
 };
 
-export const sources = {
-  schema: 'server/prisma/schema.prisma',
-  openapi: 'server/openapi.json',
-};
+export const sources = { schema: 'server/prisma/schema.prisma', openapi: 'server/openapi.json' };
+
+const codeValidator = z.object({
+  message: z.string(),
+  files: z.array(z.object({ source: z.string(), content: z.string() })),
+  deletedFiles: z.array(z.string()),
+});
+
+const toDiffs = (files: LocalGitFile[]) =>
+  files.filter(
+    (file) => file.source.startsWith('client/') && !['package.json'].includes(file.source)
+  );
+
+const toDeletedFiles = (deletedFiles: string[]) =>
+  deletedFiles.filter((file) => file.startsWith('client/') && !['package.json'].includes(file));
+
+const toSilentDeletedFiles = (localGit: LocalGitModel) =>
+  localGit.files
+    .filter(
+      (file) =>
+        !file.source.startsWith('server/api') &&
+        !file.source.startsWith('server/commonTypesWithClient') &&
+        /^server\/.+\//.test(file.source)
+    )
+    .map((file) => file.source);
 
 export const llmRepo = {
   initSchema: async (app: AppModel): Promise<GitDiffModel> => {
@@ -110,43 +131,21 @@ generator client {
   initClient: async (
     app: AppModel,
     localGit: LocalGitModel,
-    newApiFiles: LocalGitFile[]
+    aspidaFiles: LocalGitFile[]
   ): Promise<GitDiffModel> => {
-    const prompt = prompts.initClient(app, localGit, newApiFiles);
-    const validator = z.object({
-      message: z.string(),
-      files: z.array(z.object({ source: z.string(), content: z.string() })),
-      deletedFiles: z.array(z.string()),
-    });
-    const result = await invokeOrThrow(app, prompt, validator, []);
+    const prompt = prompts.initClient(app, localGit, aspidaFiles);
+    const result = await invokeOrThrow(app, prompt, codeValidator, []);
     const deletedApis = localGit.files.filter(
       (file) =>
         file.source.startsWith('server/api') &&
-        newApiFiles.every((api) => api.source !== file.source)
+        aspidaFiles.every((api) => api.source !== file.source)
     );
 
     return {
       newMessage: result.message,
-      diffs: [
-        ...result.files.filter(
-          (file) => file.source.startsWith('client/') && !['package.json'].includes(file.source)
-        ),
-        ...newApiFiles,
-      ],
-      deletedFiles: [
-        ...deletedApis.map((a) => a.source),
-        ...result.deletedFiles.filter(
-          (file) => file.startsWith('client/') && !['package.json'].includes(file)
-        ),
-      ],
-      silentDeletedFiles: localGit.files
-        .filter(
-          (file) =>
-            !file.source.startsWith('server/api') &&
-            !file.source.startsWith('server/commonTypesWithClient') &&
-            /^server\/.+\//.test(file.source)
-        )
-        .map((file) => file.source),
+      diffs: [...toDiffs(result.files), ...aspidaFiles],
+      deletedFiles: [...deletedApis.map((a) => a.source), ...toDeletedFiles(result.deletedFiles)],
+      silentDeletedFiles: toSilentDeletedFiles(localGit),
     };
   },
   fixClient: async (
@@ -155,31 +154,13 @@ generator client {
     failedStep: GHStepModel
   ): Promise<GitDiffModel> => {
     const prompt = prompts.fixClient(app, localGit, failedStep);
-    const validator = z.object({
-      message: z.string(),
-      files: z.array(z.object({ source: z.string(), content: z.string() })),
-      deletedFiles: z.array(z.string()),
-    });
-    const result = await invokeOrThrow(app, prompt, validator, []);
+    const result = await invokeOrThrow(app, prompt, codeValidator, []);
 
     return {
       newMessage: result.message,
-      diffs: [
-        ...result.files.filter(
-          (file) => file.source.startsWith('client/') && !['package.json'].includes(file.source)
-        ),
-      ],
-      deletedFiles: result.deletedFiles.filter(
-        (file) => file.startsWith('client/') && !['package.json'].includes(file)
-      ),
-      silentDeletedFiles: localGit.files
-        .filter(
-          (file) =>
-            !file.source.startsWith('server/api') &&
-            !file.source.startsWith('server/commonTypesWithClient') &&
-            /^server\/.+\//.test(file.source)
-        )
-        .map((file) => file.source),
+      diffs: toDiffs(result.files),
+      deletedFiles: toDeletedFiles(result.deletedFiles),
+      silentDeletedFiles: toSilentDeletedFiles(localGit),
     };
   },
 };
