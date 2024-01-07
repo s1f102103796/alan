@@ -1,6 +1,6 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { AppId } from '$/commonTypesWithClient/branded';
-import { GITHUB_TOKEN } from '$/service/envValues';
+import { GITHUB_OWNER, GITHUB_TOKEN } from '$/service/envValues';
 import { customAssert } from '$/service/returnStatus';
 import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'fs';
 import isBinaryPath from 'is-binary-path';
@@ -35,7 +35,7 @@ const listFiles = (dir: string): string[] =>
 
 const genPathes = (app: AppModel, remoteBranch: RemoteBranch) => ({
   dirPath: `appRepositories/${app.displayId}/${remoteBranch}`,
-  gitPath: `github.com/deus-app/${app.displayId}.git`,
+  gitPath: `github.com/${GITHUB_OWNER}/${app.displayId}.git`,
 });
 
 export const localGitRepo = {
