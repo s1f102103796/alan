@@ -65,7 +65,12 @@ const Home = () => {
       <div className={styles.main}>
         <div>
           <div className={styles.appList}>
-            <AppList sortedApps={sortedApps} currentApp={currentApp} append={appendApp} />
+            <AppList
+              user={user}
+              sortedApps={sortedApps}
+              currentApp={currentApp}
+              append={appendApp}
+            />
           </div>
           {currentApp && (
             <>

@@ -32,6 +32,10 @@
   transition: 0.2s;
 }
 
+.loginBtn:hover {
+  background: #fff2;
+}
+
 .userBtn {
   display: flex;
   gap: 8px;
@@ -43,7 +47,6 @@
   transition: 0.2s;
 }
 
-.loginBtn:hover,
 .userBtn:hover {
   border-color: #eee;
 }
