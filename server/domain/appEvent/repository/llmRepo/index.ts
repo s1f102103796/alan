@@ -58,7 +58,6 @@ generator client {
 }
 
 `;
-
     const validator = z.object({ prismaSchema: z.string() });
     let result = await invokeOrThrow(app, prompt, validator, []);
 
@@ -174,6 +173,21 @@ generator client {
     failedStep: GHStepModel
   ): Promise<GitDiffModel> => {
     const prompt = prompts.fixClient(app, localGit, failedStep);
+    const result = await invokeOrThrow(app, prompt, codeValidator, []);
+
+    return {
+      newMessage: result.message,
+      diffs: toDiffs(result.files),
+      deletedFiles: toDeletedFiles(result.deletedFiles),
+      silentDeletedFiles: toSilentDeletedFiles(localGit),
+    };
+  },
+  fixServer: async (
+    app: AppModel,
+    localGit: LocalGitModel,
+    failedStep: GHStepModel
+  ): Promise<GitDiffModel> => {
+    const prompt = prompts.fixServer(app, localGit, failedStep);
     const result = await invokeOrThrow(app, prompt, codeValidator, []);
 
     return {

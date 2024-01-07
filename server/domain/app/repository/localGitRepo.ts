@@ -147,7 +147,7 @@ export const localGitRepo = {
       })
       .push(`https://${GITHUB_TOKEN}@${gitPath}`, `HEAD:${remoteBranch}`, ['-f'])
       .then((e) => {
-        console.log('pushed:', e.remoteMessages);
+        e.remoteMessages.all.length > 0 && console.log('pushed:', e.remoteMessages);
         if (e.remoteMessages.all.some((msg) => msg === 'Everything up-to-date')) {
           throw new Error(`appId: ${app.id}, Everything up-to-date`);
         }

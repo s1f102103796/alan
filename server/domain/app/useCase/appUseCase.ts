@@ -21,7 +21,7 @@ export const appUseCase = {
       ]);
       const app = appMethods.create(user, count, waitingCount, desc);
       await appRepo.save(tx, app);
-      const dispatcher = await appEventUseCase.create(tx, 'AppCreated', app);
+      const dispatcher = await appEventUseCase.createWithLatestBubble(tx, 'AppCreated', app);
 
       return { app, dispatcher };
     }).then(({ app, dispatcher }) => {
@@ -66,7 +66,7 @@ export const appUseCase = {
     const running = appMethods.run(inited, railway);
     await appRepo.save(tx, running);
 
-    return await appEventUseCase.create(tx, 'RailwayCreated', running);
+    return await appEventUseCase.createWithLatestBubble(tx, 'RailwayCreated', running);
   },
   updateRWDeployments: (appId: AppId, deployments: RWDeploymentModel[]) =>
     transaction('RepeatableRead', async (tx) => {

@@ -1,4 +1,5 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
 import { localGitRepo } from '$/domain/app/repository/localGitRepo';
 import { railwayRepo } from '$/domain/app/repository/railwayRepo';
 import { appUseCase } from '$/domain/app/useCase/appUseCase';
@@ -20,9 +21,10 @@ export const appEventUseCase = {
   create: async (
     tx: Prisma.TransactionClient,
     type: AppEventType,
-    app: AppModel
+    app: AppModel,
+    bubble: BubbleModel
   ): Promise<AppEventDispatcher> => {
-    const events = appEventMethods.create(type, app);
+    const events = appEventMethods.create(type, app, bubble);
     await Promise.all(events.map((ev) => appEventRepo.save(tx, ev)));
 
     return {
@@ -31,6 +33,16 @@ export const appEventUseCase = {
         events.forEach((ev) => subs.find((sub) => sub.id === ev.subscriberId)?.fn());
       },
     };
+  },
+  createWithLatestBubble: async (
+    tx: Prisma.TransactionClient,
+    type: AppEventType,
+    app: AppModel
+  ): Promise<AppEventDispatcher> => {
+    const bubble = app.bubbles.at(-1);
+    customAssert(bubble, 'エラーならロジック修正必須');
+
+    return await appEventUseCase.create(tx, type, app, bubble);
   },
   callWhenServerStarted: async () => {
     await transaction('RepeatableRead', async (tx) => {
@@ -44,7 +56,9 @@ export const appEventUseCase = {
     appEventUseCase.createSchema();
     appEventUseCase.createApiDef();
     appEventUseCase.createClientCode();
+    appEventUseCase.createServerCode();
     appEventUseCase.fixClientCode();
+    appEventUseCase.fixServerCode();
   },
   createGitHub: () =>
     subscribe('createGitHub', async (published) => {
@@ -96,7 +110,7 @@ export const appEventUseCase = {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
         await appEventRepo.save(tx, appEventMethods.complete(event));
 
-        return await appEventUseCase.create(tx, 'SchemaCreated', event.app);
+        return await appEventUseCase.createWithLatestBubble(tx, 'SchemaCreated', event.app);
       }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
     }),
   createApiDef: () =>
@@ -107,12 +121,12 @@ export const appEventUseCase = {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
         await appEventRepo.save(tx, appEventMethods.complete(event));
 
-        return await appEventUseCase.create(tx, 'ApiDefined', event.app);
+        return await appEventUseCase.createWithLatestBubble(tx, 'ApiDefined', event.app);
       }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
     }),
   createClientCode: () =>
     subscribe('createClientCode', async (published) => {
-      await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_client_code');
+      await appUseCase.addSystemBubble(published.app.id, 'creating_client_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-client');
       const aspidaFiles = await aspidaRepo.generateFromOpenapi(published.app);
       const gitDiff = await llmRepo.initClient(published.app, localGit, aspidaFiles);
@@ -127,7 +141,7 @@ export const appEventUseCase = {
     }),
   createServerCode: () =>
     subscribe('createServerCode', async (published) => {
-      await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_server_code');
+      await appUseCase.addSystemBubble(published.app.id, 'creating_server_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-server');
       const aspidaFiles = await aspidaRepo.generateFromOpenapi(published.app);
       const gitDiff = await llmRepo.initServer(published.app, localGit, aspidaFiles);
@@ -155,6 +169,27 @@ export const appEventUseCase = {
 
       await localGitRepo.pushToRemoteOrThrow(published.app, localGit, gitDiff, 'deus/test-client');
       await githubUseCase.addGitBubble(published.app, 'deus/test-client', gitDiff);
+
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+      });
+    }),
+  fixServerCode: () =>
+    subscribe('fixServerCode', async (published) => {
+      await appUseCase.addSystemBubble(published.app.id, 'fixing_server_code');
+
+      const localGit = await localGitRepo.getFiles(published.app, 'deus/server-failure-types');
+      customAssert(published.bubble.type === 'github', 'エラーならロジック修正必須');
+
+      const failedStep = await githubEventRepo.findFailedStepOrThrow(
+        published.app,
+        published.bubble.content
+      );
+      const gitDiff = await llmRepo.fixServer(published.app, localGit, failedStep);
+
+      await localGitRepo.pushToRemoteOrThrow(published.app, localGit, gitDiff, 'deus/test-server');
+      await githubUseCase.addGitBubble(published.app, 'deus/test-server', gitDiff);
 
       await transaction('RepeatableRead', async (tx) => {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);

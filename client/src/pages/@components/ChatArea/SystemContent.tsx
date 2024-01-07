@@ -42,6 +42,8 @@ export const SystemContent = (props: { app: AppModel; bubble: SystemBubbleModel 
                 return 'バックエンドの開発を開始しています。';
               case 'fixing_client_code':
                 return 'フロントエンドのエラーを修正しています。';
+              case 'fixing_server_code':
+                return 'バックエンドのエラーを修正しています。';
               default:
                 throw new Error(props.bubble.content satisfies never);
             }

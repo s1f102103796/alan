@@ -5,6 +5,7 @@ import type { GitDiffModel } from '$/domain/appEvent/repository/llmRepo';
 import { appEventUseCase } from '$/domain/appEvent/useCase/appEventUseCase';
 import { connectLocaltunnelIfLocal } from '$/service/localtunnel';
 import { prismaClient, transaction } from '$/service/prismaClient';
+import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
 import { appMethods } from '../model/appMethods';
 import { bubbleMethods } from '../model/bubbleMethods';
@@ -24,6 +25,11 @@ const updateWorkflowRun = async (displayId: DisplayId, workflowRun: WorkflowRun)
 
     if (workflowRun.status !== 'completed') return;
 
+    const bubble = newApp.bubbles.find(
+      (b) => b.type === 'github' && b.content.id === workflowRun.id
+    );
+    customAssert(bubble, 'エラーならロジック修正必須');
+
     switch (workflowRun.name) {
       case 'pull request test':
       case 'client deployment':
@@ -31,20 +37,18 @@ const updateWorkflowRun = async (displayId: DisplayId, workflowRun: WorkflowRun)
       case 'test':
         return;
       case 'client test':
-        return await transaction('RepeatableRead', (tx) =>
-          appEventUseCase.create(
-            tx,
-            workflowRun.conclusion === 'success' ? 'ClientTestWasSuccess' : 'ClientTestWasFailure',
-            newApp
-          )
+        return await appEventUseCase.create(
+          tx,
+          workflowRun.conclusion === 'success' ? 'ClientTestWasSuccess' : 'ClientTestWasFailure',
+          newApp,
+          bubble
         );
       case 'server test':
-        return await transaction('RepeatableRead', (tx) =>
-          appEventUseCase.create(
-            tx,
-            workflowRun.conclusion === 'success' ? 'ServerTestWasSuccess' : 'ServerTestWasFailure',
-            newApp
-          )
+        return await appEventUseCase.create(
+          tx,
+          workflowRun.conclusion === 'success' ? 'ServerTestWasSuccess' : 'ServerTestWasFailure',
+          newApp,
+          bubble
         );
       default:
         throw new Error(workflowRun.name satisfies never);
@@ -57,7 +61,7 @@ const dispatchPushedEvent = async (displayId: DisplayId, ref: string) => {
   await transaction('RepeatableRead', async (tx) => {
     const app = await appQuery.findByDisplayIdOrThrow(tx, displayId);
 
-    return await appEventUseCase.create(tx, 'MainBranchPushed', app);
+    return await appEventUseCase.createWithLatestBubble(tx, 'MainBranchPushed', app);
   }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
 };
 
@@ -67,7 +71,7 @@ export const githubUseCase = {
     const app = appMethods.addBubble(inited, bubble);
     await appRepo.save(tx, app);
 
-    return await appEventUseCase.create(tx, 'GitHubCreated', app);
+    return await appEventUseCase.createWithLatestBubble(tx, 'GitHubCreated', app);
   },
   addGitBubble: (app: AppModel, remoteBranch: RemoteBranch, gitDiff: GitDiffModel) =>
     transaction('RepeatableRead', async (tx) => {

@@ -114,6 +114,7 @@ const SYSTEM_STATUSES = [
   'creating_client_code',
   'creating_server_code',
   'fixing_client_code',
+  'fixing_server_code',
 ] as const;
 
 export type SystemStatus = (typeof SYSTEM_STATUSES)[number];

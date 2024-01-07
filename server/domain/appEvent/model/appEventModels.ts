@@ -2,7 +2,6 @@ import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
 import type { AppEventId } from '$/service/branded';
 import { appEventIdParser } from '$/service/idParsers';
-import { customAssert } from '$/service/returnStatus';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { appEventUseCase } from '../useCase/appEventUseCase';
@@ -40,6 +39,7 @@ export const appSubscriberIdParser = z.enum([
   'createClientCode',
   'createServerCode',
   'fixClientCode',
+  'fixServerCode',
 ]);
 export type SubscriberId = z.infer<typeof appSubscriberIdParser>;
 
@@ -76,16 +76,13 @@ export const appSubscriberDict = (): {
   ClientTestWasSuccess: [],
   ClientTestWasFailure: [{ id: 'fixClientCode', fn: appEventUseCase.fixClientCode }],
   ServerTestWasSuccess: [],
-  ServerTestWasFailure: [],
+  ServerTestWasFailure: [{ id: 'fixServerCode', fn: appEventUseCase.fixServerCode }],
 });
 
 export const appEventMethods = {
-  create: (type: AppEventType, app: AppModel): AppEventModel[] =>
-    appSubscriberDict()[type].map((sub): AppEventModel => {
-      const bubble = app.bubbles.at(-1);
-      customAssert(bubble, 'エラーならロジック修正必須');
-
-      return {
+  create: (type: AppEventType, app: AppModel, bubble: BubbleModel): AppEventModel[] =>
+    appSubscriberDict()[type].map(
+      (sub): AppEventModel => ({
         id: appEventIdParser.parse(randomUUID()),
         type,
         app,
@@ -95,8 +92,8 @@ export const appEventMethods = {
         createdTime: Date.now(),
         updatedTime: Date.now(),
         failedCount: 0,
-      };
-    }),
+      })
+    ),
   publish: (event: AppEventModel): AppEventModel => ({
     ...event,
     status: 'published',

@@ -105,4 +105,16 @@ ${codeBlocks.fromText(failedStep.log, 'txt')}
 
 ${chunks.codePostFix}
 `,
+
+  fixServer: (app: AppModel, localGit: LocalGitModel, failedStep: GHStepModel) => `${
+    app.name
+  }によく似たサービスのフロントエンドを開発中にエラーが発生しました。
+以下はバックエンドのソースコードです。
+${codeBlocks.valToJson(filterServerCode(localGit))}
+
+GitHub ActionsのCIで以下のエラーが発生したのでこれを修正してください。
+${codeBlocks.fromText(failedStep.log, 'txt')}
+
+${chunks.codePostFix}
+`,
 };
