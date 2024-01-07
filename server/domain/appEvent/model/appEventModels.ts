@@ -23,6 +23,7 @@ export const appEventTypeParser = z.enum([
   'RailwayCreated',
   'SchemaCreated',
   'ApiDefined',
+  'ClientCreated',
 ]);
 export type AppEventType = z.infer<typeof appEventTypeParser>;
 export const appSubscriberIdParser = z.enum([
@@ -32,6 +33,7 @@ export const appSubscriberIdParser = z.enum([
   'watchRailwayOnce',
   'createSchema',
   'createApiDefinition',
+  'createClientCode',
 ]);
 export type SubscriberId = z.infer<typeof appSubscriberIdParser>;
 
@@ -60,7 +62,8 @@ export const appSubscriberDict = (): {
   MainBranchPushed: [{ id: 'watchRailway', fn: appEventUseCase.watchRailway }],
   RailwayCreated: [{ id: 'watchRailwayOnce', fn: appEventUseCase.watchRailwayOnce }],
   SchemaCreated: [{ id: 'createApiDefinition', fn: appEventUseCase.createApiDef }],
-  ApiDefined: [],
+  ApiDefined: [{ id: 'createClientCode', fn: appEventUseCase.createClientCode }],
+  ClientCreated: [],
 });
 
 export const appEventMethods = {

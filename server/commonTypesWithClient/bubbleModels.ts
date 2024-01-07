@@ -110,6 +110,7 @@ const SYSTEM_STATUSES = [
   'retry_test',
   'creating_schema',
   'creating_api_def',
+  'creating_client_code',
 ] as const;
 
 export type SystemStatus = (typeof SYSTEM_STATUSES)[number];

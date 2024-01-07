@@ -16,7 +16,7 @@ export type GitDiffModel = {
   newMessage: string;
 };
 
-const sources = {
+export const sources = {
   schema: 'server/prisma/schema.prisma',
   openapi: 'server/openapi.json',
 };
@@ -75,7 +75,7 @@ Userのidにauto_incrementは不要です。`;
 
     throw new Error('schema.prismaを正しく生成できませんでした。');
   },
-  initApiDef: async (app: AppModel, localGit: LocalGitModel) => {
+  initApiDef: async (app: AppModel, localGit: LocalGitModel): Promise<GitDiffModel> => {
     const schema = localGit.files.find((file) => file.source === sources.schema);
     customAssert(schema, 'エラーならロジック修正必須');
 
@@ -116,5 +116,68 @@ ${schema.content}
     }
 
     throw new Error('openapi.jsonを正しく生成できませんでした。');
+  },
+  initClient: async (
+    app: AppModel,
+    localGit: LocalGitModel,
+    newApiFiles: LocalGitFile[]
+  ): Promise<GitDiffModel> => {
+    const prompt = `開発中のウェブサービスに大きな仕様変更が発生しました。Todoアプリだったものを${
+      app.name
+    }によく似たサービスに変えなければなりません。
+以下は元のTodoアプリのフロントエンドです。
+\`\`\`json
+${JSON.stringify(
+  localGit.files.filter(
+    (file) =>
+      file.source.startsWith('client/') ||
+      /^server\/api\/.+\/(index\.ts|\$api\.ts)$/.test(file.source)
+  ),
+  null,
+  2
+)}
+\`\`\`
+
+バックエンドエンジニアが新しいREST APIをaspidaでserver/apiディレクトリに以下の通り作成しました。
+\`\`\`json
+${JSON.stringify(newApiFiles, null, 2)}
+\`\`\`
+
+このAPI定義はclient/src/utils/apiClient.tsでimportしており、あなたはこれをフルに活用してclientディレクトリ以下を書き換えてください。
+新たに必要なnpmパッケージは自動的にpackage.jsonに追加される仕組みがあるので自由に使うことができます。
+削除するファイルはfilesに含めず、deletedFilesにファイルパスの配列を指定すること。
+変更あるいは追加したファイルのみをfilesに含めてください。
+'$'から始まるtsファイルはCIで生成しているため変更不要です。
+新しいファイルを生成してもよいです。
+messageには変更内容のコミットメッセージを日本語で記述してください。
+`;
+
+    const validator = z.object({
+      message: z.string(),
+      files: z.array(z.object({ source: z.string(), content: z.string() })),
+      deletedFiles: z.array(z.string()),
+    });
+    const result = await invokeOrThrow(app, prompt, validator, []);
+    const deletedApis = localGit.files.filter(
+      (file) =>
+        file.source.startsWith('server/api') &&
+        newApiFiles.every((api) => api.source !== file.source)
+    );
+
+    return {
+      newMessage: result.message,
+      diffs: [
+        ...result.files.filter(
+          (file) => file.source.startsWith('client/') && !['package.json'].includes(file.source)
+        ),
+        ...newApiFiles,
+      ],
+      deletedFiles: [
+        ...result.deletedFiles.filter(
+          (file) => file.startsWith('client/') && !['package.json'].includes(file)
+        ),
+        ...deletedApis.map((a) => a.source),
+      ],
+    };
   },
 };

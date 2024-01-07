@@ -76,7 +76,7 @@ ${input}
           .parse(JSON.parse(content));
       })
       .catch((e) => {
-        console.log(e.message);
+        console.log(e.stack);
         return null;
       });
 
@@ -149,7 +149,7 @@ ${failedStep.log}
           .parse(JSON.parse(content));
       })
       .catch((e) => {
-        console.log(e.message);
+        console.log(e.stack);
         return null;
       });
 

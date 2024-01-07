@@ -1,8 +1,9 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { AppId } from '$/commonTypesWithClient/branded';
 import { GITHUB_OWNER, GITHUB_TOKEN } from '$/service/envValues';
+import { listFiles } from '$/service/listFiles';
 import { customAssert } from '$/service/returnStatus';
-import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import isBinaryPath from 'is-binary-path';
 import { dirname } from 'path';
 import simpleGit, { ResetMode } from 'simple-git';
@@ -11,6 +12,7 @@ import type { GitDiffModel } from './llmRepo';
 const remoteBranches = {
   main: 'main',
   testTypes: 'deus/test-types',
+  testClient: 'deus/test-client',
   mainTypes: 'deus/main-types',
   test: 'deus/test',
   dbSchema: 'deus/db-schema',
@@ -28,11 +30,6 @@ export type LocalGitModel = {
   files: LocalGitFile[];
 };
 
-const listFiles = (dir: string): string[] =>
-  readdirSync(dir, { withFileTypes: true }).flatMap((dirent) =>
-    dirent.isFile() ? [`${dir}/${dirent.name}`] : listFiles(`${dir}/${dirent.name}`)
-  );
-
 const genPathes = (app: AppModel, remoteBranch: RemoteBranch) => ({
   dirPath: `appRepositories/${app.displayId}/${remoteBranch}`,
   gitPath: `github.com/${GITHUB_OWNER}/${app.displayId}.git`,
@@ -42,10 +39,12 @@ export const localGitRepo = {
   getFiles: async (app: AppModel, remoteBranch: RemoteBranch): Promise<LocalGitModel> => {
     const { dirPath, gitPath } = genPathes(app, remoteBranch);
 
-    if (!existsSync(dirPath)) {
-      await simpleGit().clone(`https://${gitPath}`, dirPath);
+    if (existsSync(dirPath)) {
+      await simpleGit(dirPath)
+        .fetch('origin', remoteBranch)
+        .catch(() => simpleGit(dirPath).fetch('origin', remoteBranches.mainTypes));
     } else {
-      await simpleGit(dirPath).fetch('origin', remoteBranch);
+      await simpleGit().clone(`https://${gitPath}`, dirPath);
     }
 
     await simpleGit(dirPath)
@@ -74,13 +73,27 @@ export const localGitRepo = {
       ),
     };
   },
+  fetchRemoteFileOrThrow: async (
+    app: AppModel,
+    remoteBranch: RemoteBranch,
+    source: string
+  ): Promise<LocalGitFile> => {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/${GITHUB_OWNER}/${app.displayId}/${remoteBranch}/${source}`
+    );
+
+    if (res.status !== 200) throw new Error(`${source} is not exists`);
+    return { source, content: await res.text() };
+  },
   pushToRemote: async (app: AppModel, gitDiff: GitDiffModel, remoteBranch: RemoteBranch) => {
     const { dirPath, gitPath } = genPathes(app, remoteBranch);
 
-    if (!existsSync(dirPath)) {
-      await simpleGit().clone(`https://${gitPath}`, dirPath);
+    if (existsSync(dirPath)) {
+      await simpleGit(dirPath)
+        .fetch('origin', remoteBranch)
+        .catch(() => simpleGit(dirPath).fetch('origin', remoteBranches.main));
     } else {
-      await simpleGit(dirPath).fetch('origin', remoteBranch);
+      await simpleGit().clone(`https://${gitPath}`, dirPath);
     }
 
     await simpleGit(dirPath)

@@ -38,6 +38,8 @@ export const SystemContent = (props: { app: AppModel; bubble: SystemBubbleModel 
                 return 'DBスキーマを作成しています。';
               case 'creating_api_def':
                 return 'REST API定義ファイルを作成しています。';
+              case 'creating_client_code':
+                return 'フロントエンドの開発を開始しています。';
               default:
                 throw new Error(props.bubble.content satisfies never);
             }

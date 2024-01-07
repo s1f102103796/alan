@@ -1,73 +1,25 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { LocalGitFile } from '$/domain/app/repository/localGitRepo';
+import { localGitRepo } from '$/domain/app/repository/localGitRepo';
 import { railwayRepo } from '$/domain/app/repository/railwayRepo';
 import { appUseCase } from '$/domain/app/useCase/appUseCase';
 import { githubUseCase } from '$/domain/app/useCase/githubUseCase';
 import { githubEventRepo } from '$/domain/appEvent/repository/githubEventRepo';
+import { listFiles } from '$/service/listFiles';
 import { transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
-import type {
-  AppEventDispatcher,
-  AppEventModel,
-  AppEventType,
-  SubscriberId,
-} from '../model/appEventModels';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import openapi2aspida from 'openapi2aspida';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import type { AppEventDispatcher, AppEventType } from '../model/appEventModels';
 import { appEventMethods, appSubscriberDict } from '../model/appEventModels';
 import { appEventQuery } from '../query/appEventQuery';
 import { appEventRepo } from '../repository/appEventRepo';
+import { llmRepo, sources } from '../repository/llmRepo';
 import { railwayEventUseCase } from './railwayEventUseCase';
-
-const subscribingDict: Record<SubscriberId, boolean> = {
-  createGitHub: false,
-  createRailway: false,
-  createSchema: false,
-  watchRailway: false,
-  watchRailwayOnce: false,
-  createApiDefinition: false,
-};
-
-const subscribe = async (
-  subscriberId: SubscriberId,
-  cb: (published: AppEventModel) => Promise<void>
-) => {
-  if (subscribingDict[subscriberId]) return;
-  subscribingDict[subscriberId] = true;
-
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const published = await transaction('RepeatableRead', async (tx) => {
-      const failed = await appEventQuery.findHead(tx, subscriberId, 'failed');
-
-      if (failed !== null) {
-        const published = appEventMethods.publish(failed);
-        await appEventRepo.save(tx, published);
-
-        return published;
-      }
-
-      const waiting = await appEventQuery.findHead(tx, subscriberId, 'waiting');
-
-      if (waiting === null) return null;
-
-      const published = appEventMethods.publish(waiting);
-      await appEventRepo.save(tx, published);
-
-      return published;
-    });
-
-    if (published === null) break;
-
-    await cb(published).catch((e) =>
-      transaction('RepeatableRead', async (tx) => {
-        console.log(subscriberId, 'error:', e.message);
-        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
-        await appEventRepo.save(tx, appEventMethods.fail(event));
-      })
-    );
-  }
-
-  subscribingDict[subscriberId] = false;
-};
+import { subscribe } from './subscribe';
 
 export const appEventUseCase = {
   create: async (
@@ -96,6 +48,7 @@ export const appEventUseCase = {
     appEventUseCase.watchRailway();
     appEventUseCase.createSchema();
     appEventUseCase.createApiDef();
+    appEventUseCase.createClientCode();
   },
   createGitHub: () =>
     subscribe('createGitHub', async (published) => {
@@ -160,5 +113,55 @@ export const appEventUseCase = {
 
         return await appEventUseCase.create(tx, 'ApiDefined', event.app);
       }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
+    }),
+  createClientCode: () =>
+    subscribe('createClientCode', async (published) => {
+      await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_client_code');
+      // const prisma = await localGitRepo.fetchRemoteFileOrThrow(
+      //   published.app,
+      //   'deus/db-schema',
+      //   sources.schema
+      // );
+      const openapi = await localGitRepo.fetchRemoteFileOrThrow(
+        published.app,
+        'deus/api-definition',
+        sources.openapi
+      );
+      const localGit = await localGitRepo.getFiles(published.app, 'deus/test-client');
+      // const oldSchema = localGit.files.find(file => file.source === sources.schema)
+      // const oldApiDir = localGit.files.filter(
+      //   (file) =>
+      //     file.source.startsWith('server/api') && ['/index.ts', '/$api.ts'].includes(file.source)
+      // );
+      const tmpApiDir = join(tmpdir(), published.app.displayId);
+      if (!existsSync(tmpApiDir)) mkdirSync(tmpApiDir);
+
+      const openapiPath = join(tmpApiDir, 'openapi.json');
+      writeFileSync(openapiPath, openapi.content, 'utf8');
+      const outputDir = join(tmpApiDir, 'server/api');
+      if (existsSync(outputDir)) rmSync(outputDir, { recursive: true, force: true }); // エラーで残ることがあるのをopenapi2aspidaのために空にしておく
+
+      await openapi2aspida({
+        input: outputDir,
+        openapi: { inputFile: openapiPath, yaml: false, outputDir },
+      }); // openapi2aspidaの内部作業はawaitが効かないため、作業完了を正確に取得するにはchild_process.execなどを使う
+
+      const newApiDir = listFiles(outputDir).map(
+        (file): LocalGitFile => ({
+          source: file.replace(tmpApiDir, ''),
+          content: readFileSync(file, 'utf8'),
+        })
+      );
+
+      const gitDiff = await llmRepo.initClient(published.app, localGit, newApiDir);
+      rmSync(tmpApiDir, { recursive: true, force: true });
+
+      await localGitRepo.pushToRemote(published.app, gitDiff, 'deus/test-client');
+      await githubUseCase.addGitBubble(published.app, 'deus/test-client', gitDiff);
+
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+      });
     }),
 };

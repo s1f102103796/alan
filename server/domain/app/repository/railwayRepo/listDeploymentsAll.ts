@@ -58,7 +58,7 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
         variables: { serviceId: app.railway.serviceId, after },
       })
       .catch((e) => {
-        console.log(e.message);
+        console.log(e.stack);
         return null;
       });
 
