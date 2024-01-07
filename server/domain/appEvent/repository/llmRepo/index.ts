@@ -148,6 +148,26 @@ generator client {
       silentDeletedFiles: toSilentDeletedFiles(localGit),
     };
   },
+  initServer: async (
+    app: AppModel,
+    localGit: LocalGitModel,
+    aspidaFiles: LocalGitFile[]
+  ): Promise<GitDiffModel> => {
+    const prompt = prompts.initServer(app, localGit, aspidaFiles);
+    const result = await invokeOrThrow(app, prompt, codeValidator, []);
+    const deletedApis = localGit.files.filter(
+      (file) =>
+        file.source.startsWith('server/api') &&
+        aspidaFiles.every((api) => api.source !== file.source)
+    );
+
+    return {
+      newMessage: result.message,
+      diffs: [...toDiffs(result.files), ...aspidaFiles],
+      deletedFiles: [...deletedApis.map((a) => a.source), ...toDeletedFiles(result.deletedFiles)],
+      silentDeletedFiles: toSilentDeletedFiles(localGit),
+    };
+  },
   fixClient: async (
     app: AppModel,
     localGit: LocalGitModel,

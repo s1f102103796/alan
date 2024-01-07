@@ -12,6 +12,7 @@ export const actionTypeParser = z.enum([
   'pull request test',
   'pages build and deployment',
   'client test',
+  'server test',
 ]);
 
 export const ghStatusParser = z.enum([
@@ -111,6 +112,7 @@ const SYSTEM_STATUSES = [
   'creating_schema',
   'creating_api_def',
   'creating_client_code',
+  'creating_server_code',
   'fixing_client_code',
 ] as const;
 

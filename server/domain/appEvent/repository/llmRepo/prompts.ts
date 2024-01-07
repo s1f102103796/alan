@@ -18,17 +18,20 @@ const filterClientCode = (localGit: LocalGitModel) =>
       /^server\/api\/.+\/(index\.ts|\$api\.ts)$/.test(file.source)
   );
 
+const filterServerCode = (localGit: LocalGitModel) =>
+  localGit.files.filter((file) => file.source.startsWith('server/'));
+
 const chunks = {
-  clientPostFix: (
+  codePostFix: (
     localGit: LocalGitModel
   ) => `変更あるいは新たに作成したファイルのみをfilesに含めてください。
-  削除するファイルはfilesに含めず、deletedFilesにファイルパスの配列を指定すること。
-  以下は過去に削除されたファイルのリストです。
-  必要に応じてこのリストにあるファイルをfilesに復元することができます。
-  ${codeBlocks.valToJson(localGit.deletedFiles)}
-  
-  '$'から始まるtsファイルはCIで生成しているため変更不要です。
-  messageには修正内容のコミットメッセージを日本語で記述してください。`,
+削除するファイルはfilesに含めず、deletedFilesにファイルパスの配列を指定すること。
+以下は過去に削除されたファイルのリストです。
+必要に応じてこのリストにあるファイルをfilesに復元することができます。
+${codeBlocks.valToJson(localGit.deletedFiles)}
+
+'$'から始まるtsファイルはCIで生成しているため変更不要です。
+messageには修正内容のコミットメッセージを日本語で記述してください。`,
 };
 
 export const prompts = {
@@ -69,7 +72,26 @@ ${codeBlocks.valToJson(newApiFiles)}
 このAPI定義はclient/src/utils/apiClient.tsでimportしており、あなたはこれをフルに活用してclientディレクトリ以下を書き換えてください。
 新たに必要なnpmパッケージは自動的にpackage.jsonに追加される仕組みがあるので自由に使うことができます。
 
-${chunks.clientPostFix}
+${chunks.codePostFix}
+`,
+
+  initServer: (
+    app: AppModel,
+    localGit: LocalGitModel,
+    newApiFiles: LocalGitFile[]
+  ) => `開発中のウェブサービスに大きな仕様変更が発生しました。Todoアプリだったものを${
+    app.name
+  }によく似たサービスに変えなければなりません。
+以下は元のTodoアプリのバックエンドです。
+${codeBlocks.valToJson(filterServerCode(localGit))}
+
+バックエンドエンジニアが新しいREST APIをaspidaでserver/apiディレクトリに以下の通り作成しました。
+${codeBlocks.valToJson(newApiFiles)}
+
+バックエンドフレームワークはfrourioなのでaspidaの定義をもとにserver/apiディレクトリの配下にcontroller.tsを作成する必要があります。
+新たに必要なnpmパッケージは自動的にpackage.jsonに追加される仕組みがあるので自由に使うことができます。
+
+${chunks.codePostFix}
 `,
 
   fixClient: (app: AppModel, localGit: LocalGitModel, failedStep: GHStepModel) => `${
@@ -81,6 +103,6 @@ ${codeBlocks.valToJson(filterClientCode(localGit))}
 GitHub ActionsのCIで以下のエラーが発生したのでこれを修正してください。
 ${codeBlocks.fromText(failedStep.log, 'txt')}
 
-${chunks.clientPostFix}
+${chunks.codePostFix}
 `,
 };

@@ -38,6 +38,14 @@ const updateWorkflowRun = async (displayId: DisplayId, workflowRun: WorkflowRun)
             newApp
           )
         );
+      case 'server test':
+        return await transaction('RepeatableRead', (tx) =>
+          appEventUseCase.create(
+            tx,
+            workflowRun.conclusion === 'success' ? 'ServerTestWasSuccess' : 'ServerTestWasFailure',
+            newApp
+          )
+        );
       default:
         throw new Error(workflowRun.name satisfies never);
     }

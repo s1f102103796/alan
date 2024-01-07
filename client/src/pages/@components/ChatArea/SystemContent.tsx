@@ -38,6 +38,8 @@ export const SystemContent = (props: { app: AppModel; bubble: SystemBubbleModel 
                 return 'REST API定義ファイルを作成しています。';
               case 'creating_client_code':
                 return 'フロントエンドの開発を開始しています。';
+              case 'creating_server_code':
+                return 'バックエンドの開発を開始しています。';
               case 'fixing_client_code':
                 return 'フロントエンドのエラーを修正しています。';
               default:

@@ -125,6 +125,21 @@ export const appEventUseCase = {
         await appEventRepo.save(tx, appEventMethods.complete(event));
       });
     }),
+  createServerCode: () =>
+    subscribe('createServerCode', async (published) => {
+      await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_server_code');
+      const localGit = await localGitRepo.getFiles(published.app, 'deus/test-server');
+      const aspidaFiles = await aspidaRepo.generateFromOpenapi(published.app);
+      const gitDiff = await llmRepo.initServer(published.app, localGit, aspidaFiles);
+
+      await localGitRepo.pushToRemoteOrThrow(published.app, localGit, gitDiff, 'deus/test-server');
+      await githubUseCase.addGitBubble(published.app, 'deus/test-server', gitDiff);
+
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+      });
+    }),
   fixClientCode: () =>
     subscribe('fixClientCode', async (published) => {
       await appUseCase.addSystemBubble(published.app.id, 'fixing_client_code');
