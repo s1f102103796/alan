@@ -59,8 +59,6 @@ const Home = () => {
     }
   }, [apps, currentApp, router]);
 
-  if (!user) return null;
-
   return (
     <>
       <BasicHeader user={user} />
