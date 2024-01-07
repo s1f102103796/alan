@@ -49,6 +49,7 @@ export const appEventUseCase = {
     appEventUseCase.createSchema();
     appEventUseCase.createApiDef();
     appEventUseCase.createClientCode();
+    appEventUseCase.fixClientCode();
   },
   createGitHub: () =>
     subscribe('createGitHub', async (published) => {
@@ -117,22 +118,12 @@ export const appEventUseCase = {
   createClientCode: () =>
     subscribe('createClientCode', async (published) => {
       await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_client_code');
-      // const prisma = await localGitRepo.fetchRemoteFileOrThrow(
-      //   published.app,
-      //   'deus/db-schema',
-      //   sources.schema
-      // );
       const openapi = await localGitRepo.fetchRemoteFileOrThrow(
         published.app,
         'deus/api-definition',
         sources.openapi
       );
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-client');
-      // const oldSchema = localGit.files.find(file => file.source === sources.schema)
-      // const oldApiDir = localGit.files.filter(
-      //   (file) =>
-      //     file.source.startsWith('server/api') && ['/index.ts', '/$api.ts'].includes(file.source)
-      // );
       const tmpApiDir = join(tmpdir(), published.app.displayId);
       if (!existsSync(tmpApiDir)) mkdirSync(tmpApiDir);
 
@@ -141,10 +132,12 @@ export const appEventUseCase = {
       const outputDir = join(tmpApiDir, 'server/api');
       if (existsSync(outputDir)) rmSync(outputDir, { recursive: true, force: true }); // エラーで残ることがあるのをopenapi2aspidaのために空にしておく
 
-      await openapi2aspida({
-        input: outputDir,
-        openapi: { inputFile: openapiPath, yaml: false, outputDir },
-      }); // openapi2aspidaの内部作業はawaitが効かないため、作業完了を正確に取得するにはchild_process.execなどを使う
+      await Promise.all(
+        openapi2aspida({
+          input: outputDir,
+          openapi: { inputFile: openapiPath, yaml: false, outputDir },
+        })
+      );
 
       const newApiDir = listFiles(outputDir).map(
         (file): LocalGitFile => ({
@@ -153,10 +146,32 @@ export const appEventUseCase = {
         })
       );
 
-      const gitDiff = await llmRepo.initClient(published.app, localGit, newApiDir);
       rmSync(tmpApiDir, { recursive: true, force: true });
 
-      await localGitRepo.pushToRemote(published.app, gitDiff, 'deus/test-client');
+      const gitDiff = await llmRepo.initClient(published.app, localGit, newApiDir);
+
+      await localGitRepo.pushToRemoteOrThrow(published.app, localGit, gitDiff, 'deus/test-client');
+      await githubUseCase.addGitBubble(published.app, 'deus/test-client', gitDiff);
+
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+      });
+    }),
+  fixClientCode: () =>
+    subscribe('fixClientCode', async (published) => {
+      await appUseCase.addSystemBubble(published.app.id, 'fixing_client_code');
+
+      const localGit = await localGitRepo.getFiles(published.app, 'deus/client-failure-types');
+      customAssert(published.bubble.type === 'github', 'エラーならロジック修正必須');
+
+      const failedStep = await githubEventRepo.findFailedStepOrThrow(
+        published.app,
+        published.bubble.content
+      );
+      const gitDiff = await llmRepo.fixClient(published.app, localGit, failedStep);
+
+      await localGitRepo.pushToRemoteOrThrow(published.app, localGit, gitDiff, 'deus/test-client');
       await githubUseCase.addGitBubble(published.app, 'deus/test-client', gitDiff);
 
       await transaction('RepeatableRead', async (tx) => {

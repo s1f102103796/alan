@@ -144,13 +144,12 @@ const toAppModel = (app: PrismaApp, waitingIds: string[]): AppModel => {
     ...base,
     status,
     urls:
-      base.bubbles.filter(
+      base.bubbles.some(
         (b) =>
           b.type === 'github' &&
           b.content.type === 'pages build and deployment' &&
-          (b.content.conclusion === 'cancelled' || b.content.conclusion === 'success')
-      ).length >= 2 &&
-      base.bubbles.some((b) => b.type === 'railway' && b.content.status === 'SUCCESS')
+          b.content.conclusion === 'success'
+      ) && base.bubbles.some((b) => b.type === 'railway' && b.content.status === 'SUCCESS')
         ? indexToUrls(app.index)
         : undefined,
     railway: {

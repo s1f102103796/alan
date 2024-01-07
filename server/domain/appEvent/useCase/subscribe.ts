@@ -4,21 +4,13 @@ import { appEventMethods } from '../model/appEventModels';
 import { appEventQuery } from '../query/appEventQuery';
 import { appEventRepo } from '../repository/appEventRepo';
 
-const subscribingDict: Record<SubscriberId, boolean> = {
-  createGitHub: false,
-  createRailway: false,
-  createSchema: false,
-  watchRailway: false,
-  watchRailwayOnce: false,
-  createApiDefinition: false,
-  createClientCode: false,
-};
+const subscribingDict: { [key in SubscriberId]?: boolean } = {};
 
 export const subscribe = async (
   subscriberId: SubscriberId,
   cb: (published: AppEventModel) => Promise<void>
 ) => {
-  if (subscribingDict[subscriberId]) return;
+  if (subscribingDict[subscriberId] === true) return;
   subscribingDict[subscriberId] = true;
 
   // eslint-disable-next-line no-constant-condition

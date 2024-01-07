@@ -1,5 +1,6 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { AppId } from '$/commonTypesWithClient/branded';
+import type { GitDiffModel } from '$/domain/appEvent/repository/llmRepo';
 import { GITHUB_OWNER, GITHUB_TOKEN } from '$/service/envValues';
 import { listFiles } from '$/service/listFiles';
 import { customAssert } from '$/service/returnStatus';
@@ -7,13 +8,13 @@ import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from '
 import isBinaryPath from 'is-binary-path';
 import { dirname } from 'path';
 import simpleGit, { ResetMode } from 'simple-git';
-import type { GitDiffModel } from './llmRepo';
 
 const remoteBranches = {
   main: 'main',
   testTypes: 'deus/test-types',
   testClient: 'deus/test-client',
   mainTypes: 'deus/main-types',
+  clientFailureTypes: 'deus/client-failure-types',
   test: 'deus/test',
   dbSchema: 'deus/db-schema',
   apiDefinition: 'deus/api-definition',
@@ -28,16 +29,18 @@ export type LocalGitModel = {
   message: string;
   remoteBranch: RemoteBranch;
   files: LocalGitFile[];
+  deletedFiles: LocalGitFile[];
 };
 
 const genPathes = (app: AppModel, remoteBranch: RemoteBranch) => ({
   dirPath: `appRepositories/${app.displayId}/${remoteBranch}`,
   gitPath: `github.com/${GITHUB_OWNER}/${app.displayId}.git`,
+  deletedFilesJson: `appRepositories/${app.displayId}/${remoteBranch}/deletedFiles.json`,
 });
 
 export const localGitRepo = {
   getFiles: async (app: AppModel, remoteBranch: RemoteBranch): Promise<LocalGitModel> => {
-    const { dirPath, gitPath } = genPathes(app, remoteBranch);
+    const { dirPath, gitPath, deletedFilesJson } = genPathes(app, remoteBranch);
 
     if (existsSync(dirPath)) {
       await simpleGit(dirPath)
@@ -71,6 +74,9 @@ export const localGitRepo = {
           ? []
           : { source: file.replace(`${dirPath}/`, ''), content: readFileSync(file, 'utf8') }
       ),
+      deletedFiles: existsSync(deletedFilesJson)
+        ? JSON.parse(readFileSync(deletedFilesJson, 'utf8'))
+        : [],
     };
   },
   fetchRemoteFileOrThrow: async (
@@ -85,8 +91,13 @@ export const localGitRepo = {
     if (res.status !== 200) throw new Error(`${source} is not exists`);
     return { source, content: await res.text() };
   },
-  pushToRemote: async (app: AppModel, gitDiff: GitDiffModel, remoteBranch: RemoteBranch) => {
-    const { dirPath, gitPath } = genPathes(app, remoteBranch);
+  pushToRemoteOrThrow: async (
+    app: AppModel,
+    localGit: LocalGitModel | undefined,
+    gitDiff: GitDiffModel,
+    remoteBranch: RemoteBranch
+  ) => {
+    const { dirPath, gitPath, deletedFilesJson } = genPathes(app, remoteBranch);
 
     if (existsSync(dirPath)) {
       await simpleGit(dirPath)
@@ -106,6 +117,21 @@ export const localGitRepo = {
       if (existsSync(filePath)) unlinkSync(filePath);
     });
 
+    if (remoteBranch === 'main') {
+      unlinkSync(deletedFilesJson);
+    } else if (localGit !== undefined) {
+      const newDeletedFiles: LocalGitFile[] = [
+        ...localGit.deletedFiles.filter((del) =>
+          gitDiff.diffs.every((d) => d.source !== del.source)
+        ),
+        ...gitDiff.deletedFiles.flatMap((f) =>
+          localGit.files.flatMap((file) => (file.source === f ? file : []))
+        ),
+      ];
+
+      writeFileSync(deletedFilesJson, JSON.stringify(newDeletedFiles, null, 2), 'utf8');
+    }
+
     gitDiff.diffs.forEach((file) => {
       const filePath = `${dirPath}/${file.source}`;
       if (!existsSync(dirname(filePath))) mkdirSync(dirname(filePath), { recursive: true });
@@ -117,6 +143,12 @@ export const localGitRepo = {
       .commit(gitDiff.newMessage, {
         '--author': '"github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"',
       })
-      .push(`https://${GITHUB_TOKEN}@${gitPath}`, `HEAD:${remoteBranch}`, ['-f']);
+      .push(`https://${GITHUB_TOKEN}@${gitPath}`, `HEAD:${remoteBranch}`, ['-f'])
+      .then((e) => {
+        console.log('pushed:', e.remoteMessages);
+        if (e.remoteMessages.all.some((msg) => msg === 'Everything up-to-date')) {
+          throw new Error(`appId: ${app.id}, Everything up-to-date`);
+        }
+      });
   },
 };

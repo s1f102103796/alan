@@ -32,14 +32,14 @@ export const SystemContent = (props: { app: AppModel; bubble: SystemBubbleModel 
                 return 'GitHubリポジトリを作成しました。';
               case 'init_infra':
                 return 'インフラのセットアップを開始しています。';
-              case 'retry_test':
-                return 'テストに失敗したコードを修正しています。';
               case 'creating_schema':
                 return 'DBスキーマを作成しています。';
               case 'creating_api_def':
                 return 'REST API定義ファイルを作成しています。';
               case 'creating_client_code':
                 return 'フロントエンドの開発を開始しています。';
+              case 'fixing_client_code':
+                return 'フロントエンドのエラーを修正しています。';
               default:
                 throw new Error(props.bubble.content satisfies never);
             }

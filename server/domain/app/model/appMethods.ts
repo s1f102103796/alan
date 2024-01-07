@@ -60,12 +60,6 @@ export const appMethods = {
       waitingOrder: undefined,
     };
   },
-  retry: (app: ActiveAppModel): ActiveAppModel => {
-    return {
-      ...app,
-      bubbles: [...app.bubbles, bubbleMethods.createSystem('retry_test', Date.now())],
-    };
-  },
   addBubble: <T extends AppModel>(app: T, bubble: BubbleModel): T => {
     return { ...app, bubbles: [...app.bubbles, bubble] };
   },

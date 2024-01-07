@@ -24,6 +24,8 @@ export const appEventTypeParser = z.enum([
   'SchemaCreated',
   'ApiDefined',
   'ClientCreated',
+  'ClientTestWasSuccess',
+  'ClientTestWasFailure',
 ]);
 export type AppEventType = z.infer<typeof appEventTypeParser>;
 export const appSubscriberIdParser = z.enum([
@@ -34,6 +36,7 @@ export const appSubscriberIdParser = z.enum([
   'createSchema',
   'createApiDefinition',
   'createClientCode',
+  'fixClientCode',
 ]);
 export type SubscriberId = z.infer<typeof appSubscriberIdParser>;
 
@@ -64,6 +67,8 @@ export const appSubscriberDict = (): {
   SchemaCreated: [{ id: 'createApiDefinition', fn: appEventUseCase.createApiDef }],
   ApiDefined: [{ id: 'createClientCode', fn: appEventUseCase.createClientCode }],
   ClientCreated: [],
+  ClientTestWasSuccess: [],
+  ClientTestWasFailure: [{ id: 'fixClientCode', fn: appEventUseCase.fixClientCode }],
 });
 
 export const appEventMethods = {

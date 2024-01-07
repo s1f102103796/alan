@@ -1,4 +1,5 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { GHStepModel } from '$/domain/app/model/githubModels';
 import type { LocalGitFile, LocalGitModel } from '$/domain/app/repository/localGitRepo';
 import { customAssert } from '$/service/returnStatus';
 import SwaggerParser from '@apidevtools/swagger-parser';
@@ -9,10 +10,12 @@ import { join } from 'path';
 import { promisify } from 'util';
 import { z } from 'zod';
 import { invokeOrThrow } from './invokeOrThrow';
+import { prompts } from './prompts';
 
 export type GitDiffModel = {
   diffs: LocalGitFile[];
   deletedFiles: string[];
+  silentDeletedFiles: string[];
   newMessage: string;
 };
 
@@ -23,6 +26,7 @@ export const sources = {
 
 export const llmRepo = {
   initSchema: async (app: AppModel): Promise<GitDiffModel> => {
+    const prompt = prompts.initSchema(app);
     const prismaHeader = `datasource db {
   provider = "postgresql"
   url      = env("API_DATABASE_URL")
@@ -33,13 +37,6 @@ generator client {
 }
 
 `;
-    const prompt = `${app.name}によく似たウェブサービスをTypeScriptで開発するための詳細なschema.prismaを作成してください。
-Prismaのフォーマットやリレーションの記述が正しいかをよく確認してください。
-サーバーエンジニアがあなたのschema.prismaを使って開発を行うため、テーブル名やカラム名には長くても良いので人間が理解しやすい命名を心掛けてください。
-schema.prismaにはdatasourceとgeneratorとenumを含めず、modelのみを使用してください。
-認証にSupabase Authを利用するのでパスワードを保存する必要はありません。
-Supabase Authと連携できるように、必ずUser modelに id/email/name のカラムを含めてください。
-Userのidにauto_incrementは不要です。`;
 
     const validator = z.object({ prismaSchema: z.string() });
     let result = await invokeOrThrow(app, prompt, validator, []);
@@ -63,6 +60,7 @@ Userのidにauto_incrementは不要です。`;
         return {
           diffs: [{ source: sources.schema, content }],
           deletedFiles: [],
+          silentDeletedFiles: [],
           newMessage: 'DBスキーマの定義',
         };
       }
@@ -79,16 +77,7 @@ Userのidにauto_incrementは不要です。`;
     const schema = localGit.files.find((file) => file.source === sources.schema);
     customAssert(schema, 'エラーならロジック修正必須');
 
-    const prompt = `以下は${app.name}によく似たウェブサービスをTypeScriptで開発するためのschema.prismaです。
-\`\`\`prisma
-${schema.content}
-\`\`\`
-このSchemaをもとに、REST APIを設計しOpenAPI 3.0をJSON形式で出力してください。
-サービスのユースケースを十分に考慮し、必要なエンドポイントを網羅するように努力してください。
-認証認可が必要なエンドポイントは 'api/private/' 以下に定義してください。
-認証不要の公開エンドポイントは 'api/public/' 以下に定義してください。
-認証にSupabase Authを利用しており、自動的に行われるため今回は考慮する必要がありません。`;
-
+    const prompt = prompts.initApiDef(app, schema);
     const validator = z.object({}).passthrough();
     let result = await invokeOrThrow(app, prompt, validator, []);
 
@@ -105,6 +94,7 @@ ${schema.content}
         return {
           diffs: [{ source: sources.openapi, content }],
           deletedFiles: [],
+          silentDeletedFiles: [],
           newMessage: 'REST APIエンドポイントの定義',
         };
       }
@@ -122,36 +112,7 @@ ${schema.content}
     localGit: LocalGitModel,
     newApiFiles: LocalGitFile[]
   ): Promise<GitDiffModel> => {
-    const prompt = `開発中のウェブサービスに大きな仕様変更が発生しました。Todoアプリだったものを${
-      app.name
-    }によく似たサービスに変えなければなりません。
-以下は元のTodoアプリのフロントエンドです。
-\`\`\`json
-${JSON.stringify(
-  localGit.files.filter(
-    (file) =>
-      file.source.startsWith('client/') ||
-      /^server\/api\/.+\/(index\.ts|\$api\.ts)$/.test(file.source)
-  ),
-  null,
-  2
-)}
-\`\`\`
-
-バックエンドエンジニアが新しいREST APIをaspidaでserver/apiディレクトリに以下の通り作成しました。
-\`\`\`json
-${JSON.stringify(newApiFiles, null, 2)}
-\`\`\`
-
-このAPI定義はclient/src/utils/apiClient.tsでimportしており、あなたはこれをフルに活用してclientディレクトリ以下を書き換えてください。
-新たに必要なnpmパッケージは自動的にpackage.jsonに追加される仕組みがあるので自由に使うことができます。
-削除するファイルはfilesに含めず、deletedFilesにファイルパスの配列を指定すること。
-変更あるいは追加したファイルのみをfilesに含めてください。
-'$'から始まるtsファイルはCIで生成しているため変更不要です。
-新しいファイルを生成してもよいです。
-messageには変更内容のコミットメッセージを日本語で記述してください。
-`;
-
+    const prompt = prompts.initClient(app, localGit, newApiFiles);
     const validator = z.object({
       message: z.string(),
       files: z.array(z.object({ source: z.string(), content: z.string() })),
@@ -173,11 +134,52 @@ messageには変更内容のコミットメッセージを日本語で記述し�
         ...newApiFiles,
       ],
       deletedFiles: [
+        ...deletedApis.map((a) => a.source),
         ...result.deletedFiles.filter(
           (file) => file.startsWith('client/') && !['package.json'].includes(file)
         ),
-        ...deletedApis.map((a) => a.source),
       ],
+      silentDeletedFiles: localGit.files
+        .filter(
+          (file) =>
+            !file.source.startsWith('server/api') &&
+            !file.source.startsWith('server/commonTypesWithClient') &&
+            /^server\/.+\//.test(file.source)
+        )
+        .map((file) => file.source),
+    };
+  },
+  fixClient: async (
+    app: AppModel,
+    localGit: LocalGitModel,
+    failedStep: GHStepModel
+  ): Promise<GitDiffModel> => {
+    const prompt = prompts.fixClient(app, localGit, failedStep);
+    const validator = z.object({
+      message: z.string(),
+      files: z.array(z.object({ source: z.string(), content: z.string() })),
+      deletedFiles: z.array(z.string()),
+    });
+    const result = await invokeOrThrow(app, prompt, validator, []);
+
+    return {
+      newMessage: result.message,
+      diffs: [
+        ...result.files.filter(
+          (file) => file.source.startsWith('client/') && !['package.json'].includes(file.source)
+        ),
+      ],
+      deletedFiles: result.deletedFiles.filter(
+        (file) => file.startsWith('client/') && !['package.json'].includes(file)
+      ),
+      silentDeletedFiles: localGit.files
+        .filter(
+          (file) =>
+            !file.source.startsWith('server/api') &&
+            !file.source.startsWith('server/commonTypesWithClient') &&
+            /^server\/.+\//.test(file.source)
+        )
+        .map((file) => file.source),
     };
   },
 };
