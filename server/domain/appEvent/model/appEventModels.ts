@@ -109,7 +109,7 @@ export const appEventMethods = {
 
     return {
       ...event,
-      status: failedCount < 3 ? 'failed' : 'destroyed',
+      status: failedCount < 10 ? 'failed' : 'destroyed',
       updatedTime: Date.now(),
       failedCount,
     };

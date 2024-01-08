@@ -1,5 +1,6 @@
+/* eslint-disable max-lines */
 import type { AppModel } from '$/commonTypesWithClient/appModels';
-import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
+import type { BubbleModel, SystemStatus } from '$/commonTypesWithClient/bubbleModels';
 import { localGitRepo } from '$/domain/app/repository/localGitRepo';
 import { railwayRepo } from '$/domain/app/repository/railwayRepo';
 import { appUseCase } from '$/domain/app/useCase/appUseCase';
@@ -8,7 +9,7 @@ import { githubEventRepo } from '$/domain/appEvent/repository/githubEventRepo';
 import { transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
-import type { AppEventDispatcher, AppEventType } from '../model/appEventModels';
+import type { AppEventDispatcher, AppEventModel, AppEventType } from '../model/appEventModels';
 import { appEventMethods, appSubscriberDict } from '../model/appEventModels';
 import { appEventQuery } from '../query/appEventQuery';
 import { appEventRepo } from '../repository/appEventRepo';
@@ -16,6 +17,9 @@ import { aspidaRepo } from '../repository/aspidaRepo';
 import { llmRepo } from '../repository/llmRepo';
 import { railwayEventUseCase } from './railwayEventUseCase';
 import { subscribe } from './subscribe';
+
+const addSystemBubbleOnce = async (evt: AppEventModel, status: SystemStatus) =>
+  evt.failedCount === 0 && (await appUseCase.addSystemBubble(evt.app.id, status));
 
 export const appEventUseCase = {
   create: async (
@@ -104,7 +108,7 @@ export const appEventUseCase = {
   watchRailwayOnce: () => subscribe('watchRailwayOnce', railwayEventUseCase.watchDeployments),
   createSchema: () =>
     subscribe('createSchema', async (published) => {
-      await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_schema');
+      await addSystemBubbleOnce(published, 'creating_schema');
       await githubEventRepo.createSchema(published.app);
       await transaction('RepeatableRead', async (tx) => {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
@@ -115,7 +119,7 @@ export const appEventUseCase = {
     }),
   createApiDef: () =>
     subscribe('createApiDefinition', async (published) => {
-      await appUseCase.addSystemBubbleIfNotExists(published.app.id, 'creating_api_def');
+      await addSystemBubbleOnce(published, 'creating_api_def');
       await githubEventRepo.createApiDef(published.app);
       await transaction('RepeatableRead', async (tx) => {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
@@ -126,7 +130,7 @@ export const appEventUseCase = {
     }),
   createClientCode: () =>
     subscribe('createClientCode', async (published) => {
-      await appUseCase.addSystemBubble(published.app.id, 'creating_client_code');
+      await addSystemBubbleOnce(published, 'creating_client_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-client');
       const aspidaFiles = await aspidaRepo.generateFromOpenapi(published.app);
       const gitDiff = await llmRepo.initClient(published.app, localGit, aspidaFiles);
@@ -141,7 +145,7 @@ export const appEventUseCase = {
     }),
   createServerCode: () =>
     subscribe('createServerCode', async (published) => {
-      await appUseCase.addSystemBubble(published.app.id, 'creating_server_code');
+      await addSystemBubbleOnce(published, 'creating_server_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-server');
       const aspidaFiles = await aspidaRepo.generateFromOpenapi(published.app);
       const gitDiff = await llmRepo.initServer(published.app, localGit, aspidaFiles);
@@ -156,7 +160,7 @@ export const appEventUseCase = {
     }),
   fixClientCode: () =>
     subscribe('fixClientCode', async (published) => {
-      await appUseCase.addSystemBubble(published.app.id, 'fixing_client_code');
+      await addSystemBubbleOnce(published, 'fixing_client_code');
 
       const localGit = await localGitRepo.getFiles(published.app, 'deus/client-failure-types');
       customAssert(published.bubble.type === 'github', 'エラーならロジック修正必須');
@@ -177,7 +181,7 @@ export const appEventUseCase = {
     }),
   fixServerCode: () =>
     subscribe('fixServerCode', async (published) => {
-      await appUseCase.addSystemBubble(published.app.id, 'fixing_server_code');
+      await addSystemBubbleOnce(published, 'fixing_server_code');
 
       const localGit = await localGitRepo.getFiles(published.app, 'deus/server-failure-types');
       customAssert(published.bubble.type === 'github', 'エラーならロジック修正必須');

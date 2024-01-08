@@ -25,7 +25,7 @@ export const invokeOrThrow = async <T extends z.AnyZodObject>(
   const input = `${prompt}
 
 ステップ・バイ・ステップで考えましょう。
-返答は以下のJSON schemasに従ってください。
+返答は必ず以下のJSON schemas通りにしてください。
 ${codeBlocks.valToJson(jsonSchema)}
 `;
 

@@ -88,7 +88,6 @@ const toBubble = (
             service: app.serviceId,
             deployment: bubble.RailwayDeployment.id,
           }),
-          branch: bubble.RailwayDeployment.branch,
           branchUrl: toBranchUrl(indexToDisplayId(app.index), bubble.RailwayDeployment.branch),
           commitId: bubble.RailwayDeployment.commitId,
           commitUrl: toCommitUrl(indexToDisplayId(app.index), bubble.RailwayDeployment.commitId),

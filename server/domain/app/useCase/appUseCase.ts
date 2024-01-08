@@ -47,17 +47,6 @@ export const appUseCase = {
       );
       await appRepo.save(tx, newApp);
     }),
-  addSystemBubbleIfNotExists: (appId: AppId, systemStatus: SystemStatus) =>
-    transaction('RepeatableRead', async (tx) => {
-      const app = await appQuery.findByIdOrThrow(tx, appId);
-      if (app.bubbles.some((b) => b.type === 'system' && b.content === systemStatus)) return;
-
-      const newApp = appMethods.addBubble(
-        app,
-        bubbleMethods.createSystem(systemStatus, Date.now())
-      );
-      await appRepo.save(tx, newApp);
-    }),
   completeRailwayInit: async (
     tx: Prisma.TransactionClient,
     inited: InitAppModel,

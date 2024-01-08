@@ -12,13 +12,7 @@ import { z } from 'zod';
 import { invokeOrThrow } from './invokeOrThrow';
 import { prompts } from './prompts';
 
-export type GitDiffModel = {
-  diffs: LocalGitFile[];
-  deletedFiles: string[];
-  silentDeletedFiles: string[];
-  newMessage: string;
-};
-
+export type GitDiffModel = { diffs: LocalGitFile[]; deletedFiles: string[]; newMessage: string };
 export const sources = { schema: 'server/prisma/schema.prisma', openapi: 'server/openapi.json' };
 
 const codeValidator = z.object({
@@ -27,23 +21,14 @@ const codeValidator = z.object({
   deletedFiles: z.array(z.string()),
 });
 
-const toDiffs = (files: LocalGitFile[]) =>
-  files.filter(
-    (file) => file.source.startsWith('client/') && !['package.json'].includes(file.source)
-  );
-
-const toDeletedFiles = (deletedFiles: string[]) =>
-  deletedFiles.filter((file) => file.startsWith('client/') && !['package.json'].includes(file));
-
-const toSilentDeletedFiles = (localGit: LocalGitModel) =>
-  localGit.files
-    .filter(
-      (file) =>
-        !file.source.startsWith('server/api') &&
-        !file.source.startsWith('server/commonTypesWithClient') &&
-        /^server\/.+\//.test(file.source)
-    )
-    .map((file) => file.source);
+const filterClient = (source: string) =>
+  source.startsWith('client/src/') && !source.startsWith('client/src/api/');
+const filterServer = (source: string) =>
+  source.startsWith('server/domain/') || /^server\/api\/.+\/controller\.ts$/.test(source);
+const toClientDiffs = (files: LocalGitFile[]) => files.filter((file) => filterClient(file.source));
+const toServerDiffs = (files: LocalGitFile[]) => files.filter((file) => filterServer(file.source));
+const toClientDeletedFiles = (deletedFiles: string[]) => deletedFiles.filter(filterClient);
+const toServerDeletedFiles = (deletedFiles: string[]) => deletedFiles.filter(filterServer);
 
 export const llmRepo = {
   initSchema: async (app: AppModel): Promise<GitDiffModel> => {
@@ -51,13 +36,10 @@ export const llmRepo = {
     const prismaHeader = `datasource db {
   provider = "postgresql"
   url      = env("API_DATABASE_URL")
-}
-
+}\n
 generator client {
   provider = "prisma-client-js"
-}
-
-`;
+}\n\n`;
     const validator = z.object({ prismaSchema: z.string() });
     let result = await invokeOrThrow(app, prompt, validator, []);
 
@@ -72,7 +54,12 @@ generator client {
 
       const filePath = join(tmpdir(), `${app.displayId}-${Date.now()}-schema.prisma`);
       writeFileSync(filePath, `${prismaHeader}${result.prismaSchema}`, 'utf8');
-      const { stderr } = await promisify(exec)(`npx prisma format --schema ${filePath}`);
+      const { stderr } = await promisify(exec)(`npx prisma format --schema ${filePath}`).catch(
+        (e) => {
+          console.log('2222222', e.stack);
+          return { stderr: e.message as string };
+        }
+      );
       const content = readFileSync(filePath, 'utf8');
       unlinkSync(filePath);
 
@@ -80,7 +67,6 @@ generator client {
         return {
           diffs: [{ source: sources.schema, content }],
           deletedFiles: [],
-          silentDeletedFiles: [],
           newMessage: 'DBスキーマの定義',
         };
       }
@@ -114,7 +100,6 @@ generator client {
         return {
           diffs: [{ source: sources.openapi, content }],
           deletedFiles: [],
-          silentDeletedFiles: [],
           newMessage: 'REST APIエンドポイントの定義',
         };
       }
@@ -142,9 +127,11 @@ generator client {
 
     return {
       newMessage: result.message,
-      diffs: [...toDiffs(result.files), ...aspidaFiles],
-      deletedFiles: [...deletedApis.map((a) => a.source), ...toDeletedFiles(result.deletedFiles)],
-      silentDeletedFiles: toSilentDeletedFiles(localGit),
+      diffs: [...toClientDiffs(result.files), ...aspidaFiles],
+      deletedFiles: [
+        ...deletedApis.map((a) => a.source),
+        ...toClientDeletedFiles(result.deletedFiles),
+      ],
     };
   },
   initServer: async (
@@ -162,9 +149,11 @@ generator client {
 
     return {
       newMessage: result.message,
-      diffs: [...toDiffs(result.files), ...aspidaFiles],
-      deletedFiles: [...deletedApis.map((a) => a.source), ...toDeletedFiles(result.deletedFiles)],
-      silentDeletedFiles: toSilentDeletedFiles(localGit),
+      diffs: [...toServerDiffs(result.files), ...aspidaFiles],
+      deletedFiles: [
+        ...deletedApis.map((a) => a.source),
+        ...toServerDeletedFiles(result.deletedFiles),
+      ],
     };
   },
   fixClient: async (
@@ -177,9 +166,8 @@ generator client {
 
     return {
       newMessage: result.message,
-      diffs: toDiffs(result.files),
-      deletedFiles: toDeletedFiles(result.deletedFiles),
-      silentDeletedFiles: toSilentDeletedFiles(localGit),
+      diffs: toClientDiffs(result.files),
+      deletedFiles: toClientDeletedFiles(result.deletedFiles),
     };
   },
   fixServer: async (
@@ -192,9 +180,8 @@ generator client {
 
     return {
       newMessage: result.message,
-      diffs: toDiffs(result.files),
-      deletedFiles: toDeletedFiles(result.deletedFiles),
-      silentDeletedFiles: toSilentDeletedFiles(localGit),
+      diffs: toServerDiffs(result.files),
+      deletedFiles: toServerDeletedFiles(result.deletedFiles),
     };
   },
 };
