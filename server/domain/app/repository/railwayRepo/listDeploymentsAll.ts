@@ -6,6 +6,7 @@ import { railwayClient } from '$/service/railwayClient';
 import { customAssert } from '$/service/returnStatus';
 import { gql } from '@apollo/client';
 import { displayIdToApiOrigin, toBranchUrl, toCommitUrl, toRWDeployUrl } from '../../query/utils';
+import { localGitRepo } from '../localGitRepo';
 
 export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
   const list: RWDeploymentModel[] = [];
@@ -64,23 +65,15 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
 
     if (res === null) break;
 
+    const gitLogs = await localGitRepo.getLogs(app, 'main');
     const deployments = await Promise.all(
       res.data.deployments.edges.map(async ({ node }) => {
         const createdTime = new Date(node.createdAt).getTime();
-        const nearestGitHub = app.bubbles
-          .flatMap((b) =>
-            b.type === 'github' &&
-            b.content.type === 'client deployment' &&
-            b.createdTime < createdTime
-              ? b
-              : []
-          )
-          .at(-1);
+        const commitLog = gitLogs.find((log) => new Date(log.date).getTime() < createdTime);
+        customAssert(commitLog, 'エラーならロジック修正必須');
         const oldBubble = app.bubbles.flatMap((b) =>
           b.type === 'railway' && b.content.id === node.id ? b : []
         )[0];
-
-        customAssert(nearestGitHub, 'エラーならロジック修正必須');
 
         const status =
           oldBubble?.content.status !== 'SUCCESS' && node.status === 'SUCCESS'
@@ -91,17 +84,16 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
 
         return parseRWDeployment({
           id: node.id,
-          title: nearestGitHub.content.title,
+          title: commitLog.message,
           status,
           url: toRWDeployUrl({
             project: app.railway.projectId,
             service: app.railway.serviceId,
             deployment: node.id,
           }),
-          branch: nearestGitHub.content.branch,
-          branchUrl: toBranchUrl(app.displayId, nearestGitHub.content.branch),
-          commitId: nearestGitHub.content.commitId,
-          commitUrl: toCommitUrl(app.displayId, nearestGitHub.content.commitId),
+          branchUrl: toBranchUrl(app.displayId, 'main'),
+          commitId: commitLog.hash,
+          commitUrl: toCommitUrl(app.displayId, commitLog.hash),
           createdTime,
           updatedTime:
             oldBubble === undefined || oldBubble.content.status !== node.status

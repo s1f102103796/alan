@@ -40,27 +40,32 @@ const genPathes = (app: AppModel, remoteBranch: RemoteBranch) => ({
   deletedFilesJson: `appRepositories/${app.displayId}/${remoteBranch}/deletedFiles.json`,
 });
 
+const fetchBranch = async (app: AppModel, remoteBranch: RemoteBranch, baseBranch: RemoteBranch) => {
+  const { dirPath, gitPath } = genPathes(app, remoteBranch);
+
+  if (existsSync(dirPath)) {
+    await simpleGit(dirPath)
+      .fetch('origin', remoteBranch)
+      .catch(() => simpleGit(dirPath).fetch('origin', baseBranch));
+  } else {
+    await simpleGit().clone(`https://${gitPath}`, dirPath);
+  }
+
+  await simpleGit(dirPath)
+    .checkout(remoteBranch)
+    .reset(ResetMode.HARD, [`origin/${remoteBranch}`])
+    .catch(() =>
+      simpleGit(dirPath)
+        .checkout(baseBranch)
+        .reset(ResetMode.HARD, [`origin/${baseBranch}`])
+    );
+};
+
 export const localGitRepo = {
   getFiles: async (app: AppModel, remoteBranch: RemoteBranch): Promise<LocalGitModel> => {
-    const { dirPath, gitPath, deletedFilesJson } = genPathes(app, remoteBranch);
+    await fetchBranch(app, remoteBranch, 'deus/main-types');
 
-    if (existsSync(dirPath)) {
-      await simpleGit(dirPath)
-        .fetch('origin', remoteBranch)
-        .catch(() => simpleGit(dirPath).fetch('origin', remoteBranches.mainTypes));
-    } else {
-      await simpleGit().clone(`https://${gitPath}`, dirPath);
-    }
-
-    await simpleGit(dirPath)
-      .checkout(remoteBranch)
-      .reset(ResetMode.HARD, [`origin/${remoteBranch}`])
-      .catch(() =>
-        simpleGit(dirPath)
-          .checkout(remoteBranches.mainTypes)
-          .reset(ResetMode.HARD, [`origin/${remoteBranches.mainTypes}`])
-      );
-
+    const { dirPath, deletedFilesJson } = genPathes(app, remoteBranch);
     const log = await simpleGit(dirPath)
       .log({ maxCount: 1 })
       .then((e) => e.latest);
@@ -81,6 +86,13 @@ export const localGitRepo = {
         : [],
     };
   },
+  getLogs: async (app: AppModel, remoteBranch: RemoteBranch) => {
+    await fetchBranch(app, remoteBranch, 'main');
+
+    const { dirPath } = genPathes(app, remoteBranch);
+    const log = await simpleGit(dirPath).checkout(remoteBranch).log();
+    return log.all;
+  },
   fetchRemoteFileOrThrow: async (
     app: AppModel,
     remoteBranch: RemoteBranch,
@@ -99,20 +111,9 @@ export const localGitRepo = {
     gitDiff: GitDiffModel,
     remoteBranch: RemoteBranch
   ) => {
+    await fetchBranch(app, remoteBranch, 'main');
+
     const { dirPath, gitPath, deletedFilesJson } = genPathes(app, remoteBranch);
-
-    if (existsSync(dirPath)) {
-      await simpleGit(dirPath)
-        .fetch('origin', remoteBranch)
-        .catch(() => simpleGit(dirPath).fetch('origin', remoteBranches.main));
-    } else {
-      await simpleGit().clone(`https://${gitPath}`, dirPath);
-    }
-
-    await simpleGit(dirPath)
-      .checkout(remoteBranch)
-      .reset(ResetMode.HARD, [`origin/${remoteBranch}`])
-      .catch(() => simpleGit(dirPath).reset(ResetMode.HARD, [`origin/${remoteBranches.main}`]));
 
     gitDiff.deletedFiles.forEach((source) => {
       const filePath = `${dirPath}/${source}`;
@@ -140,17 +141,13 @@ export const localGitRepo = {
       writeFileSync(`${dirPath}/${file.source}`, file.content, 'utf8');
     });
 
-    await simpleGit(dirPath)
+    const { pushed } = await simpleGit(dirPath)
       .add('./*')
       .commit(gitDiff.newMessage, {
         '--author': '"github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"',
       })
-      .push(`https://${GITHUB_TOKEN}@${gitPath}`, `HEAD:${remoteBranch}`, ['-f'])
-      .then((e) => {
-        e.remoteMessages.all.length > 0 && console.log('pushed:', e.remoteMessages);
-        if (e.remoteMessages.all.some((msg) => msg === 'Everything up-to-date')) {
-          throw new Error(`appId: ${app.id}, Everything up-to-date`);
-        }
-      });
+      .push(`https://${GITHUB_TOKEN}@${gitPath}`, `HEAD:${remoteBranch}`, ['-f']);
+
+    if (pushed[0]?.alreadyUpdated === true) throw new Error(`${app.displayId} alreadyUpdated`);
   },
 };

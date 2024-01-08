@@ -86,7 +86,7 @@ const rwDeploymentParser = z.object({
   title: z.string(),
   status: z.enum(RW_STATUSES),
   url: z.string(),
-  branch: z.string(),
+  branch: z.literal('main'),
   branchUrl: z.string(),
   commitId: commitIdParser,
   commitUrl: z.string(),
@@ -99,10 +99,10 @@ export type RWStatus = (typeof RW_STATUSES)[number];
 export type RWDeploymentModel = z.infer<typeof rwDeploymentParser>;
 
 export const parseRWDeployment = (val: {
-  [Key in keyof Omit<RWDeploymentModel, 'model'>]: RWDeploymentModel[Key] extends string
+  [Key in keyof Omit<RWDeploymentModel, 'model' | 'branch'>]: RWDeploymentModel[Key] extends string
     ? string
     : number;
-}) => rwDeploymentParser.parse({ ...val, model: 'railway' });
+}) => rwDeploymentParser.parse({ ...val, model: 'railway', branch: 'main' });
 
 const SYSTEM_STATUSES = [
   'first_question',
