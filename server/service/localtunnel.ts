@@ -1,18 +1,17 @@
 import localtunnel from 'localtunnel';
 import { setTimeout } from 'timers/promises';
-import { API_ORIGIN } from './envValues';
+import { API_ORIGIN, IS_LOCALHOST } from './envValues';
 
-const isLocal = API_ORIGIN.startsWith('http://localhost');
 let tunnel: localtunnel.Tunnel | null = null;
 
 export const getApiOriginOrLocaltunnelUrl = () => {
-  if (!isLocal) return API_ORIGIN;
+  if (!IS_LOCALHOST) return API_ORIGIN;
 
   return tunnel?.url ?? 'http://tunnel-error.localhost';
 };
 
 export const connectLocaltunnelIfLocal = async (handlers: { onReconnect: () => void }) => {
-  if (!isLocal) return;
+  if (!IS_LOCALHOST) return;
 
   tunnel = await localtunnel({ port: +new URL(API_ORIGIN).port }).catch((e) => {
     console.log('tunnel connecting error:', e.message);

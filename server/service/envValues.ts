@@ -31,6 +31,7 @@ const S3_CUSTOM_ENDPOINT = z
   .url()
   .optional()
   .parse(process.env.S3_CUSTOM_ENDPOINT === '' ? undefined : process.env.S3_CUSTOM_ENDPOINT);
+const IS_LOCALHOST = API_ORIGIN.startsWith('http://localhost');
 
 export {
   API_BASE_PATH,
@@ -44,6 +45,7 @@ export {
   GITHUB_TEMPLATE,
   GITHUB_TOKEN,
   GITHUB_WEBHOOK_SECRET,
+  IS_LOCALHOST,
   OPENAI_KEY,
   PORT,
   RAILWAY_TOKEN,

@@ -1,6 +1,8 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
-import { OPENAI_KEY } from '$/service/envValues';
+import { toJST } from '$/service/dayjs';
+import { IS_LOCALHOST, OPENAI_KEY } from '$/service/envValues';
 import { customAssert } from '$/service/returnStatus';
+import { putTextToS3 } from '$/service/s3Client';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
 import type { z } from 'zod';
@@ -13,6 +15,18 @@ const llm = new ChatOpenAI({
   openAIApiKey: OPENAI_KEY,
 }).bind({ response_format: { type: 'json_object' } });
 
+const saveLog = async (dir: string, name: string, body: string) => {
+  if (IS_LOCALHOST) {
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+
+    writeFileSync(`${dir}/${name}`, body, 'utf8');
+  } else {
+    await putTextToS3(`${dir}/${name}`, body).catch((e) => {
+      console.log('log saving error:', e.message, `${dir}/${name}`);
+    });
+  }
+};
+
 export const invokeOrThrow = async <T extends z.AnyZodObject>(
   app: AppModel,
   prompt: string,
@@ -21,7 +35,8 @@ export const invokeOrThrow = async <T extends z.AnyZodObject>(
   count = 3
 ): Promise<z.infer<T>> => {
   const jsonSchema = zodToJsonSchema(validator);
-  const logDir = `logs/${app.displayId}/${Date.now()}`;
+  const now = Date.now();
+  const logDir = `logs/${app.displayId}/${toJST(now).format('YYYY/MM/DD/HH')}/${Date.now()}`;
   const input = `${prompt}
 
 ステップ・バイ・ステップで考えましょう。
@@ -29,8 +44,7 @@ export const invokeOrThrow = async <T extends z.AnyZodObject>(
 ${codeBlocks.valToJson(jsonSchema)}
 `;
 
-  if (!existsSync(logDir)) mkdirSync(logDir, { recursive: true });
-  writeFileSync(`${logDir}/input.txt`, input, 'utf8');
+  await saveLog(logDir, 'input.txt', input);
 
   return await llm
     .invoke([
@@ -41,14 +55,14 @@ ${codeBlocks.valToJson(jsonSchema)}
       ['human', input],
       ...additionalPrompts,
     ])
-    .then(({ content }) => {
+    .then(async ({ content }) => {
       customAssert(typeof content === 'string', '不正リクエスト防御');
-      writeFileSync(`${logDir}/output.json`, content, 'utf8');
+      await saveLog(logDir, 'output.json', content);
 
       return validator.parse(JSON.parse(content));
     })
-    .catch((e) => {
-      writeFileSync(`${logDir}/error-${count}.txt`, e.message, 'utf8');
+    .catch(async (e) => {
+      await saveLog(logDir, `error-${count}.txt`, e.message);
 
       if (count === 0) throw e;
 
