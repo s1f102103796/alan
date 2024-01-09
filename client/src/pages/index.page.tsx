@@ -36,7 +36,7 @@ const Home = () => {
   };
   const fetchApps = useCallback(
     () =>
-      apiClient.public.apps
+      apiClient.public.cachedApps
         .$get()
         .then((res) =>
           setApps((apps) => (JSON.stringify(apps) === JSON.stringify(res) ? apps : res))
