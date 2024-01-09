@@ -59,15 +59,18 @@ const Home = () => {
     }
   }, [apps, currentApp, router]);
 
-  if (!user) return null;
-
   return (
     <>
       <BasicHeader user={user} />
       <div className={styles.main}>
         <div>
           <div className={styles.appList}>
-            <AppList sortedApps={sortedApps} currentApp={currentApp} append={appendApp} />
+            <AppList
+              user={user}
+              sortedApps={sortedApps}
+              currentApp={currentApp}
+              append={appendApp}
+            />
           </div>
           {currentApp && (
             <>

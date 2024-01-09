@@ -1,4 +1,4 @@
-import type { AppModel } from 'commonTypesWithClient/appModels';
+import type { AppModel, UserModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { PrimeButton } from 'src/components/Buttons/Buttons';
@@ -34,6 +34,7 @@ const StatusCircle = (props: { app: AppModel }) => {
 };
 
 export const AppList = (props: {
+  user: UserModel | null;
   sortedApps: AppModel[];
   currentApp: AppModel | undefined;
   append: (app: AppModel) => void;
@@ -69,9 +70,11 @@ export const AppList = (props: {
 
   return (
     <div className={styles.container}>
-      <div className={styles.createBtn}>
-        <PrimeButton label="アプリ新規生成" width="100%" onClick={() => setOpened(true)} />
-      </div>
+      {props.user && (
+        <div className={styles.createBtn}>
+          <PrimeButton label="アプリ新規生成" width="100%" onClick={() => setOpened(true)} />
+        </div>
+      )}
       <div className={styles.searchBox}>
         <input
           className={styles.searchInput}
