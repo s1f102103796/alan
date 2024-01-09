@@ -77,7 +77,7 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
 
         const status =
           oldBubble?.content.status !== 'SUCCESS' && node.status === 'SUCCESS'
-            ? await fetch(`${displayIdToApiOrigin(app.displayId)}/api/health`)
+            ? await fetch(`${displayIdToApiOrigin(app.displayId)}/api/session`, { method: 'POST' })
                 .then((res) => (res.status === 200 ? ('SUCCESS' as const) : ('DEPLOYING' as const)))
                 .catch(() => 'DEPLOYING' as const)
             : node.status;

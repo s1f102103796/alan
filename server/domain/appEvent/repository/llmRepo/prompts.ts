@@ -37,7 +37,7 @@ Prismaのフォーマットやリレーションの記述が正しいかをよ�
 サーバーエンジニアがあなたのschema.prismaを使って開発を行うため、テーブル名やカラム名には長くても良いので人間が理解しやすい命名を心掛けてください。
 schema.prismaにはdatasourceとgeneratorとenumを含めず、modelのみを使用してください。
 認証にSupabase Authを利用するのでパスワードを保存する必要はありません。
-Supabase Authと連携できるように、必ずUser modelに id/email/name のカラムを含めてください。
+Supabase Authと連携できるように、必ずUser modelに id/email/name のみを必須カラムとして含めてください。
 Userのidにauto_incrementは不要です。`,
 
   initApiDef: (app: AppModel, schema: LocalGitFile) => `以下は${
@@ -47,8 +47,8 @@ ${codeBlocks.fromText(schema.content, 'prisma')}
 
 このSchemaをもとに、REST APIを設計しOpenAPI 3.0をJSON形式で出力してください。
 サービスのユースケースを十分に考慮し、必要なエンドポイントを網羅するように努力してください。
-認証認可が必要なエンドポイントは 'api/private/' 以下に定義してください。
-認証不要の公開エンドポイントは 'api/public/' 以下に定義してください。
+認証認可が必要なエンドポイントは 'private/' 以下に定義してください。
+認証不要の公開エンドポイントは 'public/' 以下に定義してください。
 認証にSupabase Authを利用しており、自動的に行われるため今回は考慮する必要がありません。`,
 
   initClient: (

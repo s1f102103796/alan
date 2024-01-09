@@ -9,22 +9,21 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { promisify } from 'util';
 import { z } from 'zod';
+import { aspidaRepo } from '../aspidaRepo';
 import { invokeOrThrow } from './invokeOrThrow';
 import { prompts } from './prompts';
 
 export type GitDiffModel = { diffs: LocalGitFile[]; deletedFiles: string[]; newMessage: string };
-export const sources = { schema: 'server/prisma/schema.prisma', openapi: 'server/openapi.json' };
 
+const sources = { schema: 'server/prisma/schema.prisma', openapi: 'server/openapi.json' };
 const codeValidator = z.object({
   message: z.string(),
   files: z.array(z.object({ source: z.string(), content: z.string() })),
   deletedFiles: z.array(z.string()),
 });
-
 const filterClient = (source: string) =>
   source.startsWith('client/src/') && !source.startsWith('client/src/api/');
-const filterServer = (source: string) =>
-  source.startsWith('server/domain/') || /^server\/api\/.+\/controller\.ts$/.test(source);
+const filterServer = (source: string) => source.startsWith('server/domain/');
 const toClientDiffs = (files: LocalGitFile[]) => files.filter((file) => filterClient(file.source));
 const toServerDiffs = (files: LocalGitFile[]) => files.filter((file) => filterServer(file.source));
 const toClientDeletedFiles = (deletedFiles: string[]) => deletedFiles.filter(filterClient);
@@ -56,7 +55,7 @@ generator client {
       writeFileSync(filePath, `${prismaHeader}${result.prismaSchema}`, 'utf8');
       const { stderr } = await promisify(exec)(`npx prisma format --schema ${filePath}`).catch(
         (e) => {
-          console.log('2222222', e.stack);
+          console.log('2222222', e.message);
           return { stderr: e.message as string };
         }
       );
@@ -79,7 +78,7 @@ generator client {
 
     throw new Error('schema.prismaを正しく生成できませんでした。');
   },
-  initApiDef: async (app: AppModel, localGit: LocalGitModel): Promise<GitDiffModel> => {
+  initApiDef: async (app: AppModel, localGit: LocalGitModel): Promise<LocalGitFile[]> => {
     const schema = localGit.files.find((file) => file.source === sources.schema);
     customAssert(schema, 'エラーならロジック修正必須');
 
@@ -89,23 +88,17 @@ generator client {
 
     for (let i = 0; i < 3; i += 1) {
       const filePath = join(tmpdir(), `${app.displayId}-${Date.now()}-openapi.json`);
-      const content = JSON.stringify(result, null, 2);
-      writeFileSync(filePath, content, 'utf8');
+      const openapi = JSON.stringify(result, null, 2);
+      writeFileSync(filePath, openapi, 'utf8');
       const err = await SwaggerParser.validate(filePath)
         .then(() => null)
         .catch((e) => e.message as string);
       unlinkSync(filePath);
 
-      if (err === null) {
-        return {
-          diffs: [{ source: sources.openapi, content }],
-          deletedFiles: [],
-          newMessage: 'REST APIエンドポイントの定義',
-        };
-      }
+      if (err === null) return aspidaRepo.generateFromOpenapi(openapi);
 
       result = await invokeOrThrow(app, prompt, validator, [
-        ['ai', content],
+        ['ai', openapi],
         ['human', `以下のエラーを修正してください。\n${err}`],
       ]);
     }
@@ -115,45 +108,29 @@ generator client {
   initClient: async (
     app: AppModel,
     localGit: LocalGitModel,
-    aspidaFiles: LocalGitFile[]
+    aspidaGit: LocalGitFile[]
   ): Promise<GitDiffModel> => {
-    const prompt = prompts.initClient(app, localGit, aspidaFiles);
+    const prompt = prompts.initClient(app, localGit, aspidaGit);
     const result = await invokeOrThrow(app, prompt, codeValidator, []);
-    const deletedApis = localGit.files.filter(
-      (file) =>
-        file.source.startsWith('server/api') &&
-        aspidaFiles.every((api) => api.source !== file.source)
-    );
 
     return {
       newMessage: result.message,
-      diffs: [...toClientDiffs(result.files), ...aspidaFiles],
-      deletedFiles: [
-        ...deletedApis.map((a) => a.source),
-        ...toClientDeletedFiles(result.deletedFiles),
-      ],
+      diffs: toClientDiffs(result.files),
+      deletedFiles: toClientDeletedFiles(result.deletedFiles),
     };
   },
   initServer: async (
     app: AppModel,
     localGit: LocalGitModel,
-    aspidaFiles: LocalGitFile[]
+    aspidaGit: LocalGitFile[]
   ): Promise<GitDiffModel> => {
-    const prompt = prompts.initServer(app, localGit, aspidaFiles);
+    const prompt = prompts.initServer(app, localGit, aspidaGit);
     const result = await invokeOrThrow(app, prompt, codeValidator, []);
-    const deletedApis = localGit.files.filter(
-      (file) =>
-        file.source.startsWith('server/api') &&
-        aspidaFiles.every((api) => api.source !== file.source)
-    );
 
     return {
       newMessage: result.message,
-      diffs: [...toServerDiffs(result.files), ...aspidaFiles],
-      deletedFiles: [
-        ...deletedApis.map((a) => a.source),
-        ...toServerDeletedFiles(result.deletedFiles),
-      ],
+      diffs: toServerDiffs(result.files),
+      deletedFiles: toServerDeletedFiles(result.deletedFiles),
     };
   },
   fixClient: async (

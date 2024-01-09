@@ -13,7 +13,6 @@ import type { AppEventDispatcher, AppEventModel, AppEventType } from '../model/a
 import { appEventMethods, appSubscriberDict } from '../model/appEventModels';
 import { appEventQuery } from '../query/appEventQuery';
 import { appEventRepo } from '../repository/appEventRepo';
-import { aspidaRepo } from '../repository/aspidaRepo';
 import { llmRepo } from '../repository/llmRepo';
 import { railwayEventUseCase } from './railwayEventUseCase';
 import { subscribe } from './subscribe';
@@ -132,8 +131,8 @@ export const appEventUseCase = {
     subscribe('createClientCode', async (published) => {
       await addSystemBubbleOnce(published, 'creating_client_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-client');
-      const aspidaFiles = await aspidaRepo.generateFromOpenapi(published.app);
-      const gitDiff = await llmRepo.initClient(published.app, localGit, aspidaFiles);
+      const aspidaGit = await localGitRepo.getApiFiles(published.app);
+      const gitDiff = await llmRepo.initClient(published.app, localGit, aspidaGit);
 
       await localGitRepo.pushToRemoteOrThrow(published.app, localGit, gitDiff, 'deus/test-client');
       await githubUseCase.addGitBubble(published.app, 'deus/test-client', gitDiff);
@@ -147,8 +146,8 @@ export const appEventUseCase = {
     subscribe('createServerCode', async (published) => {
       await addSystemBubbleOnce(published, 'creating_server_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-server');
-      const aspidaFiles = await aspidaRepo.generateFromOpenapi(published.app);
-      const gitDiff = await llmRepo.initServer(published.app, localGit, aspidaFiles);
+      const aspidaGit = await localGitRepo.getApiFiles(published.app);
+      const gitDiff = await llmRepo.initServer(published.app, localGit, aspidaGit);
 
       await localGitRepo.pushToRemoteOrThrow(published.app, localGit, gitDiff, 'deus/test-server');
       await githubUseCase.addGitBubble(published.app, 'deus/test-server', gitDiff);

@@ -7,6 +7,7 @@ import { githubRepo } from '$/domain/app/repository/githubRepo';
 import type { RemoteBranch } from '$/domain/app/repository/localGitRepo';
 import { localGitRepo } from '$/domain/app/repository/localGitRepo';
 import { githubUseCase } from '$/domain/app/useCase/githubUseCase';
+import type { GitDiffModel } from '$/domain/appEvent/repository/llmRepo';
 import { llmRepo } from '$/domain/appEvent/repository/llmRepo';
 import { GITHUB_OWNER, GITHUB_TEMPLATE } from '$/service/envValues';
 import { githubApiClient } from '$/service/githubApiClient';
@@ -75,7 +76,14 @@ export const githubEventRepo = {
   },
   createApiDef: async (app: AppModel) => {
     const localGit = await localGitRepo.getFiles(app, 'deus/db-schema');
-    const gitDiff = await llmRepo.initApiDef(app, localGit);
+    const aspidaFiles = await llmRepo.initApiDef(app, localGit);
+    const gitDiff: GitDiffModel = {
+      diffs: aspidaFiles,
+      deletedFiles: localGit.files
+        .filter((f) => /^server\/api\/(@types|private\/tesks|public\/tesks)/.test(f.source))
+        .map((f) => f.source),
+      newMessage: 'REST APIをaspidaで定義',
+    };
     const branch: RemoteBranch = 'deus/api-definition';
 
     await localGitRepo.pushToRemoteOrThrow(app, localGit, gitDiff, branch);

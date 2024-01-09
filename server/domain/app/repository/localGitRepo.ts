@@ -86,24 +86,16 @@ export const localGitRepo = {
         : [],
     };
   },
+  getApiFiles: (app: AppModel) =>
+    localGitRepo
+      .getFiles(app, 'deus/api-definition')
+      .then((res) => res.files.filter((f) => f.source.startsWith('server/api/'))),
   getLogs: async (app: AppModel, remoteBranch: RemoteBranch) => {
     await fetchBranch(app, remoteBranch, 'main');
 
     const { dirPath } = genPathes(app, remoteBranch);
     const log = await simpleGit(dirPath).checkout(remoteBranch).log();
     return log.all;
-  },
-  fetchRemoteFileOrThrow: async (
-    app: AppModel,
-    remoteBranch: RemoteBranch,
-    source: string
-  ): Promise<LocalGitFile> => {
-    const res = await fetch(
-      `https://raw.githubusercontent.com/${GITHUB_OWNER}/${app.displayId}/${remoteBranch}/${source}`
-    );
-
-    if (res.status !== 200) throw new Error(`${source} is not exists`);
-    return { source, content: await res.text() };
   },
   pushToRemoteOrThrow: async (
     app: AppModel,
