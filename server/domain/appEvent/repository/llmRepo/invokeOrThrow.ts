@@ -2,22 +2,20 @@ import type { AppModel } from '$/commonTypesWithClient/appModels';
 import { OPENAI_KEY } from '$/service/envValues';
 import { customAssert } from '$/service/returnStatus';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { ChatOpenAI } from 'langchain/chat_models/openai';
+import OpenAI from 'openai';
 import type { z } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
 import { codeBlocks } from './prompts';
 
-const llm = new ChatOpenAI({
-  modelName: 'gpt-4-1106-preview',
-  temperature: 0,
-  openAIApiKey: OPENAI_KEY,
-}).bind({ response_format: { type: 'json_object' } });
+const openai = new OpenAI({
+  apiKey: OPENAI_KEY,
+});
 
 export const invokeOrThrow = async <T extends z.AnyZodObject>(
   app: AppModel,
   prompt: string,
   validator: T,
-  additionalPrompts: ['ai' | 'human', string][],
+  additionalPrompts: { role: 'system' | 'user'; content: string }[],
   count = 3
 ): Promise<z.infer<T>> => {
   const jsonSchema = zodToJsonSchema(validator);
@@ -32,16 +30,23 @@ ${codeBlocks.valToJson(jsonSchema)}
   if (!existsSync(logDir)) mkdirSync(logDir, { recursive: true });
   writeFileSync(`${logDir}/input.txt`, input, 'utf8');
 
-  return await llm
-    .invoke([
-      [
-        'system',
-        'あなたはTypeScriptのフルスタックエンジニアとしてウェブサービスを開発してください。',
+  return await openai.chat.completions
+    .create({
+      model: 'gpt-4-1106-preview',
+      temperature: 0,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'system',
+          content:
+            'あなたはTypeScriptのフルスタックエンジニアとしてウェブサービスを開発してください。',
+        },
+        { role: 'user', content: input },
+        ...additionalPrompts,
       ],
-      ['human', input],
-      ...additionalPrompts,
-    ])
-    .then(({ content }) => {
+    })
+    .then((response) => {
+      const content = response.choices[0]?.message.content;
       customAssert(typeof content === 'string', '不正リクエスト防御');
       writeFileSync(`${logDir}/output.json`, content, 'utf8');
 
