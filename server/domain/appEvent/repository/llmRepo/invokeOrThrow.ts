@@ -15,7 +15,7 @@ export const invokeOrThrow = async <T extends z.AnyZodObject>(
   app: AppModel,
   prompt: string,
   validator: T,
-  additionalPrompts: { role: 'system' | 'user'; content: string }[],
+  additionalPrompts: ['assistant' | 'user', string][],
   count = 3
 ): Promise<z.infer<T>> => {
   const jsonSchema = zodToJsonSchema(validator);
@@ -42,7 +42,7 @@ ${codeBlocks.valToJson(jsonSchema)}
             'あなたはTypeScriptのフルスタックエンジニアとしてウェブサービスを開発してください。',
         },
         { role: 'user', content: input },
-        ...additionalPrompts,
+        ...additionalPrompts.map(([role, content]) => ({ role, content })),
       ],
     })
     .then((response) => {

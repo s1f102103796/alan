@@ -45,11 +45,8 @@ generator client {
     for (let i = 0; i < 3; i += 1) {
       if (!/model User ?{[^}]+?( id )[^}]+?( email )[^}]+?( name )/.test(result.prismaSchema)) {
         result = await invokeOrThrow(app, prompt, validator, [
-          { role: 'system', content: result.prismaSchema },
-          {
-            role: 'user',
-            content: 'User modelに指定のカラムが含まれていません。修正してください。',
-          },
+          ['assistant', result.prismaSchema],
+          ['user', 'User modelに指定のカラムが含まれていません。修正してください。'],
         ]);
 
         continue;
@@ -75,8 +72,8 @@ generator client {
       }
 
       result = await invokeOrThrow(app, prompt, validator, [
-        { role: 'system', content: result.prismaSchema },
-        { role: 'user', content: `以下のエラーを修正してください。\n${stderr}` },
+        ['assistant', result.prismaSchema],
+        ['user', `以下のエラーを修正してください。\n${stderr}`],
       ]);
     }
 
@@ -102,8 +99,8 @@ generator client {
       if (err === null) return aspidaRepo.generateFromOpenapi(openapi);
 
       result = await invokeOrThrow(app, prompt, validator, [
-        { role: 'system', content: openapi },
-        { role: 'user', content: `以下のエラーを修正してください。\n${err}` },
+        ['assistant', openapi],
+        ['user', `以下のエラーを修正してください。\n${err}`],
       ]);
     }
 
