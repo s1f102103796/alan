@@ -19,6 +19,7 @@ export const appRepo = {
         userId: app.author.userId,
         index: app.index,
         name: app.name,
+        similarName: app.similarName,
         createdAt: new Date(app.createdTime),
         status: app.status,
         environmentId: app.railway?.environmentId,

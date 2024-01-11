@@ -57,6 +57,7 @@ model App {
   id             String     @id
   index          Int
   name           String
+  similarName    String
   status         String
   ogpImageName   String?
   ogpImagePrompt String?

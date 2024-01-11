@@ -12,7 +12,7 @@ export const ogpImageRepo = {
     const validator = z.object({ prompt: z.string() });
     const { prompt } = await invokeOrThrow(
       app,
-      `${app.name}によく似たウェブサービスを開発しています。
+      `${app.similarName}によく似たウェブサービスを開発しています。
 DALL-E 3でOGP画像を生成するためのプロンプトを日本語で作成してください。
 サービス名「${app.name}」を中央にテキスト表示する指示を含めてください。
 ダウンロード後にアスペクト比2:1にトリミングするので、要素を画像の上下中央部にまとめる指示も含めてください。`,
@@ -32,7 +32,7 @@ DALL-E 3でOGP画像を生成するためのプロンプトを日本語で作成
     );
     const buffer = canvas.toBuffer('image/webp');
     const imageName = `${Date.now()}.webp`;
-    const ogpImage = toOgpImage(app.index, imageName, image.revised_prompt ?? prompt);
+    const ogpImage = toOgpImage(app.index, imageName, prompt);
     await putImageToS3(ogpImage.s3Key, buffer);
 
     return ogpImage;

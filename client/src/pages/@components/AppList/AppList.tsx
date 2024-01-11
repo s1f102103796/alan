@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { PrimeButton } from 'src/components/Buttons/Buttons';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'src/components/Modal/Modal';
 import { Spacer } from 'src/components/Spacer';
-import { Textarea } from 'src/components/Textarea/Textarea';
+import { TextInput } from 'src/components/TextInput/TextInput';
 import { SearchIcon } from 'src/components/icons/SearchIcon';
 import { useAppStatus } from 'src/pages/@hooks/useAppStatus';
 import { useLoading } from 'src/pages/@hooks/useLoading';
@@ -41,7 +41,8 @@ export const AppList = (props: {
 }) => {
   const { addLoading, removeLoading } = useLoading();
   const [opened, setOpened] = useState(false);
-  const [desc, setDesc] = useState('');
+  const [name, setName] = useState('');
+  const [similarName, setSimilarName] = useState('');
   const [searchWord, setSearchWord] = useState('');
   const filteredApps = useMemo(
     () =>
@@ -62,9 +63,10 @@ export const AppList = (props: {
 
   const createApp = async () => {
     addLoading();
-    await apiClient.apps.$post({ body: { desc } }).then(props.append);
+    await apiClient.apps.$post({ body: { name, similarName } }).then(props.append);
     removeLoading();
-    setDesc('');
+    setName('');
+    setSimilarName('');
     setOpened(false);
   };
 
@@ -113,7 +115,20 @@ export const AppList = (props: {
       </div>
       <Modal open={opened}>
         <ModalHeader text={FIRST_QUESTION} />
-        <ModalBody content={<Textarea rows={8} value={desc} width="400px" onChange={setDesc} />} />
+        <ModalBody
+          content={
+            <div>
+              <div>アプリ名</div>
+              <Spacer axis="y" size={8} />
+              <TextInput value={name} width="400px" onChange={setName} />
+              <Spacer axis="y" size={24} />
+              <div>類似サービス名</div>
+              <Spacer axis="y" size={8} />
+              <TextInput value={similarName} width="400px" onChange={setSimilarName} />
+              <Spacer axis="y" size={24} />
+            </div>
+          }
+        />
         <ModalFooter okText="新規生成" ok={createApp} cancel={() => setOpened(false)} />
       </Modal>
     </div>

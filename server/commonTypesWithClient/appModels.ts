@@ -25,6 +25,7 @@ export type AppModelBase = {
   index: number;
   displayId: DisplayId;
   name: string;
+  similarName: string;
   createdTime: number;
   bubbles: BubbleModel[];
 };

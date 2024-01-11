@@ -105,6 +105,7 @@ const toAppModelBase = (app: PrismaApp): AppModelBase => {
     index: app.index,
     displayId: indexToDisplayId(app.index),
     name: app.name,
+    similarName: app.similarName,
     createdTime: app.createdAt.getTime(),
     bubbles,
   };

@@ -14,14 +14,23 @@ import type {
 } from '$/commonTypesWithClient/bubbleModels';
 import { appIdParser } from '$/service/idParsers';
 import { randomUUID } from 'crypto';
+import { z } from 'zod';
 import { indexToDisplayId, indexToUrls } from '../query/utils';
 import { bubbleMethods } from './bubbleMethods';
 
 export const appMethods = {
-  create: (user: UserModel, appCount: number, waitingAppCount: number, desc: string): AppModel => {
+  create: (
+    user: UserModel,
+    appCount: number,
+    waitingAppCount: number,
+    name: string,
+    similarName: string
+  ): AppModel => {
     const id = appIdParser.parse(randomUUID());
     const index = appCount + 1;
     const now = Date.now();
+    z.string().min(1).max(30).parse(name);
+    z.string().min(1).max(30).parse(similarName);
 
     return {
       id,
@@ -33,11 +42,16 @@ export const appMethods = {
       },
       index,
       displayId: indexToDisplayId(index),
-      name: desc.slice(0, 15),
+      name,
+      similarName,
       createdTime: now,
       bubbles: [
         bubbleMethods.createSystem('first_question', now),
-        bubbleMethods.createAiOrHuman('human', desc, now + 1),
+        bubbleMethods.createAiOrHuman(
+          'human',
+          `アプリ名: ${name}\n類似サービス: ${similarName}`,
+          now + 1
+        ),
         ...(waitingAppCount === 0 ? [] : [bubbleMethods.createSystem('waiting_init', now + 2)]),
       ],
       status: 'waiting',

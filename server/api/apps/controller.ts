@@ -8,8 +8,11 @@ import { defineController } from './$relay';
 export default defineController(() => ({
   get: () => appQuery.findAll(prismaClient).then(returnSuccess).catch(returnGetError),
   post: {
-    validators: { body: z.object({ desc: z.string() }) },
+    validators: { body: z.object({ name: z.string(), similarName: z.string() }) },
     handler: ({ user, body }) =>
-      appUseCase.create(user, body.desc).then(returnSuccess).catch(returnPostError),
+      appUseCase
+        .create(user, body.name, body.similarName)
+        .then(returnSuccess)
+        .catch(returnPostError),
   },
 }));

@@ -6,7 +6,7 @@ export type Methods = DefineMethods<{
     resBody: AppModel[];
   };
   post: {
-    reqBody: { desc: string };
+    reqBody: { name: string; similarName: string };
     resBody: AppModel;
   };
 }>;

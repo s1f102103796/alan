@@ -32,7 +32,7 @@ messageには修正内容のコミットメッセージを日本語で記述し�
 export const prompts = {
   initSchema: (
     app: AppModel
-  ) => `${app.name}によく似たウェブサービスをTypeScriptで開発するための詳細なschema.prismaを作成してください。
+  ) => `${app.similarName}によく似たウェブサービスをTypeScriptで開発するための詳細なschema.prismaを作成してください。
 Prismaのフォーマットやリレーションの記述が正しいかをよく確認してください。
 サーバーエンジニアがあなたのschema.prismaを使って開発を行うため、テーブル名やカラム名には長くても良いので人間が理解しやすい命名を心掛けてください。
 schema.prismaにはdatasourceとgeneratorとenumを含めず、modelのみを使用してください。
@@ -41,7 +41,7 @@ Supabase Authと連携できるように、必ずUser modelに id/email/name の
 Userのidにauto_incrementは不要です。`,
 
   initApiDef: (app: AppModel, schema: LocalGitFile) => `以下は${
-    app.name
+    app.similarName
   }によく似たウェブサービスをTypeScriptで開発するためのschema.prismaです。
 ${codeBlocks.fromText(schema.content, 'prisma')}
 
@@ -56,7 +56,7 @@ ${codeBlocks.fromText(schema.content, 'prisma')}
     localGit: LocalGitModel,
     newApiFiles: LocalGitFile[]
   ) => `開発中のウェブサービスに大きな仕様変更が発生しました。Todoアプリだったものを${
-    app.name
+    app.similarName
   }によく似たサービスに変えなければなりません。
 以下は元のTodoアプリのNext.jsです。
 ${codeBlocks.valToJson(filterClientCode(localGit))}
@@ -73,7 +73,7 @@ ${codeBlocks.valToJson(newApiFiles)}
     localGit: LocalGitModel,
     newApiFiles: LocalGitFile[]
   ) => `開発中のウェブサービスに大きな仕様変更が発生しました。Todoアプリだったものを${
-    app.name
+    app.similarName
   }によく似たサービスに変えなければなりません。
 以下は元のfrourioのバックエンドです。
 ${codeBlocks.valToJson(filterServerCode(localGit))}
@@ -86,7 +86,7 @@ ${codeBlocks.valToJson(newApiFiles)}
 \n${chunks.codePostFix(localGit)}\n`,
 
   fixClient: (app: AppModel, localGit: LocalGitModel, failedStep: GHStepModel) => `${
-    app.name
+    app.similarName
   }によく似たサービスのフロントエンドを開発中にエラーが発生しました。
 以下はNext.jsのソースコードです。
 ${codeBlocks.valToJson(filterClientCode(localGit))}
@@ -95,7 +95,7 @@ GitHub ActionsのCIで以下のエラーが発生したのでこれを修正し�
 ${codeBlocks.fromText(failedStep.log, 'txt')}\n\n${chunks.codePostFix(localGit)}\n`,
 
   fixServer: (app: AppModel, localGit: LocalGitModel, failedStep: GHStepModel) => `${
-    app.name
+    app.similarName
   }によく似たサービスのバックエンドを開発中にエラーが発生しました。
 以下はfrourioのソースコードです。
 ${codeBlocks.valToJson(filterServerCode(localGit))}

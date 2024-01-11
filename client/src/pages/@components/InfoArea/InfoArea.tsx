@@ -5,7 +5,6 @@ import { BatteryIcon } from 'src/components/Notch/BatteryIcon';
 import { SignalIcon } from 'src/components/Notch/SignalIcon';
 import { WifiIcon } from 'src/components/Notch/WifiIcon';
 import { Spacer } from 'src/components/Spacer';
-import { TextInput } from 'src/components/TextInput/TextInput';
 import { Textarea } from 'src/components/Textarea/Textarea';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { LockIcon } from 'src/components/icons/LockIcon';
@@ -66,6 +65,8 @@ export const InfoArea = (props: { app: AppModel }) => {
             </div>
           </div>
           <div className={styles.rightContent}>
+            <Spacer axis="y" size={10} />
+            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Dev Tools</div>
             <Spacer axis="y" size={8} />
             <div className={styles.linkContainer}>
               {[
@@ -105,18 +106,10 @@ export const InfoArea = (props: { app: AppModel }) => {
               ))}
             </div>
             <Spacer axis="y" size={24} />
-            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Title</div>
-            <Spacer axis="y" size={8} />
-            <TextInput value={props.app.name} onChange={() => null} />
-            <Spacer axis="y" size={20} />
-            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Description</div>
-            <Spacer axis="y" size={8} />
-            <TextInput value={props.app.name} onChange={() => null} />
-            <Spacer axis="y" size={20} />
             <div style={{ fontSize: '18px', fontWeight: 'bold' }}>OGP Image</div>
             <Spacer axis="y" size={8} />
-            <Textarea rows={5} value={props.app.ogpImage.prompt} onChange={() => null} />
-            <Spacer axis="y" size={8} />
+            <Textarea rows={8} value={props.app.ogpImage.prompt} onChange={() => null} />
+            <Spacer axis="y" size={16} />
             <img src={props.app.ogpImage.url} style={{ width: '100%' }} />
           </div>
         </>

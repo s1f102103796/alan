@@ -52,6 +52,7 @@ export const appEventUseCase = {
     appEventUseCase.createGitHub();
     appEventUseCase.createRailway();
     appEventUseCase.watchRailway();
+    appEventUseCase.watchRailwayOnce();
     appEventUseCase.createSchema();
     appEventUseCase.createApiDef();
     appEventUseCase.createClientCode();

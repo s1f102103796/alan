@@ -18,13 +18,13 @@ import { appRepo } from '../repository/appRepo';
 import { githubUseCase } from './githubUseCase';
 
 export const appUseCase = {
-  create: (user: UserModel, desc: string): Promise<AppModel> =>
+  create: (user: UserModel, name: string, similarName: string): Promise<AppModel> =>
     transaction('Serializable', async (tx) => {
       const [count, waitingCount] = await Promise.all([
         appQuery.countAll(tx),
         appQuery.countWaitings(tx),
       ]);
-      const app = appMethods.create(user, count, waitingCount, desc);
+      const app = appMethods.create(user, count, waitingCount, name, similarName);
       await appRepo.save(tx, app);
       const dispatcher = await appEventUseCase.createWithLatestBubble(tx, 'AppCreated', app);
 
