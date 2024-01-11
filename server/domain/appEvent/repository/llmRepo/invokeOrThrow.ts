@@ -4,16 +4,14 @@ import { IS_LOCALHOST, OPENAI_KEY } from '$/service/envValues';
 import { customAssert } from '$/service/returnStatus';
 import { putTextToS3 } from '$/service/s3Client';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { ChatOpenAI } from 'langchain/chat_models/openai';
+import OpenAI from 'openai';
 import type { z } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
 import { codeBlocks } from './prompts';
 
-const llm = new ChatOpenAI({
-  modelName: 'gpt-4-1106-preview',
-  temperature: 0,
-  openAIApiKey: OPENAI_KEY,
-}).bind({ response_format: { type: 'json_object' } });
+const openai = new OpenAI({
+  apiKey: OPENAI_KEY,
+});
 
 const saveLog = async (dir: string, name: string, body: string) => {
   if (IS_LOCALHOST) {
@@ -31,7 +29,7 @@ export const invokeOrThrow = async <T extends z.AnyZodObject>(
   app: AppModel,
   prompt: string,
   validator: T,
-  additionalPrompts: ['ai' | 'human', string][],
+  additionalPrompts: ['assistant' | 'user', string][],
   count = 3
 ): Promise<z.infer<T>> => {
   const jsonSchema = zodToJsonSchema(validator);
@@ -46,16 +44,23 @@ ${codeBlocks.valToJson(jsonSchema)}
 
   await saveLog(logDir, 'input.txt', input);
 
-  return await llm
-    .invoke([
-      [
-        'system',
-        'あなたはTypeScriptのフルスタックエンジニアとしてウェブサービスを開発してください。',
+  return await openai.chat.completions
+    .create({
+      model: 'gpt-4-1106-preview',
+      temperature: 0,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'system',
+          content:
+            'あなたはTypeScriptのフルスタックエンジニアとしてウェブサービスを開発してください。',
+        },
+        { role: 'user', content: input },
+        ...additionalPrompts.map(([role, content]) => ({ role, content })),
       ],
-      ['human', input],
-      ...additionalPrompts,
-    ])
-    .then(async ({ content }) => {
+    })
+    .then(async (response) => {
+      const content = response.choices[0]?.message.content;
       customAssert(typeof content === 'string', '不正リクエスト防御');
       await saveLog(logDir, 'output.json', content);
 
