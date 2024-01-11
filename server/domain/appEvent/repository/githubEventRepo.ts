@@ -42,6 +42,7 @@ export const githubEventRepo = {
 
     await Promise.all(
       [
+        { name: 'NEXT_PUBLIC_APP_NAME', value: app.name },
         { name: 'CNAME', value: new URL(urls.site).host },
         { name: 'API_ORIGIN', value: displayIdToApiOrigin(repoName) },
       ].map((body) =>
