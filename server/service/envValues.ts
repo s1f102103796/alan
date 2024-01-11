@@ -26,6 +26,7 @@ const GITHUB_WEBHOOK_SECRET = z.string().parse(process.env.GITHUB_WEBHOOK_SECRET
 const RAILWAY_TOKEN = z.string().parse(process.env.RAILWAY_TOKEN);
 const DISPLAY_ID_PREFIX = z.string().parse(process.env.DISPLAY_ID_PREFIX);
 const BASE_DOMAIN = z.string().parse(process.env.BASE_DOMAIN);
+const DEUS_LO_VULT_TOKEN = z.string().parse(process.env.DEUS_LO_VULT_TOKEN);
 const S3_CUSTOM_ENDPOINT = z
   .string()
   .url()
@@ -38,6 +39,7 @@ export {
   API_ORIGIN,
   BASE_DOMAIN,
   CORS_ORIGIN,
+  DEUS_LO_VULT_TOKEN,
   DISPLAY_ID_PREFIX,
   FIREBASE_AUTH_EMULATOR_HOST,
   FIREBASE_SERVER_KEY,
