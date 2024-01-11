@@ -11,7 +11,7 @@ import {
 } from '$/service/envValues';
 import { railwayClient } from '$/service/railwayClient';
 import { gql } from '@apollo/client';
-import { indexToUrls, projectIdToUrl } from '../../query/utils';
+import { indexToSiteUrl, projectIdToUrl } from '../../query/utils';
 
 export const createOnRailwayRepo = async (app: InitAppModel): Promise<RailwayModel> => {
   const repoName = app.displayId;
@@ -67,7 +67,6 @@ export const createOnRailwayRepo = async (app: InitAppModel): Promise<RailwayMod
     variables: { projectId },
   });
   const serviceId = pj.data.project.services.edges[0].node.id;
-  const urls = indexToUrls(app.index);
 
   await railwayClient.mutate({
     mutation: gql`
@@ -109,7 +108,7 @@ export const createOnRailwayRepo = async (app: InitAppModel): Promise<RailwayMod
       environmentId,
       projectId,
       serviceId,
-      origin: urls.site,
+      origin: indexToSiteUrl(app.index),
       supabase: SUPABASE_JWT_SECRET,
       s3Endpoint: S3_ENDPOINT,
       s3Bucket: S3_BUCKET,

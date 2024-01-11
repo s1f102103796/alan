@@ -2,6 +2,7 @@ import type {
   ActiveAppModel,
   AppModel,
   InitAppModel,
+  OgpImage,
   RailwayModel,
   UserModel,
   WaitingAppModel,
@@ -51,11 +52,14 @@ export const appMethods = {
       bubbles: [...app.bubbles, bubbleMethods.createSystem('init_infra', Date.now())],
     };
   },
-  run: (app: InitAppModel, railway: RailwayModel): ActiveAppModel => {
+  setOgp: (app: InitAppModel, ogpImage: OgpImage): InitAppModel => ({ ...app, ogpImage }),
+  setRailway: (app: InitAppModel, railway: RailwayModel): InitAppModel => ({ ...app, railway }),
+  run: (app: InitAppModel, ogpImage: OgpImage, railway: RailwayModel): ActiveAppModel => {
     return {
       ...app,
       status: 'running',
       urls: indexToUrls(app.index),
+      ogpImage,
       railway,
       waitingOrder: undefined,
     };

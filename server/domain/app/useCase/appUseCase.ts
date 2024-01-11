@@ -1,4 +1,9 @@
-import type { AppModel, InitAppModel, RailwayModel } from '$/commonTypesWithClient/appModels';
+import type {
+  AppModel,
+  InitAppModel,
+  OgpImage,
+  RailwayModel,
+} from '$/commonTypesWithClient/appModels';
 import { type UserModel } from '$/commonTypesWithClient/appModels';
 import type { AppId } from '$/commonTypesWithClient/branded';
 import type { RWDeploymentModel, SystemStatus } from '$/commonTypesWithClient/bubbleModels';
@@ -47,15 +52,36 @@ export const appUseCase = {
       );
       await appRepo.save(tx, newApp);
     }),
+  completeOgpInit: async (
+    tx: Prisma.TransactionClient,
+    inited: InitAppModel,
+    ogpImage: OgpImage
+  ) => {
+    const app = appMethods.setOgp(inited, ogpImage);
+    await appRepo.save(tx, app);
+
+    return await appEventUseCase.createWithLatestBubble(tx, 'OgpImageCreated', app);
+  },
   completeRailwayInit: async (
     tx: Prisma.TransactionClient,
     inited: InitAppModel,
     railway: RailwayModel
   ) => {
-    const running = appMethods.run(inited, railway);
+    const app = appMethods.setRailway(inited, railway);
+    await appRepo.save(tx, app);
+
+    return await appEventUseCase.createWithLatestBubble(tx, 'RailwayCreated', app);
+  },
+  run: async (
+    tx: Prisma.TransactionClient,
+    inited: InitAppModel,
+    ogpImage: OgpImage,
+    railway: RailwayModel
+  ) => {
+    const running = appMethods.run(inited, ogpImage, railway);
     await appRepo.save(tx, running);
 
-    return await appEventUseCase.createWithLatestBubble(tx, 'RailwayCreated', running);
+    return await appEventUseCase.createWithLatestBubble(tx, 'AppRunning', running);
   },
   updateRWDeployments: (appId: AppId, deployments: RWDeploymentModel[]) =>
     transaction('RepeatableRead', async (tx) => {

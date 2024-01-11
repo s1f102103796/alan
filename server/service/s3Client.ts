@@ -17,3 +17,15 @@ export const putTextToS3 = (Key: string, Body: string) =>
       ContentType: Key.split('.').at(-1) === 'json' ? 'application/json' : 'text/plain',
     })
   );
+
+export const putImageToS3 = (Key: string, Body: Buffer) =>
+  s3Client.send(
+    new PutObjectCommand({
+      Bucket: S3_BUCKET,
+      ContentType:
+        Key.split('.').at(-1) === 'jpg' ? 'image/jpeg' : `image/${Key.split('.').at(-1)}`,
+      ACL: 'public-read',
+      Key,
+      Body,
+    })
+  );

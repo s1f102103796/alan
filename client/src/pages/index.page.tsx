@@ -36,13 +36,13 @@ const Home = () => {
   };
   const fetchApps = useCallback(
     () =>
-      apiClient.public.cachedApps
+      (user === null ? apiClient.public.cachedApps : apiClient.apps)
         .$get()
         .then((res) =>
           setApps((apps) => (JSON.stringify(apps) === JSON.stringify(res) ? apps : res))
         )
         .catch(returnNull),
-    [setApps]
+    [user, setApps]
   );
 
   useEffect(() => {

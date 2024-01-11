@@ -19,10 +19,11 @@ export const appEventTypeParser = z.enum([
   'AppCreated',
   'GitHubCreated',
   'MainBranchPushed',
+  'OgpImageCreated',
   'RailwayCreated',
+  'AppRunning',
   'SchemaCreated',
   'ApiDefined',
-  'ClientCreated',
   'ClientTestWasSuccess',
   'ClientTestWasFailure',
   'ServerTestWasSuccess',
@@ -31,7 +32,9 @@ export const appEventTypeParser = z.enum([
 export type AppEventType = z.infer<typeof appEventTypeParser>;
 export const appSubscriberIdParser = z.enum([
   'createGitHub',
+  'createOgpImage',
   'createRailway',
+  'checkRunningStatus',
   'watchRailway',
   'watchRailwayOnce',
   'createSchema',
@@ -57,22 +60,28 @@ export type AppEventModel = {
 
 export type AppEventDispatcher = { dispatchAfterTransaction: () => void };
 
-export const appSubscriberDict = (): {
+// 関数にしないとESModulesの循環参照でビルド出来なくなる
+const appSubscriberDict = (): {
   [Type in AppEventType]: { id: SubscriberId; fn: () => void }[];
 } => ({
   AppCreated: [{ id: 'createGitHub', fn: appEventUseCase.createGitHub }],
   GitHubCreated: [
+    { id: 'createOgpImage', fn: appEventUseCase.createOgpImage },
     { id: 'createRailway', fn: appEventUseCase.createRailway },
     { id: 'createSchema', fn: appEventUseCase.createSchema },
   ],
   MainBranchPushed: [{ id: 'watchRailway', fn: appEventUseCase.watchRailway }],
-  RailwayCreated: [{ id: 'watchRailwayOnce', fn: appEventUseCase.watchRailwayOnce }],
+  OgpImageCreated: [{ id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus }],
+  RailwayCreated: [
+    { id: 'watchRailwayOnce', fn: appEventUseCase.watchRailwayOnce },
+    { id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus },
+  ],
+  AppRunning: [],
   SchemaCreated: [{ id: 'createApiDefinition', fn: appEventUseCase.createApiDef }],
   ApiDefined: [
     { id: 'createClientCode', fn: appEventUseCase.createClientCode },
     { id: 'createServerCode', fn: appEventUseCase.createServerCode },
   ],
-  ClientCreated: [],
   ClientTestWasSuccess: [],
   ClientTestWasFailure: [{ id: 'fixClientCode', fn: appEventUseCase.fixClientCode }],
   ServerTestWasSuccess: [],
@@ -80,8 +89,12 @@ export const appSubscriberDict = (): {
 });
 
 export const appEventMethods = {
-  create: (type: AppEventType, app: AppModel, bubble: BubbleModel): AppEventModel[] =>
-    appSubscriberDict()[type].map(
+  create: (
+    type: AppEventType,
+    app: AppModel,
+    bubble: BubbleModel
+  ): { events: AppEventModel[]; dispatcher: AppEventDispatcher } => {
+    const events = appSubscriberDict()[type].map(
       (sub): AppEventModel => ({
         id: appEventIdParser.parse(randomUUID()),
         type,
@@ -93,7 +106,18 @@ export const appEventMethods = {
         updatedTime: Date.now(),
         failedCount: 0,
       })
-    ),
+    );
+
+    return {
+      events,
+      dispatcher: {
+        dispatchAfterTransaction: () => {
+          const subs = appSubscriberDict()[type];
+          events.forEach((ev) => subs.find((sub) => sub.id === ev.subscriberId)?.fn());
+        },
+      },
+    };
+  },
   publish: (event: AppEventModel): AppEventModel => ({
     ...event,
     status: 'published',

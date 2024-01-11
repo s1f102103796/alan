@@ -8,6 +8,8 @@ export const appRepo = {
       update: {
         name: app.name,
         status: app.status,
+        ogpImageName: app.ogpImage?.name,
+        ogpImagePrompt: app.ogpImage?.prompt,
         environmentId: app.railway?.environmentId,
         projectId: app.railway?.projectId,
         serviceId: app.railway?.serviceId,

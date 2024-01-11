@@ -10,10 +10,11 @@ import { transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
 import type { Prisma } from '@prisma/client';
 import type { AppEventDispatcher, AppEventModel, AppEventType } from '../model/appEventModels';
-import { appEventMethods, appSubscriberDict } from '../model/appEventModels';
+import { appEventMethods } from '../model/appEventModels';
 import { appEventQuery } from '../query/appEventQuery';
 import { appEventRepo } from '../repository/appEventRepo';
 import { llmRepo } from '../repository/llmRepo';
+import { ogpImageRepo } from '../repository/ogpImageRepo';
 import { railwayEventUseCase } from './railwayEventUseCase';
 import { subscribe } from './subscribe';
 
@@ -27,15 +28,10 @@ export const appEventUseCase = {
     app: AppModel,
     bubble: BubbleModel
   ): Promise<AppEventDispatcher> => {
-    const events = appEventMethods.create(type, app, bubble);
+    const { events, dispatcher } = appEventMethods.create(type, app, bubble);
     await Promise.all(events.map((ev) => appEventRepo.save(tx, ev)));
 
-    return {
-      dispatchAfterTransaction: () => {
-        const subs = appSubscriberDict()[type];
-        events.forEach((ev) => subs.find((sub) => sub.id === ev.subscriberId)?.fn());
-      },
-    };
+    return dispatcher;
   },
   createWithLatestBubble: async (
     tx: Prisma.TransactionClient,
@@ -93,9 +89,22 @@ export const appEventUseCase = {
         return await appUseCase.completeRailwayInit(tx, event.app, railway);
       }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
     }),
+  createOgpImage: () =>
+    subscribe('createOgpImage', async (published) => {
+      customAssert(published.app.status === 'init', 'エラーならロジック修正必須');
+
+      const ogpImage = await ogpImageRepo.create(published.app);
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+
+        customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
+        return await appUseCase.completeOgpInit(tx, event.app, ogpImage);
+      }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
+    }),
   watchRailway: () =>
     subscribe('watchRailway', async (published) => {
-      if (published.app.status === 'waiting' || published.app.status === 'init') {
+      if (published.app.status === 'waiting' || published.app.railway === undefined) {
         return await transaction('RepeatableRead', async (tx) => {
           const event = await appEventQuery.findByIdOrThrow(tx, published.id);
           await appEventRepo.save(tx, appEventMethods.complete(event));
@@ -105,6 +114,17 @@ export const appEventUseCase = {
       await railwayEventUseCase.watchDeployments(published);
     }),
   watchRailwayOnce: () => subscribe('watchRailwayOnce', railwayEventUseCase.watchDeployments),
+  checkRunningStatus: () =>
+    subscribe('checkRunningStatus', (published) =>
+      transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+        if (event.app.ogpImage === undefined || event.app.railway === undefined) return;
+
+        customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
+        return await appUseCase.run(tx, event.app, event.app.ogpImage, event.app.railway);
+      }).then((dispatcher) => dispatcher?.dispatchAfterTransaction())
+    ),
   createSchema: () =>
     subscribe('createSchema', async (published) => {
       await addSystemBubbleOnce(published, 'creating_schema');

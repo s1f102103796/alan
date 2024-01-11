@@ -55,10 +55,7 @@ generator client {
       const filePath = join(tmpdir(), `${app.displayId}-${Date.now()}-schema.prisma`);
       writeFileSync(filePath, `${prismaHeader}${result.prismaSchema}`, 'utf8');
       const { stderr } = await promisify(exec)(`npx prisma format --schema ${filePath}`).catch(
-        (e) => {
-          console.log('2222222', e.message);
-          return { stderr: e.message as string };
-        }
+        (e) => ({ stderr: e.message as string })
       );
       const content = readFileSync(filePath, 'utf8');
       unlinkSync(filePath);

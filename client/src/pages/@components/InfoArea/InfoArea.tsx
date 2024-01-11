@@ -6,6 +6,7 @@ import { SignalIcon } from 'src/components/Notch/SignalIcon';
 import { WifiIcon } from 'src/components/Notch/WifiIcon';
 import { Spacer } from 'src/components/Spacer';
 import { TextInput } from 'src/components/TextInput/TextInput';
+import { Textarea } from 'src/components/Textarea/Textarea';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { LockIcon } from 'src/components/icons/LockIcon';
 import { RailwayIcon } from 'src/components/icons/RailwayIcon';
@@ -114,7 +115,9 @@ export const InfoArea = (props: { app: AppModel }) => {
             <Spacer axis="y" size={20} />
             <div style={{ fontSize: '18px', fontWeight: 'bold' }}>OGP Image</div>
             <Spacer axis="y" size={8} />
-            <img src={staticPath.images.odaiba_jpg} style={{ width: '100%' }} />
+            <Textarea rows={5} value={props.app.ogpImage.prompt} onChange={() => null} />
+            <Spacer axis="y" size={8} />
+            <img src={props.app.ogpImage.url} style={{ width: '100%' }} />
           </div>
         </>
       ) : (

@@ -1,4 +1,4 @@
-import type { ActiveAppModel } from '$/commonTypesWithClient/appModels';
+import type { ActiveAppModel, InitAppModel, RailwayModel } from '$/commonTypesWithClient/appModels';
 import type { RWDeploymentId } from '$/commonTypesWithClient/branded';
 import type { RWDeploymentModel, RWStatus } from '$/commonTypesWithClient/bubbleModels';
 import { parseRWDeployment } from '$/commonTypesWithClient/bubbleModels';
@@ -8,7 +8,10 @@ import { gql } from '@apollo/client';
 import { displayIdToApiOrigin, toBranchUrl, toCommitUrl, toRWDeployUrl } from '../../query/utils';
 import { localGitRepo } from '../localGitRepo';
 
-export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
+export const listDeploymentsAllOnRailwayRepo = async (
+  app: InitAppModel | ActiveAppModel,
+  railway: RailwayModel
+) => {
   const list: RWDeploymentModel[] = [];
   let after: string | undefined = undefined;
 
@@ -56,7 +59,7 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
             }
           }
         `,
-        variables: { serviceId: app.railway.serviceId, after },
+        variables: { serviceId: railway.serviceId, after },
       })
       .catch((e) => {
         console.log(e.stack);
@@ -87,8 +90,8 @@ export const listDeploymentsAllOnRailwayRepo = async (app: ActiveAppModel) => {
           title: commitLog.message,
           status,
           url: toRWDeployUrl({
-            project: app.railway.projectId,
-            service: app.railway.serviceId,
+            project: railway.projectId,
+            service: railway.serviceId,
             deployment: node.id,
           }),
           branchUrl: toBranchUrl(app.displayId, 'main'),

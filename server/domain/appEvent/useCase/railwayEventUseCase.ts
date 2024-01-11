@@ -10,15 +10,20 @@ import { appEventRepo } from '../repository/appEventRepo';
 
 export const railwayEventUseCase = {
   watchDeployments: async (published: AppEventModel) => {
-    customAssert(
-      published.app.status !== 'waiting' && published.app.status !== 'init',
-      'エラーならロジック修正必須'
-    );
+    customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
+    if (published.app.railway === undefined) {
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+      });
+      return;
+    }
 
     let isStillRunning = true;
 
     for (let i = 0; i < 100; i += 1) {
-      const list = await railwayRepo.listDeploymentsAll(published.app);
+      const list = await railwayRepo.listDeploymentsAll(published.app, published.app.railway);
 
       await appUseCase.updateRWDeployments(published.app.id, list);
 

@@ -1,17 +1,13 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
 import { toJST } from '$/service/dayjs';
-import { IS_LOCALHOST, OPENAI_KEY } from '$/service/envValues';
+import { IS_LOCALHOST } from '$/service/envValues';
+import { openai } from '$/service/openai';
 import { customAssert } from '$/service/returnStatus';
 import { putTextToS3 } from '$/service/s3Client';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import OpenAI from 'openai';
 import type { z } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
 import { codeBlocks } from './prompts';
-
-const openai = new OpenAI({
-  apiKey: OPENAI_KEY,
-});
 
 const saveLog = async (dir: string, name: string, body: string) => {
   if (IS_LOCALHOST) {

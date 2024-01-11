@@ -1,6 +1,11 @@
-import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { AppModel, OgpImage } from '$/commonTypesWithClient/appModels';
 import type { DisplayId } from '$/commonTypesWithClient/branded';
-import { BASE_DOMAIN, DISPLAY_ID_PREFIX, GITHUB_OWNER } from '$/service/envValues';
+import {
+  BASE_DOMAIN,
+  DISPLAY_ID_PREFIX,
+  GITHUB_OWNER,
+  S3_CUSTOM_ENDPOINT,
+} from '$/service/envValues';
 import { displayIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
 
@@ -11,8 +16,17 @@ export const displayIdToIndex = (displayId: DisplayId) => {
   customAssert(idxText !== undefined, 'エラーならロジック修正必須');
   return +idxText;
 };
+export const indexToSiteUrl = (index: number) => `https://${index}.${BASE_DOMAIN}`;
+const toOgpS3Key = (index: number, imageName: string) =>
+  `${indexToDisplayId(index)}/images/ogp/${imageName}`;
+export const toOgpImage = (index: number, imageName: string, prompt: string): OgpImage => ({
+  url: `${S3_CUSTOM_ENDPOINT}/${toOgpS3Key(index, imageName)}`,
+  prompt,
+  name: imageName,
+  s3Key: toOgpS3Key(index, imageName),
+});
 export const indexToUrls = (index: number): Required<AppModel>['urls'] => ({
-  site: `https://${index}.${BASE_DOMAIN}`,
+  site: indexToSiteUrl(index),
   github: `https://github.com/${GITHUB_OWNER}/${indexToDisplayId(index)}`,
   vscode: `https://github.dev/${GITHUB_OWNER}/${indexToDisplayId(
     index
