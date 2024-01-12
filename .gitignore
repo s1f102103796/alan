@@ -33,6 +33,9 @@ npm-debug.log*
 # docker
 /docker/dev/minio/
 
+# client
+client/src/api/*
+
 # server
 server/index.js
 server/index.js.map
