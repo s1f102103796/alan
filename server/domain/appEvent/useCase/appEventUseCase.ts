@@ -182,7 +182,7 @@ export const appEventUseCase = {
     subscribe('fixClientCode', async (published) => {
       await addSystemBubbleOnce(published, 'fixing_client_code');
 
-      const localGit = await localGitRepo.getFiles(published.app, 'deus/client-failure-types');
+      const localGit = await localGitRepo.getFiles(published.app, 'deus/test-client');
       customAssert(published.bubble.type === 'github', 'エラーならロジック修正必須');
 
       const failedStep = await githubEventRepo.findFailedStepOrThrow(
@@ -203,7 +203,7 @@ export const appEventUseCase = {
     subscribe('fixServerCode', async (published) => {
       await addSystemBubbleOnce(published, 'fixing_server_code');
 
-      const localGit = await localGitRepo.getFiles(published.app, 'deus/server-failure-types');
+      const localGit = await localGitRepo.getFiles(published.app, 'deus/test-server');
       customAssert(published.bubble.type === 'github', 'エラーならロジック修正必須');
 
       const failedStep = await githubEventRepo.findFailedStepOrThrow(

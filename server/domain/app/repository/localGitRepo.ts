@@ -11,12 +11,8 @@ import simpleGit, { ResetMode } from 'simple-git';
 
 const remoteBranches = {
   main: 'main',
-  testTypes: 'deus/test-types',
   testClient: 'deus/test-client',
   testServer: 'deus/test-server',
-  mainTypes: 'deus/main-types',
-  clientFailureTypes: 'deus/client-failure-types',
-  serverFailureTypes: 'deus/server-failure-types',
   test: 'deus/test',
   dbSchema: 'deus/db-schema',
   apiDefinition: 'deus/api-definition',
@@ -63,7 +59,7 @@ const fetchBranch = async (app: AppModel, remoteBranch: RemoteBranch, baseBranch
 
 export const localGitRepo = {
   getFiles: async (app: AppModel, remoteBranch: RemoteBranch): Promise<LocalGitModel> => {
-    await fetchBranch(app, remoteBranch, 'deus/main-types');
+    await fetchBranch(app, remoteBranch, 'main');
 
     const { dirPath, deletedFilesJson } = genPathes(app, remoteBranch);
     const log = await simpleGit(dirPath)
