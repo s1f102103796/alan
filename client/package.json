@@ -23,7 +23,6 @@
     "api": "file:../server/api",
     "aspida": "^1.14.0",
     "axios": "^1.4.0",
-    "commonConstantsWithClient": "file:../server/commonConstantsWithClient",
     "commonTypesWithClient": "file:../server/commonTypesWithClient",
     "dayjs": "^1.11.10",
     "firebase": "^10.1.0",

@@ -4,7 +4,7 @@ module.exports = {
   pageExtensions: ['page.tsx'],
   output: 'export',
   trailingSlash: true,
-  transpilePackages: ['api', 'commonConstantsWithClient'],
+  transpilePackages: ['api'],
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 };
