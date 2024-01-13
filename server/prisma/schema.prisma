@@ -41,6 +41,18 @@ model RailwayDeployment {
   bubbleId  String   @unique
 }
 
+model Task {
+  id       String  @id
+  index    Int
+  title    String
+  content  String
+  done     Boolean
+  Bubble   Bubble  @relation(fields: [bubbleId], references: [id])
+  bubbleId String
+  App      App?    @relation(fields: [appId], references: [id])
+  appId    String?
+}
+
 model Bubble {
   id                String             @id
   type              String
@@ -49,6 +61,7 @@ model Bubble {
   App               App                @relation(fields: [appId], references: [id])
   appId             String
   events            AppEvent[]
+  taskList          Task[]
   GitHubAction      GitHubAction?
   RailwayDeployment RailwayDeployment?
 }
@@ -67,6 +80,7 @@ model App {
   createdAt      DateTime
   bubbles        Bubble[]
   events         AppEvent[]
+  taskList       Task[]
   User           User       @relation(fields: [userId], references: [id])
   userId         String
 }

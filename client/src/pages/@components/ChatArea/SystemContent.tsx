@@ -1,7 +1,7 @@
+import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { SystemBubbleModel } from '$/commonTypesWithClient/bubbleModels';
 import type { MessageModel } from '@chatscope/chat-ui-kit-react';
 import { Avatar, Message } from '@chatscope/chat-ui-kit-react';
-import type { AppModel } from 'commonTypesWithClient/appModels';
-import type { SystemBubbleModel } from 'commonTypesWithClient/bubbleModels';
 import { Spacer } from 'src/components/Spacer';
 import { ChatGPTIcon } from 'src/components/icons/ChatGPTIcon';
 import { FIRST_QUESTION } from 'src/utils/constants';

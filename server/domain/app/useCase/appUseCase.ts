@@ -6,7 +6,11 @@ import type {
 } from '$/commonTypesWithClient/appModels';
 import { type UserModel } from '$/commonTypesWithClient/appModels';
 import type { AppId } from '$/commonTypesWithClient/branded';
-import type { RWDeploymentModel, SystemStatus } from '$/commonTypesWithClient/bubbleModels';
+import type {
+  RWDeploymentModel,
+  SystemStatus,
+  TaskModel,
+} from '$/commonTypesWithClient/bubbleModels';
 import { appEventUseCase } from '$/domain/appEvent/useCase/appEventUseCase';
 import { transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
@@ -72,13 +76,24 @@ export const appUseCase = {
 
     return await appEventUseCase.createWithLatestBubble(tx, 'RailwayCreated', app);
   },
+  completeTaskListInit: async (
+    tx: Prisma.TransactionClient,
+    inited: InitAppModel,
+    taskList: TaskModel[]
+  ) => {
+    const app = appMethods.addTaskListBubble(inited, taskList);
+    await appRepo.save(tx, app);
+
+    return await appEventUseCase.createWithLatestBubble(tx, 'TaskListCreated', app);
+  },
   run: async (
     tx: Prisma.TransactionClient,
     inited: InitAppModel,
     ogpImage: OgpImage,
-    railway: RailwayModel
+    railway: RailwayModel,
+    taskList: TaskModel[]
   ) => {
-    const running = appMethods.run(inited, ogpImage, railway);
+    const running = appMethods.run(inited, ogpImage, railway, taskList);
     await appRepo.save(tx, running);
 
     return await appEventUseCase.createWithLatestBubble(tx, 'AppRunning', running);

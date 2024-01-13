@@ -1,5 +1,5 @@
 import type { UserModel } from '$/commonTypesWithClient/appModels';
-import { ghUserIdParser, userIdParser } from '$/service/idParsers';
+import { ghUserIdParser, userIdParser } from '$/commonTypesWithClient/idParsers';
 import { prismaClient } from '$/service/prismaClient';
 import type { Prisma, User } from '@prisma/client';
 

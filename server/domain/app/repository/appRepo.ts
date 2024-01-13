@@ -34,13 +34,16 @@ export const appRepo = {
         await tx.bubble.upsert({
           where: { id: bubble.id },
           update:
-            bubble.type === 'github' || bubble.type === 'railway'
+            bubble.type === 'github' || bubble.type === 'railway' || bubble.type === 'taskList'
               ? {}
               : { content: bubble.content },
           create: {
             id: bubble.id,
             type: bubble.type,
-            content: bubble.type === 'github' || bubble.type === 'railway' ? '' : bubble.content,
+            content:
+              bubble.type === 'github' || bubble.type === 'railway' || bubble.type === 'taskList'
+                ? ''
+                : bubble.content,
             createdAt: new Date(bubble.createdTime),
             App: { connect: { id: app.id } },
           },
@@ -88,6 +91,22 @@ export const appRepo = {
                 updatedAt: new Date(bubble.content.updatedTime),
                 Bubble: { connect: { id: bubble.id } },
               },
+            });
+            break;
+          case 'taskList':
+            await tx.task.deleteMany({ where: { bubbleId: bubble.id } });
+            await tx.task.createMany({
+              data: bubble.content.map(
+                (task, index): Prisma.TaskCreateManyInput => ({
+                  id: task.id,
+                  index,
+                  title: task.title,
+                  content: task.content,
+                  done: task.done,
+                  bubbleId: bubble.id,
+                  appId: app.taskList?.some((t) => t.id === task.id) === true ? app.id : undefined,
+                })
+              ),
             });
             break;
           default:

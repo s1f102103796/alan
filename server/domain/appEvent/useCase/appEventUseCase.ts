@@ -103,6 +103,19 @@ export const appEventUseCase = {
         return await appUseCase.completeOgpInit(tx, event.app, ogpImage);
       }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
     }),
+  createTaskList: () =>
+    subscribe('createTaskList', async (published) => {
+      customAssert(published.app.status === 'init', 'エラーならロジック修正必須');
+
+      const taskList = await llmRepo.initTaskList(published.app);
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+
+        customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
+        return await appUseCase.completeTaskListInit(tx, event.app, taskList);
+      }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
+    }),
   watchRailway: () =>
     subscribe('watchRailway', async (published) => {
       if (published.app.status === 'waiting' || published.app.railway === undefined) {
@@ -120,10 +133,22 @@ export const appEventUseCase = {
       transaction('RepeatableRead', async (tx) => {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
         await appEventRepo.save(tx, appEventMethods.complete(event));
-        if (event.app.ogpImage === undefined || event.app.railway === undefined) return;
+        if (
+          event.app.ogpImage === undefined ||
+          event.app.railway === undefined ||
+          event.app.taskList === undefined
+        ) {
+          return;
+        }
 
         customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
-        return await appUseCase.run(tx, event.app, event.app.ogpImage, event.app.railway);
+        return await appUseCase.run(
+          tx,
+          event.app,
+          event.app.ogpImage,
+          event.app.railway,
+          event.app.taskList
+        );
       }).then((dispatcher) => dispatcher?.dispatchAfterTransaction())
     ),
   createSchema: () =>

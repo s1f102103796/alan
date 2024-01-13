@@ -11,8 +11,9 @@ import type {
   BubbleModel,
   GHActionModel,
   RWDeploymentModel,
+  TaskModel,
 } from '$/commonTypesWithClient/bubbleModels';
-import { appIdParser } from '$/service/idParsers';
+import { appIdParser } from '$/commonTypesWithClient/idParsers';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { indexToDisplayId, indexToUrls } from '../query/utils';
@@ -68,18 +69,31 @@ export const appMethods = {
   },
   setOgp: (app: InitAppModel, ogpImage: OgpImage): InitAppModel => ({ ...app, ogpImage }),
   setRailway: (app: InitAppModel, railway: RailwayModel): InitAppModel => ({ ...app, railway }),
-  run: (app: InitAppModel, ogpImage: OgpImage, railway: RailwayModel): ActiveAppModel => {
+  run: (
+    app: InitAppModel,
+    ogpImage: OgpImage,
+    railway: RailwayModel,
+    taskList: TaskModel[]
+  ): ActiveAppModel => {
     return {
       ...app,
       status: 'running',
       urls: indexToUrls(app.index),
       ogpImage,
       railway,
+      taskList,
       waitingOrder: undefined,
     };
   },
   addBubble: <T extends AppModel>(app: T, bubble: BubbleModel): T => {
     return { ...app, bubbles: [...app.bubbles, bubble] };
+  },
+  addTaskListBubble: <T extends InitAppModel | ActiveAppModel>(
+    app: T,
+    taskList: TaskModel[]
+  ): T => {
+    const bubble = bubbleMethods.createTaskList(taskList);
+    return { ...app, bubbles: [...app.bubbles, bubble], taskList };
   },
   upsertGitHubBubbles: (app: AppModel, contents: GHActionModel[]): AppModel => {
     const newContentIds = contents.flatMap((c) =>

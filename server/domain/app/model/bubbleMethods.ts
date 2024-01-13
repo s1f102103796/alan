@@ -1,10 +1,6 @@
-import type { SystemStatus } from '$/commonTypesWithClient/bubbleModels';
-import {
-  type BubbleModel,
-  type GHActionModel,
-  type RWDeploymentModel,
-} from '$/commonTypesWithClient/bubbleModels';
-import { bubbleIdParser } from '$/service/idParsers';
+import type { BubbleModel, SystemStatus, TaskModel } from '$/commonTypesWithClient/bubbleModels';
+import { type GHActionModel, type RWDeploymentModel } from '$/commonTypesWithClient/bubbleModels';
+import { bubbleIdParser } from '$/commonTypesWithClient/idParsers';
 import { randomUUID } from 'crypto';
 
 export const bubbleMethods = {
@@ -25,6 +21,14 @@ export const bubbleMethods = {
       type: 'railway',
       content,
       createdTime: content.createdTime,
+    };
+  },
+  createTaskList: (content: TaskModel[]): BubbleModel => {
+    return {
+      id: bubbleIdParser.parse(randomUUID()),
+      type: 'taskList',
+      content,
+      createdTime: Date.now(),
     };
   },
   createAiOrHuman: (type: 'ai' | 'human', content: string, createdTime: number): BubbleModel => {

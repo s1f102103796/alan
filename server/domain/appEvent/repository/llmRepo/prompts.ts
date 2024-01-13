@@ -51,6 +51,13 @@ ${codeBlocks.fromText(schema.content, 'prisma')}
 認証不要の公開エンドポイントは 'public/' 以下に定義してください。
 認証にSupabase Authを利用しており、自動的に行われるため今回は考慮する必要がありません。`,
 
+  initTaskList: (
+    app: AppModel
+  ) => `${app.similarName}によく似たウェブサービスを開発するための機能要件をリストアップしてください。
+項目ごとに簡潔なタイトルと詳細な内容を書いてください。
+開発環境とCI/CDとユーザー認証機能とプロフィール機能とセキュリティ対策とレスポンスデザインは完備されているためリストに含める必要はありません。
+エンジニアが実装すべき順番にソートしてください。`,
+
   initClient: (
     app: AppModel,
     localGit: LocalGitModel,

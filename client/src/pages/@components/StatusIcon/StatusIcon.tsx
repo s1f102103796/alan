@@ -1,4 +1,4 @@
-import type { AppModel } from 'commonTypesWithClient/appModels';
+import type { AppModel } from '$/commonTypesWithClient/appModels';
 import styles from './statusIcon.module.css';
 
 const CheckMark = () => {

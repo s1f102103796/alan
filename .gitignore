@@ -35,8 +35,10 @@ npm-debug.log*
 
 # client
 client/src/api/*
+client/src/commonTypesWithClient/*
 
 # server
+server/appRepositories/
 server/index.js
 server/index.js.map
 server/upload/

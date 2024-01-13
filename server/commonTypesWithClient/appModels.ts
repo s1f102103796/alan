@@ -1,5 +1,5 @@
 import type { AppId, DisplayId, GHUserId, UserId } from './branded';
-import type { BubbleModel } from './bubbleModels';
+import type { BubbleModel, TaskModel } from './bubbleModels';
 
 export const APP_STATUSES = ['waiting', 'init', 'running', 'failure', 'success', 'closed'] as const;
 
@@ -36,6 +36,7 @@ export type WaitingAppModel = AppModelBase & {
   urls?: undefined;
   ogpImage?: undefined;
   railway?: undefined;
+  taskList?: undefined;
 };
 
 export type OgpImage = { url: string; s3Key: string; name: string; prompt: string };
@@ -46,6 +47,7 @@ export type InitAppModel = AppModelBase & {
   urls?: undefined;
   ogpImage?: OgpImage;
   railway?: RailwayModel;
+  taskList?: TaskModel[];
 };
 
 export type ActiveAppModel = AppModelBase & {
@@ -54,6 +56,7 @@ export type ActiveAppModel = AppModelBase & {
   urls?: { site: string; github: string; vscode: string };
   ogpImage: OgpImage;
   railway: RailwayModel;
+  taskList: TaskModel[];
 };
 
 export type AppModel = WaitingAppModel | InitAppModel | ActiveAppModel;

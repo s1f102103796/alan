@@ -62,3 +62,17 @@
 .commitLink:hover {
   text-decoration: underline;
 }
+
+.task {
+  margin-top: 12px;
+}
+
+.taskTitle {
+  font-weight: bold;
+  border-bottom: 1px solid #888;
+}
+
+.taskContent {
+  margin-top: 4px;
+  font-size: 12px;
+}

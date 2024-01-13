@@ -1,7 +1,7 @@
+import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { GHActionModel, RWDeploymentModel } from '$/commonTypesWithClient/bubbleModels';
 import type { MessageModel } from '@chatscope/chat-ui-kit-react';
 import { Avatar, Message } from '@chatscope/chat-ui-kit-react';
-import type { AppModel } from 'commonTypesWithClient/appModels';
-import type { GHActionModel, RWDeploymentModel } from 'commonTypesWithClient/bubbleModels';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Spacer } from 'src/components/Spacer';

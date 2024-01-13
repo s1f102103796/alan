@@ -1,3 +1,4 @@
+import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { MessageModel } from '@chatscope/chat-ui-kit-react';
 import {
   Avatar,
@@ -8,7 +9,6 @@ import {
   MessageList,
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react';
-import type { AppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { Spacer } from 'src/components/Spacer';
 import { ChatGPTIcon } from 'src/components/icons/ChatGPTIcon';
@@ -129,6 +129,35 @@ export const ChatArea = (props: { app: AppModel }) => {
                             />
                             <Spacer axis="y" size={6} />
                             <div>{bubble.content}</div>
+                          </Message.CustomContent>
+                        </Message>
+                      );
+                    case 'taskList':
+                      return (
+                        <Message
+                          key={bubble.id}
+                          model={{ type: 'custom' } as MessageModel}
+                          avatarPosition="tl"
+                        >
+                          <Avatar>
+                            <Spacer axis="y" size={26} />
+                            <Spacer axis="x" size={4} />
+                            <ChatGPTIcon size={32} fill="#fff" />
+                          </Avatar>
+                          <Message.CustomContent>
+                            <NameLabel name="GPT4-turbo" createdTime={bubble.createdTime} />
+                            <Spacer axis="y" size={6} />
+                            <div>
+                              <div>実装機能リストを作成しました。</div>
+                              {bubble.content.map((task, i) => (
+                                <div key={task.id} className={styles.task}>
+                                  <div className={styles.taskTitle}>
+                                    {i + 1}.{task.title}
+                                  </div>
+                                  <div className={styles.taskContent}>{task.content}</div>
+                                </div>
+                              ))}
+                            </div>
                           </Message.CustomContent>
                         </Message>
                       );

@@ -1,7 +1,7 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { AppEventId } from '$/commonTypesWithClient/branded';
 import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
-import type { AppEventId } from '$/service/branded';
-import { appEventIdParser } from '$/service/idParsers';
+import { appEventIdParser } from '$/commonTypesWithClient/idParsers';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { appEventUseCase } from '../useCase/appEventUseCase';
@@ -21,6 +21,7 @@ export const appEventTypeParser = z.enum([
   'MainBranchPushed',
   'OgpImageCreated',
   'RailwayCreated',
+  'TaskListCreated',
   'AppRunning',
   'SchemaCreated',
   'ApiDefined',
@@ -34,6 +35,7 @@ export const appSubscriberIdParser = z.enum([
   'createGitHub',
   'createOgpImage',
   'createRailway',
+  'createTaskList',
   'checkRunningStatus',
   'watchRailway',
   'watchRailwayOnce',
@@ -68,6 +70,7 @@ const appSubscriberDict = (): {
   GitHubCreated: [
     { id: 'createOgpImage', fn: appEventUseCase.createOgpImage },
     { id: 'createRailway', fn: appEventUseCase.createRailway },
+    { id: 'createTaskList', fn: appEventUseCase.createTaskList },
     { id: 'createSchema', fn: appEventUseCase.createSchema },
   ],
   MainBranchPushed: [{ id: 'watchRailway', fn: appEventUseCase.watchRailway }],
@@ -76,6 +79,7 @@ const appSubscriberDict = (): {
     { id: 'watchRailwayOnce', fn: appEventUseCase.watchRailwayOnce },
     { id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus },
   ],
+  TaskListCreated: [{ id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus }],
   AppRunning: [],
   SchemaCreated: [{ id: 'createApiDefinition', fn: appEventUseCase.createApiDef }],
   ApiDefined: [

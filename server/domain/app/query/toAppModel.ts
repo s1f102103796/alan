@@ -1,15 +1,16 @@
 import type { AppModel, AppModelBase, WaitingAppModel } from '$/commonTypesWithClient/appModels';
 import { APP_STATUSES } from '$/commonTypesWithClient/appModels';
-import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
+import type { BubbleModel, TaskModel } from '$/commonTypesWithClient/bubbleModels';
 import {
   bubbleTypeParser,
   parseGHAction,
   parseRWDeployment,
+  parseTask,
   systemStatusParser,
 } from '$/commonTypesWithClient/bubbleModels';
-import { appIdParser, bubbleIdParser, userIdParser } from '$/service/idParsers';
+import { appIdParser, bubbleIdParser, userIdParser } from '$/commonTypesWithClient/idParsers';
 import { customAssert } from '$/service/returnStatus';
-import type { App, Bubble, GitHubAction, RailwayDeployment, User } from '@prisma/client';
+import type { App, Bubble, GitHubAction, RailwayDeployment, Task, User } from '@prisma/client';
 import { z } from 'zod';
 import {
   indexToDisplayId,
@@ -25,9 +26,15 @@ import {
 type PrismaBubble = Bubble & {
   GitHubAction: GitHubAction | null;
   RailwayDeployment: RailwayDeployment | null;
+  taskList: Task[];
 };
 
-type PrismaApp = App & { User: User; bubbles: PrismaBubble[] };
+type PrismaApp = App & { User: User; bubbles: PrismaBubble[]; taskList: Task[] };
+
+const toTaskList = (taskList: Task[]): TaskModel[] =>
+  taskList.map((task) =>
+    parseTask({ id: task.id, title: task.title, content: task.content, done: task.done })
+  );
 
 // eslint-disable-next-line complexity
 const toBubble = (
@@ -86,6 +93,8 @@ const toBubble = (
           updatedTime: bubble.RailwayDeployment.updatedAt.getTime(),
         }),
       };
+    case 'taskList':
+      return { ...base, type, content: toTaskList(bubble.taskList) };
     default:
       throw new Error(type satisfies never);
   }
@@ -144,7 +153,8 @@ export const toAppModel = (app: PrismaApp, waitingIds: string[]): AppModel => {
       app.environmentId !== null && app.projectId !== null && app.serviceId !== null
         ? toRailway(app.environmentId, app.projectId, app.serviceId)
         : undefined;
-    return { ...toAppModelBase(app), status: 'init', ogpImage, railway };
+    const taskList = app.taskList.length > 0 ? toTaskList(app.taskList) : undefined;
+    return { ...toAppModelBase(app), status: 'init', ogpImage, railway, taskList };
   }
 
   customAssert(app.environmentId !== null, 'エラーならロジック修正必須');
@@ -152,6 +162,7 @@ export const toAppModel = (app: PrismaApp, waitingIds: string[]): AppModel => {
   customAssert(app.serviceId !== null, 'エラーならロジック修正必須');
   customAssert(app.ogpImageName !== null, 'エラーならロジック修正必須');
   customAssert(app.ogpImagePrompt !== null, 'エラーならロジック修正必須');
+  customAssert(app.taskList.length > 0, 'エラーならロジック修正必須');
 
   const base = toAppModelBase(app);
 
@@ -169,5 +180,6 @@ export const toAppModel = (app: PrismaApp, waitingIds: string[]): AppModel => {
         : undefined,
     ogpImage: toOgpImage(app.index, app.ogpImageName, app.ogpImagePrompt),
     railway: toRailway(app.environmentId, app.projectId, app.serviceId),
+    taskList: toTaskList(app.taskList),
   };
 };

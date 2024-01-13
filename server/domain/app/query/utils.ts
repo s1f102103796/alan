@@ -1,12 +1,12 @@
 import type { AppModel, OgpImage } from '$/commonTypesWithClient/appModels';
 import type { DisplayId } from '$/commonTypesWithClient/branded';
+import { displayIdParser } from '$/commonTypesWithClient/idParsers';
 import {
   BASE_DOMAIN,
   DISPLAY_ID_PREFIX,
   GITHUB_OWNER,
   S3_CUSTOM_ENDPOINT,
 } from '$/service/envValues';
-import { displayIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
 
 export const indexToDisplayId = (index: number) =>

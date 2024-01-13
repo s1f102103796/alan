@@ -1,4 +1,4 @@
-import type { UserModel } from 'commonTypesWithClient/appModels';
+import type { UserModel } from '$/commonTypesWithClient/appModels';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { useLoading } from 'src/pages/@hooks/useLoading';
 import { APP_TITLE } from 'src/utils/constants';

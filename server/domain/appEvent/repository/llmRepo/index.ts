@@ -1,9 +1,12 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { TaskModel } from '$/commonTypesWithClient/bubbleModels';
+import { parseTask } from '$/commonTypesWithClient/bubbleModels';
 import type { GHStepModel } from '$/domain/app/model/githubModels';
 import type { LocalGitFile, LocalGitModel } from '$/domain/app/repository/localGitRepo';
 import { customAssert } from '$/service/returnStatus';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { exec } from 'child_process';
+import { randomUUID } from 'crypto';
 import { readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
@@ -102,6 +105,15 @@ generator client {
     }
 
     throw new Error('openapi.jsonを正しく生成できませんでした。');
+  },
+  initTaskList: async (app: AppModel): Promise<TaskModel[]> => {
+    const prompt = prompts.initTaskList(app);
+    const validator = z.object({
+      taskList: z.array(z.object({ title: z.string(), content: z.string() })),
+    });
+    const result = await invokeOrThrow(app, prompt, validator, []);
+
+    return result.taskList.map((task) => parseTask({ ...task, id: randomUUID(), done: false }));
   },
   initClient: async (
     app: AppModel,

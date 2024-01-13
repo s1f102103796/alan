@@ -1,5 +1,5 @@
 import type { UserModel } from '$/commonTypesWithClient/appModels';
-import { ghUserIdParser, userIdParser } from '$/service/idParsers';
+import { ghUserIdParser, userIdParser } from '$/commonTypesWithClient/idParsers';
 import type { UserRecord } from 'firebase-admin/lib/auth/user-record';
 
 export const userMethods = {

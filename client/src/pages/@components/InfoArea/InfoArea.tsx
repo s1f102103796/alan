@@ -1,4 +1,4 @@
-import type { AppModel } from 'commonTypesWithClient/appModels';
+import type { AppModel } from '$/commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { BatteryIcon } from 'src/components/Notch/BatteryIcon';
@@ -29,7 +29,7 @@ export const InfoArea = (props: { app: AppModel }) => {
       <div className={styles.appName}>
         <span>{props.app.name}</span>
       </div>
-      {props.app.urls ? (
+      {props.app.urls !== undefined ? (
         <>
           <div className={styles.leftContent}>
             <img src={staticPath.images.iphone_png} style={{ height: `calc${imgHeight}` }} />

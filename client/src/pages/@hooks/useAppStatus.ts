@@ -1,5 +1,5 @@
-import type { AppModel } from 'commonTypesWithClient/appModels';
-import type { GHActionModel, RWDeploymentModel } from 'commonTypesWithClient/bubbleModels';
+import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { GHActionModel, RWDeploymentModel } from '$/commonTypesWithClient/bubbleModels';
 import { useMemo } from 'react';
 
 // eslint-disable-next-line complexity

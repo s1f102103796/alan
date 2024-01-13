@@ -1,4 +1,4 @@
-import type { AppModel, UserModel } from 'commonTypesWithClient/appModels';
+import type { AppModel, UserModel } from '$/commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { PrimeButton } from 'src/components/Buttons/Buttons';
@@ -72,7 +72,7 @@ export const AppList = (props: {
 
   return (
     <div className={styles.container}>
-      {props.user && (
+      {props.user !== null && (
         <div className={styles.createBtn}>
           <PrimeButton label="アプリ新規生成" width="100%" onClick={() => setOpened(true)} />
         </div>

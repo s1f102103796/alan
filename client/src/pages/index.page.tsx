@@ -1,5 +1,5 @@
-import type { AppModel } from 'commonTypesWithClient/appModels';
-import type { DisplayId } from 'commonTypesWithClient/branded';
+import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { DisplayId } from '$/commonTypesWithClient/branded';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -72,7 +72,7 @@ const Home = () => {
               append={appendApp}
             />
           </div>
-          {currentApp && (
+          {currentApp !== undefined && (
             <>
               <div className={styles.chatArea}>
                 <ChatArea app={currentApp} />
