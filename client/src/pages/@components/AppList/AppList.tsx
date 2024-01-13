@@ -10,7 +10,8 @@ import { useAppStatus } from 'src/pages/@hooks/useAppStatus';
 import { useLoading } from 'src/pages/@hooks/useLoading';
 import { pagesPath } from 'src/utils/$path';
 import { apiClient } from 'src/utils/apiClient';
-import { FIRST_QUESTION } from 'src/utils/constants';
+import { FIRST_QUESTION, LOGIN_MESSAGE } from 'src/utils/constants';
+import { loginWithGitHub } from 'src/utils/login';
 import styles from './appList.module.css';
 
 const StatusCircle = (props: { app: AppModel }) => {
@@ -70,13 +71,20 @@ export const AppList = (props: {
     setOpened(false);
   };
 
+  const login = async () => {
+    addLoading();
+    await loginWithGitHub();
+    removeLoading();
+    setOpened(false);
+  };
+
   return (
     <div className={styles.container}>
-      {props.user && (
+      {
         <div className={styles.createBtn}>
           <PrimeButton label="アプリ新規生成" width="100%" onClick={() => setOpened(true)} />
         </div>
-      )}
+      }
       <div className={styles.searchBox}>
         <input
           className={styles.searchInput}
@@ -114,22 +122,38 @@ export const AppList = (props: {
         ))}
       </div>
       <Modal open={opened}>
-        <ModalHeader text={FIRST_QUESTION} />
-        <ModalBody
-          content={
-            <div>
-              <div>アプリ名</div>
-              <Spacer axis="y" size={8} />
-              <TextInput value={name} width="400px" onChange={setName} />
-              <Spacer axis="y" size={24} />
-              <div>類似サービス名</div>
-              <Spacer axis="y" size={8} />
-              <TextInput value={similarName} width="400px" onChange={setSimilarName} />
-              <Spacer axis="y" size={24} />
-            </div>
-          }
-        />
-        <ModalFooter okText="新規生成" ok={createApp} cancel={() => setOpened(false)} />
+        {props.user ? (
+          <>
+            <ModalHeader text={FIRST_QUESTION} />
+            <ModalBody
+              content={
+                <div>
+                  <div>アプリ名</div>
+                  <Spacer axis="y" size={8} />
+                  <TextInput value={name} width="400px" onChange={setName} />
+                  <Spacer axis="y" size={24} />
+                  <div>類似サービス名</div>
+                  <Spacer axis="y" size={8} />
+                  <TextInput value={similarName} width="400px" onChange={setSimilarName} />
+                  <Spacer axis="y" size={24} />
+                </div>
+              }
+            />
+            <ModalFooter okText="新規生成" ok={createApp} cancel={() => setOpened(false)} />
+          </>
+        ) : (
+          <>
+            <ModalHeader text={LOGIN_MESSAGE} />
+            <ModalBody
+              content={
+                <div className={styles.loginMsg}>
+                  <div>アプリ新規生成するにはGitHubのログインが必要です</div>
+                </div>
+              }
+            />
+            <ModalFooter okText="ログイン" ok={login} cancel={() => setOpened(false)} />
+          </>
+        )}
       </Modal>
     </div>
   );

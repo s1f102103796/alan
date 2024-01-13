@@ -10,3 +10,4 @@ export const CSS_VARS = {
 };
 
 export const FIRST_QUESTION = 'どんなアプリが欲しいですか？';
+export const LOGIN_MESSAGE = 'アプリ新規生成できませんでした';

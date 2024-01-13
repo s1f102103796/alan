@@ -95,3 +95,16 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.loginMsg {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 12px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.2s;
+}
