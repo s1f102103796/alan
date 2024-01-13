@@ -127,7 +127,7 @@
 
 .linkCard {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   padding: 4px 12px 10px;
   border: 1px solid #fff8;
   border-radius: 8px;
@@ -147,7 +147,7 @@
 }
 
 .linkLabel {
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .linkHref {
@@ -156,4 +156,25 @@
   font-size: 12px;
   text-decoration: underline;
   white-space: nowrap;
+}
+
+.taskList {
+  padding: 2px 16px 16px;
+  background: #fff1;
+  border-radius: 8px;
+}
+
+.task {
+  margin-top: 12px;
+}
+
+.taskTitle {
+  font-size: 14px;
+  font-weight: bold;
+  border-bottom: 1px solid #888;
+}
+
+.taskContent {
+  margin-top: 4px;
+  font-size: 12px;
 }

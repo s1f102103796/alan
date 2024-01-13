@@ -71,7 +71,6 @@ const appSubscriberDict = (): {
     { id: 'createOgpImage', fn: appEventUseCase.createOgpImage },
     { id: 'createRailway', fn: appEventUseCase.createRailway },
     { id: 'createTaskList', fn: appEventUseCase.createTaskList },
-    { id: 'createSchema', fn: appEventUseCase.createSchema },
   ],
   MainBranchPushed: [{ id: 'watchRailway', fn: appEventUseCase.watchRailway }],
   OgpImageCreated: [{ id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus }],
@@ -79,7 +78,10 @@ const appSubscriberDict = (): {
     { id: 'watchRailwayOnce', fn: appEventUseCase.watchRailwayOnce },
     { id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus },
   ],
-  TaskListCreated: [{ id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus }],
+  TaskListCreated: [
+    { id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus },
+    { id: 'createSchema', fn: appEventUseCase.createSchema },
+  ],
   AppRunning: [],
   SchemaCreated: [{ id: 'createApiDefinition', fn: appEventUseCase.createApiDef }],
   ApiDefined: [

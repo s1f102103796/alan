@@ -33,7 +33,7 @@ const updateWorkflowRun = async (displayId: DisplayId, workflowRun: WorkflowRun)
     switch (workflowRun.name) {
       case 'pull request test':
       case 'client deployment':
-      case 'pages build and deployment':
+      case 'pages build and deployment with artifacts-next':
       case 'test':
         return;
       case 'client test':

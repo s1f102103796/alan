@@ -11,7 +11,7 @@ export const actionTypeParser = z.enum([
   'test',
   'client deployment',
   'pull request test',
-  'pages build and deployment',
+  'pages build and deployment with artifacts-next',
   'client test',
   'server test',
 ]);

@@ -148,11 +148,11 @@ export const ChatArea = (props: { app: AppModel }) => {
                             <NameLabel name="GPT4-turbo" createdTime={bubble.createdTime} />
                             <Spacer axis="y" size={6} />
                             <div>
-                              <div>実装機能リストを作成しました。</div>
+                              <div>実装タスクのリストを優先順に作成しました。</div>
                               {bubble.content.map((task, i) => (
                                 <div key={task.id} className={styles.task}>
                                   <div className={styles.taskTitle}>
-                                    {i + 1}.{task.title}
+                                    {i + 1}. {task.title}
                                   </div>
                                   <div className={styles.taskContent}>{task.content}</div>
                                 </div>

@@ -1,4 +1,4 @@
-import type { AppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
+import type { ActiveAppModel, AppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
 import type { GHActionModel } from '$/commonTypesWithClient/bubbleModels';
 import type { GHStepModel } from '$/domain/app/model/githubModels';
 import { GH_STEP_TYPES, parseGHStep } from '$/domain/app/model/githubModels';
@@ -68,14 +68,14 @@ export const githubEventRepo = {
       ._repo(repoName)
       .$patch({ body: { homepage: urls.site, default_branch: 'main' } });
   },
-  createSchema: async (app: AppModel) => {
+  createSchema: async (app: InitAppModel | ActiveAppModel) => {
     const gitDiff = await llmRepo.initSchema(app);
     const branch: RemoteBranch = 'deus/db-schema';
 
     await localGitRepo.pushToRemoteOrThrow(app, undefined, gitDiff, branch);
     await githubUseCase.addGitBubble(app, branch, gitDiff);
   },
-  createApiDef: async (app: AppModel) => {
+  createApiDef: async (app: InitAppModel | ActiveAppModel) => {
     const localGit = await localGitRepo.getFiles(app, 'deus/db-schema');
     const aspidaFiles = await llmRepo.initApiDef(app, localGit);
     const gitDiff: GitDiffModel = {

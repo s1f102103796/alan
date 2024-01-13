@@ -153,6 +153,8 @@ export const appEventUseCase = {
     ),
   createSchema: () =>
     subscribe('createSchema', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
       await addSystemBubbleOnce(published, 'creating_schema');
       await githubEventRepo.createSchema(published.app);
       await transaction('RepeatableRead', async (tx) => {
@@ -164,6 +166,8 @@ export const appEventUseCase = {
     }),
   createApiDef: () =>
     subscribe('createApiDefinition', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
       await addSystemBubbleOnce(published, 'creating_api_def');
       await githubEventRepo.createApiDef(published.app);
       await transaction('RepeatableRead', async (tx) => {
@@ -175,6 +179,8 @@ export const appEventUseCase = {
     }),
   createClientCode: () =>
     subscribe('createClientCode', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
       await addSystemBubbleOnce(published, 'creating_client_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-client');
       const aspidaGit = await localGitRepo.getApiFiles(published.app);
@@ -190,6 +196,8 @@ export const appEventUseCase = {
     }),
   createServerCode: () =>
     subscribe('createServerCode', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
       await addSystemBubbleOnce(published, 'creating_server_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-server');
       const aspidaGit = await localGitRepo.getApiFiles(published.app);

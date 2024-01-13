@@ -71,22 +71,22 @@ export const InfoArea = (props: { app: AppModel }) => {
             <div className={styles.linkContainer}>
               {[
                 {
-                  icon: <SiteIcon size={24} fill="#fff" />,
-                  label: 'Web App',
-                  href: props.app.urls.site,
-                },
-                {
-                  icon: <GithubIcon size={24} fill="#fff" />,
+                  icon: <GithubIcon size={20} fill="#fff" />,
                   label: 'GitHub',
                   href: props.app.urls.github,
                 },
                 {
-                  icon: <VscodeIcon size={24} />,
+                  icon: <SiteIcon size={20} fill="#fff" />,
+                  label: 'Web App',
+                  href: props.app.urls.site,
+                },
+                {
+                  icon: <VscodeIcon size={20} />,
                   label: 'VSCode',
                   href: props.app.urls.vscode,
                 },
                 {
-                  icon: <RailwayIcon size={24} fill="#fff" />,
+                  icon: <RailwayIcon size={20} fill="#fff" />,
                   label: 'Railway',
                   href: props.app.railway.url,
                 },
@@ -108,9 +108,22 @@ export const InfoArea = (props: { app: AppModel }) => {
             <Spacer axis="y" size={24} />
             <div style={{ fontSize: '18px', fontWeight: 'bold' }}>OGP Image</div>
             <Spacer axis="y" size={8} />
-            <Textarea rows={8} value={props.app.ogpImage.prompt} onChange={() => null} />
+            <Textarea rows={5} value={props.app.ogpImage.prompt} onChange={() => null} />
             <Spacer axis="y" size={16} />
             <img src={props.app.ogpImage.url} style={{ width: '100%' }} />
+            <Spacer axis="y" size={24} />
+            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Task List</div>
+            <Spacer axis="y" size={8} />
+            <div className={styles.taskList}>
+              {props.app.taskList.map((task, i) => (
+                <div key={task.id} className={styles.task}>
+                  <div className={styles.taskTitle}>
+                    {i + 1}. {task.title}
+                  </div>
+                  <div className={styles.taskContent}>{task.content}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </>
       ) : (

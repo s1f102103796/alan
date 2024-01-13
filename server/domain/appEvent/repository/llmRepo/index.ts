@@ -1,4 +1,4 @@
-import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { ActiveAppModel, AppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
 import type { TaskModel } from '$/commonTypesWithClient/bubbleModels';
 import { parseTask } from '$/commonTypesWithClient/bubbleModels';
 import type { GHStepModel } from '$/domain/app/model/githubModels';
@@ -33,7 +33,7 @@ const toClientDeletedFiles = (deletedFiles: string[]) => deletedFiles.filter(fil
 const toServerDeletedFiles = (deletedFiles: string[]) => deletedFiles.filter(filterServer);
 
 export const llmRepo = {
-  initSchema: async (app: AppModel): Promise<GitDiffModel> => {
+  initSchema: async (app: InitAppModel | ActiveAppModel): Promise<GitDiffModel> => {
     const prompt = prompts.initSchema(app);
     const prismaHeader = `datasource db {
   provider = "postgresql"
@@ -79,7 +79,10 @@ generator client {
 
     throw new Error('schema.prismaを正しく生成できませんでした。');
   },
-  initApiDef: async (app: AppModel, localGit: LocalGitModel): Promise<LocalGitFile[]> => {
+  initApiDef: async (
+    app: InitAppModel | ActiveAppModel,
+    localGit: LocalGitModel
+  ): Promise<LocalGitFile[]> => {
     const schema = localGit.files.find((file) => file.source === sources.schema);
     customAssert(schema, 'エラーならロジック修正必須');
 
@@ -116,7 +119,7 @@ generator client {
     return result.taskList.map((task) => parseTask({ ...task, id: randomUUID(), done: false }));
   },
   initClient: async (
-    app: AppModel,
+    app: InitAppModel | ActiveAppModel,
     localGit: LocalGitModel,
     aspidaGit: LocalGitFile[]
   ): Promise<GitDiffModel> => {
@@ -130,7 +133,7 @@ generator client {
     };
   },
   initServer: async (
-    app: AppModel,
+    app: InitAppModel | ActiveAppModel,
     localGit: LocalGitModel,
     aspidaGit: LocalGitFile[]
   ): Promise<GitDiffModel> => {

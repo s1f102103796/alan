@@ -173,7 +173,7 @@ export const toAppModel = (app: PrismaApp, waitingIds: string[]): AppModel => {
       base.bubbles.some(
         (b) =>
           b.type === 'github' &&
-          b.content.type === 'pages build and deployment' &&
+          b.content.type === 'pages build and deployment with artifacts-next' &&
           b.content.conclusion === 'success'
       ) && base.bubbles.some((b) => b.type === 'railway' && b.content.status === 'SUCCESS')
         ? indexToUrls(app.index)
