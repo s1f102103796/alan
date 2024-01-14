@@ -34,6 +34,10 @@ const Home = () => {
     setApps((apps) => [...apps, app]);
     router.push(`/?id=${app.displayId}`, undefined, { shallow: true });
   };
+  const sendChangeRequest = async (app: AppModel, content: string) => {
+    const newApp = await apiClient.apps.$patch({ body: { appId: app.id, content } });
+    setApps((apps) => apps.map((app) => (app.id === newApp.id ? newApp : app)));
+  };
   const fetchApps = useCallback(
     () =>
       (user === null ? apiClient.public.cachedApps : apiClient.apps)
@@ -75,7 +79,7 @@ const Home = () => {
           {currentApp !== undefined && (
             <>
               <div className={styles.chatArea}>
-                <ChatArea app={currentApp} />
+                <ChatArea app={currentApp} onSend={(e) => sendChangeRequest(currentApp, e)} />
               </div>
               <div className={styles.infoArea}>
                 <InfoArea app={currentApp} />

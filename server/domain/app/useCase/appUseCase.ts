@@ -1,11 +1,12 @@
 import type {
+  ActiveAppModel,
   AppModel,
   InitAppModel,
   OgpImage,
   RailwayModel,
 } from '$/commonTypesWithClient/appModels';
 import { type UserModel } from '$/commonTypesWithClient/appModels';
-import type { AppId } from '$/commonTypesWithClient/branded';
+import type { AppId, Maybe } from '$/commonTypesWithClient/branded';
 import type {
   RWDeploymentModel,
   SystemStatus,
@@ -86,6 +87,16 @@ export const appUseCase = {
 
     return await appEventUseCase.createWithLatestBubble(tx, 'TaskListCreated', app);
   },
+  completeTaskListUpdated: async (
+    tx: Prisma.TransactionClient,
+    inited: InitAppModel | ActiveAppModel,
+    taskList: TaskModel[]
+  ) => {
+    const app = appMethods.addTaskListBubble(inited, taskList);
+    await appRepo.save(tx, app);
+
+    return await appEventUseCase.createWithLatestBubble(tx, 'TaskListUpdated', app);
+  },
   run: async (
     tx: Prisma.TransactionClient,
     inited: InitAppModel,
@@ -108,4 +119,22 @@ export const appUseCase = {
   callWhenServerStarted: () => {
     githubUseCase.checkAndResetGHActionsWhileServerWasDown();
   },
+  changeRequest: (user: UserModel, appId: Maybe<AppId>, content: string) =>
+    transaction('RepeatableRead', async (tx) => {
+      const app = await appQuery.findByIdOrThrow(tx, appId);
+      customAssert(app.taskList, '不正リクエスト防御');
+      const newApp = appMethods.addHumanBubble(user, app, content);
+      await appRepo.save(tx, newApp);
+
+      const dispatcher = await appEventUseCase.createWithLatestBubble(
+        tx,
+        'ChangeRequested',
+        newApp
+      );
+
+      return { app: newApp, dispatcher };
+    }).then(({ app, dispatcher }) => {
+      dispatcher.dispatchAfterTransaction();
+      return app;
+    }),
 };

@@ -27,7 +27,7 @@ import { NameLabel } from './NameLabel';
 import { SystemContent } from './SystemContent';
 import styles from './chatArea.module.css';
 
-export const ChatArea = (props: { app: AppModel }) => {
+export const ChatArea = (props: { app: AppModel; onSend: (content: string) => void }) => {
   const isClosed = props.app.status === 'closed';
   const appStatus = useAppStatus(props.app);
 
@@ -167,13 +167,15 @@ export const ChatArea = (props: { app: AppModel }) => {
                 })
               }
             </MessageList>
-            <MessageInput
-              style={{ background: '#fff2', borderTopColor: CSS_VARS.borderColor }}
-              placeholder="変更要望を入力"
-              sendButton={false}
-              attachButton={false}
-              disabled={props.app.status !== 'running'}
-            />
+            {props.app.status === 'running' && (
+              <MessageInput
+                style={{ background: '#fff2', borderTopColor: CSS_VARS.borderColor }}
+                placeholder="変更要望を入力"
+                sendButton={false}
+                attachButton={false}
+                onSend={props.onSend}
+              />
+            )}
           </ChatContainer>
         </MainContainer>
       </div>

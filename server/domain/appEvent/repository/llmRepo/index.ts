@@ -118,6 +118,24 @@ generator client {
 
     return result.taskList.map((task) => parseTask({ ...task, id: randomUUID(), done: false }));
   },
+  updateTaskList: async (app: AppModel): Promise<TaskModel[]> => {
+    const taskList = app.taskList;
+    customAssert(taskList, 'エラーならロジック修正必須');
+    const content = app.bubbles
+      .slice(
+        app.bubbles.findIndex((b) => b.type === 'system' && b.content === 'updating_task_list')
+      )
+      .filter((b) => b.type === 'human')
+      .map((b) => b.content)
+      .join('\n');
+    const prompt = prompts.updateTaskList(app, content, taskList);
+    const validator = z.object({
+      taskList: z.array(z.object({ title: z.string(), content: z.string() })),
+    });
+    const result = await invokeOrThrow(app, prompt, validator, []);
+
+    return result.taskList.map((task) => parseTask({ ...task, id: randomUUID(), done: false }));
+  },
   initClient: async (
     app: InitAppModel | ActiveAppModel,
     localGit: LocalGitModel,

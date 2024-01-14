@@ -14,6 +14,7 @@ import type {
   TaskModel,
 } from '$/commonTypesWithClient/bubbleModels';
 import { appIdParser } from '$/commonTypesWithClient/idParsers';
+import { customAssert } from '$/service/returnStatus';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { indexToDisplayId, indexToUrls } from '../query/utils';
@@ -87,6 +88,10 @@ export const appMethods = {
   },
   addBubble: <T extends AppModel>(app: T, bubble: BubbleModel): T => {
     return { ...app, bubbles: [...app.bubbles, bubble] };
+  },
+  addHumanBubble: (user: UserModel, app: AppModel, content: string) => {
+    customAssert(user.id === app.author.userId, '不正リクエスト防御');
+    return appMethods.addBubble(app, bubbleMethods.createAiOrHuman('human', content, Date.now()));
   },
   addTaskListBubble: <T extends InitAppModel | ActiveAppModel>(
     app: T,

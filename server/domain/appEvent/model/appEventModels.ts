@@ -22,6 +22,8 @@ export const appEventTypeParser = z.enum([
   'OgpImageCreated',
   'RailwayCreated',
   'TaskListCreated',
+  'TaskListUpdated',
+  'ChangeRequested',
   'AppRunning',
   'SchemaCreated',
   'ApiDefined',
@@ -45,6 +47,7 @@ export const appSubscriberIdParser = z.enum([
   'createServerCode',
   'fixClientCode',
   'fixServerCode',
+  'updateTaskList',
 ]);
 export type SubscriberId = z.infer<typeof appSubscriberIdParser>;
 
@@ -82,6 +85,8 @@ const appSubscriberDict = (): {
     { id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus },
     { id: 'createSchema', fn: appEventUseCase.createSchema },
   ],
+  TaskListUpdated: [],
+  ChangeRequested: [{ id: 'updateTaskList', fn: appEventUseCase.updateTaskList }],
   AppRunning: [],
   SchemaCreated: [{ id: 'createApiDefinition', fn: appEventUseCase.createApiDef }],
   ApiDefined: [

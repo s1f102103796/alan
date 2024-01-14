@@ -116,6 +116,20 @@ export const appEventUseCase = {
         return await appUseCase.completeTaskListInit(tx, event.app, taskList);
       }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
     }),
+  updateTaskList: () =>
+    subscribe('updateTaskList', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
+      await addSystemBubbleOnce(published, 'updating_task_list');
+      const taskList = await llmRepo.updateTaskList(published.app);
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+
+        customAssert(event.app.status !== 'waiting', 'エラーならロジック修正必須');
+        return await appUseCase.completeTaskListUpdated(tx, event.app, taskList);
+      }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
+    }),
   watchRailway: () =>
     subscribe('watchRailway', async (published) => {
       if (published.app.status === 'waiting' || published.app.railway === undefined) {

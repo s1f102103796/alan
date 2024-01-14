@@ -126,6 +126,7 @@ const SYSTEM_STATUSES = [
   'completed_github',
   'creating_schema',
   'creating_api_def',
+  'updating_task_list',
   'creating_client_code',
   'creating_server_code',
   'fixing_client_code',
