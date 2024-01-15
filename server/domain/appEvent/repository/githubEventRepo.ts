@@ -66,7 +66,10 @@ export const githubEventRepo = {
     await githubApiClient.repos
       ._owner(GITHUB_OWNER)
       ._repo(repoName)
-      .$patch({ body: { homepage: urls.site, default_branch: 'main' } });
+      .$patch({ body: { homepage: urls.site, default_branch: 'main' } })
+      .catch((e) => {
+        if (e.response.status !== 422) throw e;
+      });
   },
   createSchema: async (app: InitAppModel | ActiveAppModel) => {
     const gitDiff = await llmRepo.initSchema(app);
