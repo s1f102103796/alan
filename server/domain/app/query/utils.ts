@@ -16,7 +16,8 @@ export const displayIdToIndex = (displayId: DisplayId) => {
   customAssert(idxText !== undefined, 'エラーならロジック修正必須');
   return +idxText;
 };
-export const indexToSiteUrl = (index: number) => `https://${index}.${BASE_DOMAIN}`;
+export const indexToSiteUrl = (index: number) =>
+  `https://${indexToDisplayId(index)}.${BASE_DOMAIN}`;
 const toOgpS3Key = (index: number, imageName: string) =>
   `${indexToDisplayId(index)}/images/ogp/${imageName}`;
 export const toOgpImage = (index: number, imageName: string, prompt: string): OgpImage => ({
