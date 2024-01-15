@@ -45,6 +45,9 @@ const fetchBranch = async (app: AppModel, remoteBranch: RemoteBranch, baseBranch
       .catch(() => simpleGit(dirPath).fetch('origin', baseBranch));
   } else {
     await simpleGit().clone(`https://${gitPath}`, dirPath);
+    await simpleGit(dirPath)
+      .addConfig('user.name', 'github-actions[bot]')
+      .addConfig('user.email', 'github-actions[bot]@users.noreply.github.com');
   }
 
   await simpleGit(dirPath)
