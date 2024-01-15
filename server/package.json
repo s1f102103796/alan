@@ -12,7 +12,7 @@
     "prebuild": "npm run generate && npm run migrate:deploy",
     "build": "node ./scripts/build.prod.js",
     "generate": "run-s generate:prisma generate:aspida generate:frourio",
-    "generate:aspida": "aspida",
+    "generate:aspida": "aspida -c aspida-prod.config.js",
     "generate:frourio": "frourio",
     "generate:prisma": "prisma generate",
     "migrate:dev": "prisma migrate dev && npx prisma db seed",

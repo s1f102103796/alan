@@ -110,7 +110,7 @@ export const InfoArea = (props: { app: AppModel }) => {
             <Spacer axis="y" size={8} />
             <Textarea rows={5} value={props.app.ogpImage.prompt} onChange={() => null} />
             <Spacer axis="y" size={16} />
-            <img src={props.app.ogpImage.url} style={{ width: '100%' }} />
+            <img src={props.app.ogpImage.url} style={{ width: '100%', borderRadius: 8 }} />
             <Spacer axis="y" size={24} />
             <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Task List</div>
             <Spacer axis="y" size={8} />

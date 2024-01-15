@@ -3,7 +3,7 @@ import z from 'zod';
 
 dotenv.config();
 
-const PORT = +z.string().parse(process.env.PORT);
+const PORT = +z.string().parse(process.env.PORT ?? '8000'); // seed時にRailwayでundefined
 const API_BASE_PATH = z.string().startsWith('/').parse(process.env.API_BASE_PATH);
 const API_ORIGIN = z.string().url().parse(process.env.API_ORIGIN);
 const CORS_ORIGIN = z.string().url().parse(process.env.CORS_ORIGIN);
