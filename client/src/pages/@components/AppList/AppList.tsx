@@ -80,7 +80,7 @@ export const AppList = (props: {
 
   return (
     <div className={styles.container}>
-      {props.user !== null && (
+      {
         <div className={styles.createBtn}>
           <PrimeButton label="アプリ新規生成" width="100%" onClick={() => setOpened(true)} />
         </div>
