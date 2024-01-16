@@ -10,7 +10,7 @@ import { useAppStatus } from 'src/pages/@hooks/useAppStatus';
 import { useLoading } from 'src/pages/@hooks/useLoading';
 import { pagesPath } from 'src/utils/$path';
 import { apiClient } from 'src/utils/apiClient';
-import { FIRST_QUESTION, LOGIN_MESSAGE } from 'src/utils/constants';
+import { FIRST_QUESTION } from 'src/utils/constants';
 import { loginWithGitHub } from 'src/utils/login';
 import styles from './appList.module.css';
 
@@ -143,11 +143,11 @@ export const AppList = (props: {
           </>
         ) : (
           <>
-            <ModalHeader text={LOGIN_MESSAGE} />
+            <ModalHeader text="ログインでアプリ新規生成" />
             <ModalBody
               content={
                 <div className={styles.loginMsg}>
-                  <div>アプリ新規生成するにはGitHubのログインが必要です</div>
+                  アプリ新規生成するにはGitHubのログインが必要です
                 </div>
               }
             />
