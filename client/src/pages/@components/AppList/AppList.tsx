@@ -80,11 +80,10 @@ export const AppList = (props: {
 
   return (
     <div className={styles.container}>
-      {
-        <div className={styles.createBtn}>
-          <PrimeButton label="アプリ新規生成" width="100%" onClick={() => setOpened(true)} />
-        </div>
-      }
+      <div className={styles.createBtn}>
+        <PrimeButton label="アプリ新規生成" width="100%" onClick={() => setOpened(true)} />
+      </div>
+
       <div className={styles.searchBox}>
         <input
           className={styles.searchInput}
