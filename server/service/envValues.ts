@@ -3,7 +3,7 @@ import z from 'zod';
 
 dotenv.config();
 
-const PORT = +z.string().parse(process.env.PORT);
+const PORT = +z.string().parse(process.env.PORT ?? '8000'); // seed時にRailwayでundefined
 const API_BASE_PATH = z.string().startsWith('/').parse(process.env.API_BASE_PATH);
 const API_ORIGIN = z.string().url().parse(process.env.API_ORIGIN);
 const CORS_ORIGIN = z.string().url().parse(process.env.CORS_ORIGIN);
@@ -13,7 +13,7 @@ const FIREBASE_AUTH_EMULATOR_HOST = z
   .parse(process.env.FIREBASE_AUTH_EMULATOR_HOST);
 const FIREBASE_SERVER_KEY = z.string().parse(process.env.FIREBASE_SERVER_KEY);
 const SUPABASE_JWT_SECRET = z.string().parse(process.env.SUPABASE_JWT_SECRET);
-const S3_ENDPOINT = z.string().url().optional().parse(process.env.S3_ENDPOINT);
+const S3_ENDPOINT = z.string().url().parse(process.env.S3_ENDPOINT);
 const S3_BUCKET = z.string().parse(process.env.S3_BUCKET);
 const S3_ACCESS_KEY = z.string().parse(process.env.S3_ACCESS_KEY);
 const S3_SECRET_KEY = z.string().parse(process.env.S3_SECRET_KEY);
@@ -31,7 +31,11 @@ const S3_CUSTOM_ENDPOINT = z
   .string()
   .url()
   .optional()
-  .parse(process.env.S3_CUSTOM_ENDPOINT === '' ? undefined : process.env.S3_CUSTOM_ENDPOINT);
+  .parse(
+    process.env.S3_CUSTOM_ENDPOINT === ''
+      ? `${S3_ENDPOINT}/${S3_BUCKET}`
+      : process.env.S3_CUSTOM_ENDPOINT
+  );
 const IS_LOCALHOST = API_ORIGIN.startsWith('http://localhost');
 
 export {

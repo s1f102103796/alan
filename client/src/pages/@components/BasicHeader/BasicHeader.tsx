@@ -1,7 +1,7 @@
-import { APP_TITLE } from 'commonConstantsWithClient';
-import type { UserModel } from 'commonTypesWithClient/appModels';
+import type { UserModel } from '$/commonTypesWithClient/appModels';
 import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { useLoading } from 'src/pages/@hooks/useLoading';
+import { APP_TITLE } from 'src/utils/constants';
 import { loginWithGitHub, logout } from 'src/utils/login';
 import { AuthorIcon } from '../AuthorIcon';
 import styles from './basicHeader.module.css';

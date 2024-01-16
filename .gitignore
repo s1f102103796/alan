@@ -33,7 +33,12 @@ npm-debug.log*
 # docker
 /docker/dev/minio/
 
+# client
+client/src/api/*
+client/src/commonTypesWithClient/*
+
 # server
+server/appRepositories/
 server/index.js
 server/index.js.map
 server/upload/

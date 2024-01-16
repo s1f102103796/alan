@@ -1,12 +1,12 @@
 import type { AppModel, OgpImage } from '$/commonTypesWithClient/appModels';
 import type { DisplayId } from '$/commonTypesWithClient/branded';
+import { displayIdParser } from '$/commonTypesWithClient/idParsers';
 import {
   BASE_DOMAIN,
   DISPLAY_ID_PREFIX,
   GITHUB_OWNER,
   S3_CUSTOM_ENDPOINT,
 } from '$/service/envValues';
-import { displayIdParser } from '$/service/idParsers';
 import { customAssert } from '$/service/returnStatus';
 
 export const indexToDisplayId = (index: number) =>
@@ -16,7 +16,8 @@ export const displayIdToIndex = (displayId: DisplayId) => {
   customAssert(idxText !== undefined, 'エラーならロジック修正必須');
   return +idxText;
 };
-export const indexToSiteUrl = (index: number) => `https://${index}.${BASE_DOMAIN}`;
+export const indexToSiteUrl = (index: number) =>
+  `https://${indexToDisplayId(index)}.${BASE_DOMAIN}`;
 const toOgpS3Key = (index: number, imageName: string) =>
   `${indexToDisplayId(index)}/images/ogp/${imageName}`;
 export const toOgpImage = (index: number, imageName: string, prompt: string): OgpImage => ({

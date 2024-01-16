@@ -1,5 +1,5 @@
-import type { AppModel } from 'commonTypesWithClient/appModels';
-import type { DisplayId } from 'commonTypesWithClient/branded';
+import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { DisplayId } from '$/commonTypesWithClient/branded';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -33,6 +33,10 @@ const Home = () => {
   const appendApp = (app: AppModel) => {
     setApps((apps) => [...apps, app]);
     router.push(`/?id=${app.displayId}`, undefined, { shallow: true });
+  };
+  const sendChangeRequest = async (app: AppModel, content: string) => {
+    const newApp = await apiClient.apps.$patch({ body: { appId: app.id, content } });
+    setApps((apps) => apps.map((app) => (app.id === newApp.id ? newApp : app)));
   };
   const fetchApps = useCallback(
     () =>
@@ -72,10 +76,10 @@ const Home = () => {
               append={appendApp}
             />
           </div>
-          {currentApp && (
+          {currentApp !== undefined && (
             <>
               <div className={styles.chatArea}>
-                <ChatArea app={currentApp} />
+                <ChatArea app={currentApp} onSend={(e) => sendChangeRequest(currentApp, e)} />
               </div>
               <div className={styles.infoArea}>
                 <InfoArea app={currentApp} />

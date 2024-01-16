@@ -6,9 +6,14 @@ import { displayIdToIndex } from './utils';
 const APP_INCLUDE = {
   User: true,
   bubbles: {
-    include: { GitHubAction: true, RailwayDeployment: true },
+    include: {
+      GitHubAction: true,
+      RailwayDeployment: true,
+      taskList: { orderBy: { index: 'asc' } },
+    },
     orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
   },
+  taskList: { orderBy: { index: 'asc' } },
 } satisfies Prisma.AppInclude;
 
 export const appQuery = {

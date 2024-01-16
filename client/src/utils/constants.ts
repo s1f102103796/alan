@@ -1,3 +1,5 @@
+export const APP_TITLE = 'Deus Creatio';
+
 export const GLOBAL_STYLE = {
   noPrint: 'noPrint',
 };

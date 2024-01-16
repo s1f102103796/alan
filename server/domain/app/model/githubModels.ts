@@ -1,5 +1,5 @@
 import { ghConclusionParser, ghStatusParser } from '$/commonTypesWithClient/bubbleModels';
-import { ghStepIdParser } from '$/service/idParsers';
+import { ghStepIdParser } from '$/commonTypesWithClient/idParsers';
 import { z } from 'zod';
 
 export const GH_STEP_TYPES = ['migrate', 'generate', 'lint', 'typecheck', 'test'] as const;

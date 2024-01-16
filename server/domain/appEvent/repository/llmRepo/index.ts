@@ -1,9 +1,12 @@
-import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { ActiveAppModel, AppModel, InitAppModel } from '$/commonTypesWithClient/appModels';
+import type { TaskModel } from '$/commonTypesWithClient/bubbleModels';
+import { parseTask } from '$/commonTypesWithClient/bubbleModels';
 import type { GHStepModel } from '$/domain/app/model/githubModels';
 import type { LocalGitFile, LocalGitModel } from '$/domain/app/repository/localGitRepo';
 import { customAssert } from '$/service/returnStatus';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { exec } from 'child_process';
+import { randomUUID } from 'crypto';
 import { readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
@@ -30,7 +33,7 @@ const toClientDeletedFiles = (deletedFiles: string[]) => deletedFiles.filter(fil
 const toServerDeletedFiles = (deletedFiles: string[]) => deletedFiles.filter(filterServer);
 
 export const llmRepo = {
-  initSchema: async (app: AppModel): Promise<GitDiffModel> => {
+  initSchema: async (app: InitAppModel | ActiveAppModel): Promise<GitDiffModel> => {
     const prompt = prompts.initSchema(app);
     const prismaHeader = `datasource db {
   provider = "postgresql"
@@ -76,7 +79,10 @@ generator client {
 
     throw new Error('schema.prismaを正しく生成できませんでした。');
   },
-  initApiDef: async (app: AppModel, localGit: LocalGitModel): Promise<LocalGitFile[]> => {
+  initApiDef: async (
+    app: InitAppModel | ActiveAppModel,
+    localGit: LocalGitModel
+  ): Promise<LocalGitFile[]> => {
     const schema = localGit.files.find((file) => file.source === sources.schema);
     customAssert(schema, 'エラーならロジック修正必須');
 
@@ -103,8 +109,35 @@ generator client {
 
     throw new Error('openapi.jsonを正しく生成できませんでした。');
   },
+  initTaskList: async (app: AppModel): Promise<TaskModel[]> => {
+    const prompt = prompts.initTaskList(app);
+    const validator = z.object({
+      taskList: z.array(z.object({ title: z.string(), content: z.string() })),
+    });
+    const result = await invokeOrThrow(app, prompt, validator, []);
+
+    return result.taskList.map((task) => parseTask({ ...task, id: randomUUID(), done: false }));
+  },
+  updateTaskList: async (app: AppModel): Promise<TaskModel[]> => {
+    const taskList = app.taskList;
+    customAssert(taskList, 'エラーならロジック修正必須');
+    const content = app.bubbles
+      .slice(
+        app.bubbles.findIndex((b) => b.type === 'system' && b.content === 'updating_task_list')
+      )
+      .filter((b) => b.type === 'human')
+      .map((b) => b.content)
+      .join('\n');
+    const prompt = prompts.updateTaskList(app, content, taskList);
+    const validator = z.object({
+      taskList: z.array(z.object({ title: z.string(), content: z.string() })),
+    });
+    const result = await invokeOrThrow(app, prompt, validator, []);
+
+    return result.taskList.map((task) => parseTask({ ...task, id: randomUUID(), done: false }));
+  },
   initClient: async (
-    app: AppModel,
+    app: InitAppModel | ActiveAppModel,
     localGit: LocalGitModel,
     aspidaGit: LocalGitFile[]
   ): Promise<GitDiffModel> => {
@@ -118,7 +151,7 @@ generator client {
     };
   },
   initServer: async (
-    app: AppModel,
+    app: InitAppModel | ActiveAppModel,
     localGit: LocalGitModel,
     aspidaGit: LocalGitFile[]
   ): Promise<GitDiffModel> => {

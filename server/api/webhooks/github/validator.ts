@@ -1,11 +1,10 @@
-import { z } from 'zod';
 import {
   actionTypeParser,
   ghConclusionParser,
   ghStatusParser,
-} from '../../../commonTypesWithClient/bubbleModels';
-import { GITHUB_OWNER } from '../../../service/envValues';
-import { displayIdParser, ghActionIdParser } from '../../../service/idParsers';
+} from '$/commonTypesWithClient/bubbleModels';
+import { displayIdParser, ghActionIdParser } from '$/commonTypesWithClient/idParsers';
+import { z } from 'zod';
 
 export const headersValidator = z.object({ 'x-hub-signature-256': z.string() }).passthrough();
 
@@ -26,7 +25,7 @@ const workflowRunValidator = z
 
 const repositoryValidator = z.object({
   name: displayIdParser,
-  owner: z.object({ login: z.literal(GITHUB_OWNER) }),
+  owner: z.object({ login: z.string() }),
 });
 
 export const bodyValidator = z.union([

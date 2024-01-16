@@ -103,6 +103,33 @@ export const appEventUseCase = {
         return await appUseCase.completeOgpInit(tx, event.app, ogpImage);
       }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
     }),
+  createTaskList: () =>
+    subscribe('createTaskList', async (published) => {
+      customAssert(published.app.status === 'init', 'エラーならロジック修正必須');
+
+      const taskList = await llmRepo.initTaskList(published.app);
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+
+        customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
+        return await appUseCase.completeTaskListInit(tx, event.app, taskList);
+      }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
+    }),
+  updateTaskList: () =>
+    subscribe('updateTaskList', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
+      await addSystemBubbleOnce(published, 'updating_task_list');
+      const taskList = await llmRepo.updateTaskList(published.app);
+      await transaction('RepeatableRead', async (tx) => {
+        const event = await appEventQuery.findByIdOrThrow(tx, published.id);
+        await appEventRepo.save(tx, appEventMethods.complete(event));
+
+        customAssert(event.app.status !== 'waiting', 'エラーならロジック修正必須');
+        return await appUseCase.completeTaskListUpdated(tx, event.app, taskList);
+      }).then(({ dispatchAfterTransaction }) => dispatchAfterTransaction());
+    }),
   watchRailway: () =>
     subscribe('watchRailway', async (published) => {
       if (published.app.status === 'waiting' || published.app.railway === undefined) {
@@ -120,14 +147,28 @@ export const appEventUseCase = {
       transaction('RepeatableRead', async (tx) => {
         const event = await appEventQuery.findByIdOrThrow(tx, published.id);
         await appEventRepo.save(tx, appEventMethods.complete(event));
-        if (event.app.ogpImage === undefined || event.app.railway === undefined) return;
+        if (
+          event.app.ogpImage === undefined ||
+          event.app.railway === undefined ||
+          event.app.taskList === undefined
+        ) {
+          return;
+        }
 
         customAssert(event.app.status === 'init', 'エラーならロジック修正必須');
-        return await appUseCase.run(tx, event.app, event.app.ogpImage, event.app.railway);
+        return await appUseCase.run(
+          tx,
+          event.app,
+          event.app.ogpImage,
+          event.app.railway,
+          event.app.taskList
+        );
       }).then((dispatcher) => dispatcher?.dispatchAfterTransaction())
     ),
   createSchema: () =>
     subscribe('createSchema', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
       await addSystemBubbleOnce(published, 'creating_schema');
       await githubEventRepo.createSchema(published.app);
       await transaction('RepeatableRead', async (tx) => {
@@ -139,6 +180,8 @@ export const appEventUseCase = {
     }),
   createApiDef: () =>
     subscribe('createApiDefinition', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
       await addSystemBubbleOnce(published, 'creating_api_def');
       await githubEventRepo.createApiDef(published.app);
       await transaction('RepeatableRead', async (tx) => {
@@ -150,6 +193,8 @@ export const appEventUseCase = {
     }),
   createClientCode: () =>
     subscribe('createClientCode', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
       await addSystemBubbleOnce(published, 'creating_client_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-client');
       const aspidaGit = await localGitRepo.getApiFiles(published.app);
@@ -165,6 +210,8 @@ export const appEventUseCase = {
     }),
   createServerCode: () =>
     subscribe('createServerCode', async (published) => {
+      customAssert(published.app.status !== 'waiting', 'エラーならロジック修正必須');
+
       await addSystemBubbleOnce(published, 'creating_server_code');
       const localGit = await localGitRepo.getFiles(published.app, 'deus/test-server');
       const aspidaGit = await localGitRepo.getApiFiles(published.app);

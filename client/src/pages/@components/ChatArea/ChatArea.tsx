@@ -1,3 +1,4 @@
+import type { AppModel } from '$/commonTypesWithClient/appModels';
 import type { MessageModel } from '@chatscope/chat-ui-kit-react';
 import {
   Avatar,
@@ -8,7 +9,6 @@ import {
   MessageList,
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react';
-import type { AppModel } from 'commonTypesWithClient/appModels';
 import Link from 'next/link';
 import { Spacer } from 'src/components/Spacer';
 import { ChatGPTIcon } from 'src/components/icons/ChatGPTIcon';
@@ -27,7 +27,7 @@ import { NameLabel } from './NameLabel';
 import { SystemContent } from './SystemContent';
 import styles from './chatArea.module.css';
 
-export const ChatArea = (props: { app: AppModel }) => {
+export const ChatArea = (props: { app: AppModel; onSend: (content: string) => void }) => {
   const isClosed = props.app.status === 'closed';
   const appStatus = useAppStatus(props.app);
 
@@ -132,19 +132,50 @@ export const ChatArea = (props: { app: AppModel }) => {
                           </Message.CustomContent>
                         </Message>
                       );
+                    case 'taskList':
+                      return (
+                        <Message
+                          key={bubble.id}
+                          model={{ type: 'custom' } as MessageModel}
+                          avatarPosition="tl"
+                        >
+                          <Avatar>
+                            <Spacer axis="y" size={26} />
+                            <Spacer axis="x" size={4} />
+                            <ChatGPTIcon size={32} fill="#fff" />
+                          </Avatar>
+                          <Message.CustomContent>
+                            <NameLabel name="GPT4-turbo" createdTime={bubble.createdTime} />
+                            <Spacer axis="y" size={6} />
+                            <div>
+                              <div>実装タスクのリストを優先順に作成しました。</div>
+                              {bubble.content.map((task, i) => (
+                                <div key={task.id} className={styles.task}>
+                                  <div className={styles.taskTitle}>
+                                    {i + 1}. {task.title}
+                                  </div>
+                                  <div className={styles.taskContent}>{task.content}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </Message.CustomContent>
+                        </Message>
+                      );
                     default:
                       throw new Error(bubble satisfies never);
                   }
                 })
               }
             </MessageList>
-            <MessageInput
-              style={{ background: '#fff2', borderTopColor: CSS_VARS.borderColor }}
-              placeholder="変更要望を入力"
-              sendButton={false}
-              attachButton={false}
-              disabled={props.app.status !== 'running'}
-            />
+            {props.app.status === 'running' && (
+              <MessageInput
+                style={{ background: '#fff2', borderTopColor: CSS_VARS.borderColor }}
+                placeholder="変更要望を入力"
+                sendButton={false}
+                attachButton={false}
+                onSend={props.onSend}
+              />
+            )}
           </ChatContainer>
         </MainContainer>
       </div>

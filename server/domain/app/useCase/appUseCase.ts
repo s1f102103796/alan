@@ -1,12 +1,17 @@
 import type {
+  ActiveAppModel,
   AppModel,
   InitAppModel,
   OgpImage,
   RailwayModel,
 } from '$/commonTypesWithClient/appModels';
 import { type UserModel } from '$/commonTypesWithClient/appModels';
-import type { AppId } from '$/commonTypesWithClient/branded';
-import type { RWDeploymentModel, SystemStatus } from '$/commonTypesWithClient/bubbleModels';
+import type { AppId, Maybe } from '$/commonTypesWithClient/branded';
+import type {
+  RWDeploymentModel,
+  SystemStatus,
+  TaskModel,
+} from '$/commonTypesWithClient/bubbleModels';
 import { appEventUseCase } from '$/domain/appEvent/useCase/appEventUseCase';
 import { transaction } from '$/service/prismaClient';
 import { customAssert } from '$/service/returnStatus';
@@ -72,13 +77,34 @@ export const appUseCase = {
 
     return await appEventUseCase.createWithLatestBubble(tx, 'RailwayCreated', app);
   },
+  completeTaskListInit: async (
+    tx: Prisma.TransactionClient,
+    inited: InitAppModel,
+    taskList: TaskModel[]
+  ) => {
+    const app = appMethods.addTaskListBubble(inited, taskList);
+    await appRepo.save(tx, app);
+
+    return await appEventUseCase.createWithLatestBubble(tx, 'TaskListCreated', app);
+  },
+  completeTaskListUpdated: async (
+    tx: Prisma.TransactionClient,
+    inited: InitAppModel | ActiveAppModel,
+    taskList: TaskModel[]
+  ) => {
+    const app = appMethods.addTaskListBubble(inited, taskList);
+    await appRepo.save(tx, app);
+
+    return await appEventUseCase.createWithLatestBubble(tx, 'TaskListUpdated', app);
+  },
   run: async (
     tx: Prisma.TransactionClient,
     inited: InitAppModel,
     ogpImage: OgpImage,
-    railway: RailwayModel
+    railway: RailwayModel,
+    taskList: TaskModel[]
   ) => {
-    const running = appMethods.run(inited, ogpImage, railway);
+    const running = appMethods.run(inited, ogpImage, railway, taskList);
     await appRepo.save(tx, running);
 
     return await appEventUseCase.createWithLatestBubble(tx, 'AppRunning', running);
@@ -93,4 +119,22 @@ export const appUseCase = {
   callWhenServerStarted: () => {
     githubUseCase.checkAndResetGHActionsWhileServerWasDown();
   },
+  changeRequest: (user: UserModel, appId: Maybe<AppId>, content: string) =>
+    transaction('RepeatableRead', async (tx) => {
+      const app = await appQuery.findByIdOrThrow(tx, appId);
+      customAssert(app.taskList, '不正リクエスト防御');
+      const newApp = appMethods.addHumanBubble(user, app, content);
+      await appRepo.save(tx, newApp);
+
+      const dispatcher = await appEventUseCase.createWithLatestBubble(
+        tx,
+        'ChangeRequested',
+        newApp
+      );
+
+      return { app: newApp, dispatcher };
+    }).then(({ app, dispatcher }) => {
+      dispatcher.dispatchAfterTransaction();
+      return app;
+    }),
 };

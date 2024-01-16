@@ -4,13 +4,15 @@ import {
   commitIdParser,
   ghActionIdParser,
   rwDeploymentIdParser,
-} from '../service/idParsers';
+  taskIdParser,
+} from './idParsers';
 
 export const actionTypeParser = z.enum([
   'test',
   'client deployment',
   'pull request test',
   'pages build and deployment',
+  'pages build and deployment with artifacts-next',
   'client test',
   'server test',
 ]);
@@ -104,6 +106,20 @@ export const parseRWDeployment = (val: {
     : number;
 }) => rwDeploymentParser.parse({ ...val, model: 'railway', branch: 'main' });
 
+const taskParser = z.object({
+  id: taskIdParser,
+  model: z.literal('task'),
+  title: z.string(),
+  content: z.string(),
+  done: z.boolean(),
+});
+
+export type TaskModel = z.infer<typeof taskParser>;
+
+export const parseTask = (val: {
+  [Key in keyof Omit<TaskModel, 'model'>]: TaskModel[Key] extends string ? string : boolean;
+}) => taskParser.parse({ ...val, model: 'task' });
+
 const SYSTEM_STATUSES = [
   'first_question',
   'waiting_init',
@@ -111,6 +127,7 @@ const SYSTEM_STATUSES = [
   'completed_github',
   'creating_schema',
   'creating_api_def',
+  'updating_task_list',
   'creating_client_code',
   'creating_server_code',
   'fixing_client_code',
@@ -120,13 +137,13 @@ const SYSTEM_STATUSES = [
 export type SystemStatus = (typeof SYSTEM_STATUSES)[number];
 export const systemStatusParser = z.enum(SYSTEM_STATUSES);
 
-export const BUBBLE_TYPES = ['ai', 'human', 'github', 'railway', 'system'] as const;
+export const BUBBLE_TYPES = ['system', 'ai', 'human', 'github', 'railway', 'taskList'] as const;
 export const bubbleTypeParser = z.enum(BUBBLE_TYPES);
 
 const systemBubbleParser = z.object({
   id: bubbleIdParser,
   createdTime: z.number(),
-  type: z.literal(BUBBLE_TYPES[4]),
+  type: z.literal(BUBBLE_TYPES[0]),
   content: systemStatusParser,
 });
 
@@ -135,10 +152,11 @@ const bubbleParser = systemBubbleParser.or(
     .object({ id: bubbleIdParser, createdTime: z.number() })
     .and(
       z.union([
-        z.object({ type: z.literal(BUBBLE_TYPES[0]), content: z.string() }),
         z.object({ type: z.literal(BUBBLE_TYPES[1]), content: z.string() }),
-        z.object({ type: z.literal(BUBBLE_TYPES[2]), content: ghActionParser }),
-        z.object({ type: z.literal(BUBBLE_TYPES[3]), content: rwDeploymentParser }),
+        z.object({ type: z.literal(BUBBLE_TYPES[2]), content: z.string() }),
+        z.object({ type: z.literal(BUBBLE_TYPES[3]), content: ghActionParser }),
+        z.object({ type: z.literal(BUBBLE_TYPES[4]), content: rwDeploymentParser }),
+        z.object({ type: z.literal(BUBBLE_TYPES[5]), content: z.array(taskParser) }),
       ])
     )
 );

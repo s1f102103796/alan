@@ -1,7 +1,7 @@
 import type { AppModel } from '$/commonTypesWithClient/appModels';
+import type { AppEventId } from '$/commonTypesWithClient/branded';
 import type { BubbleModel } from '$/commonTypesWithClient/bubbleModels';
-import type { AppEventId } from '$/service/branded';
-import { appEventIdParser } from '$/service/idParsers';
+import { appEventIdParser } from '$/commonTypesWithClient/idParsers';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { appEventUseCase } from '../useCase/appEventUseCase';
@@ -21,6 +21,9 @@ export const appEventTypeParser = z.enum([
   'MainBranchPushed',
   'OgpImageCreated',
   'RailwayCreated',
+  'TaskListCreated',
+  'TaskListUpdated',
+  'ChangeRequested',
   'AppRunning',
   'SchemaCreated',
   'ApiDefined',
@@ -34,6 +37,7 @@ export const appSubscriberIdParser = z.enum([
   'createGitHub',
   'createOgpImage',
   'createRailway',
+  'createTaskList',
   'checkRunningStatus',
   'watchRailway',
   'watchRailwayOnce',
@@ -43,6 +47,7 @@ export const appSubscriberIdParser = z.enum([
   'createServerCode',
   'fixClientCode',
   'fixServerCode',
+  'updateTaskList',
 ]);
 export type SubscriberId = z.infer<typeof appSubscriberIdParser>;
 
@@ -68,7 +73,7 @@ const appSubscriberDict = (): {
   GitHubCreated: [
     { id: 'createOgpImage', fn: appEventUseCase.createOgpImage },
     { id: 'createRailway', fn: appEventUseCase.createRailway },
-    { id: 'createSchema', fn: appEventUseCase.createSchema },
+    { id: 'createTaskList', fn: appEventUseCase.createTaskList },
   ],
   MainBranchPushed: [{ id: 'watchRailway', fn: appEventUseCase.watchRailway }],
   OgpImageCreated: [{ id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus }],
@@ -76,6 +81,12 @@ const appSubscriberDict = (): {
     { id: 'watchRailwayOnce', fn: appEventUseCase.watchRailwayOnce },
     { id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus },
   ],
+  TaskListCreated: [
+    { id: 'checkRunningStatus', fn: appEventUseCase.checkRunningStatus },
+    { id: 'createSchema', fn: appEventUseCase.createSchema },
+  ],
+  TaskListUpdated: [],
+  ChangeRequested: [{ id: 'updateTaskList', fn: appEventUseCase.updateTaskList }],
   AppRunning: [],
   SchemaCreated: [{ id: 'createApiDefinition', fn: appEventUseCase.createApiDef }],
   ApiDefined: [
